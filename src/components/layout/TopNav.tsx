@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { navItems } from './navItems'
+import AuthButton from './AuthButton'
 
 export default function TopNav() {
   return (
@@ -16,7 +17,7 @@ export default function TopNav() {
             </Link>
           ))}
         </div>
-        <Link href="/sign-in" className="btn-secondary text-sm py-2 px-4">Sign in</Link>
+        <AuthButton />
       </div>
     </nav>
   )

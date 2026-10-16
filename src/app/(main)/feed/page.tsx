@@ -1,16 +1,13 @@
 import GameCard from '@/components/games/GameCard'
 import GameFilters from '@/components/games/GameFilters'
 import PageHeader from '@/components/ui/PageHeader'
-import { mockGames } from '@/lib/mock-data'
+import { listGames } from '@/lib/queries/games'
 
 export const metadata = { title: 'Feed' }
 
 export default async function FeedPage({ searchParams }: { searchParams: Promise<{ q?: string; hangover?: string }> }) {
   const { q = '', hangover = '' } = await searchParams
-  // TODO: replace mock data with a Supabase query (ilike on title, eq on hangover_rating)
-  const games = mockGames.filter(
-    (g) => (!q || g.title.toLowerCase().includes(q.toLowerCase())) && (!hangover || g.hangover_rating === hangover),
-  )
+  const games = await listGames({ q, hangover })
   return (
     <>
       <PageHeader emoji="🎮" title="Drinking Games" subtitle="Fresh from the community, rated by hangover." />

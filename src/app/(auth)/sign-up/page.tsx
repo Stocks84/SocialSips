@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import SignUpForm from './SignUpForm'
 
 export const metadata = { title: 'Sign up' }
 
@@ -7,31 +8,7 @@ export default function SignUpPage() {
     <>
       <h1 className="text-2xl font-black mb-2">Join the party 🎉</h1>
       <p className="text-text-secondary text-sm mb-6">18+ only. We check your date of birth.</p>
-      {/* TODO (Auth sprint): validate with signUpSchema, call supabase.auth.signUp with
-          options.data = { username, date_of_birth, age_confirmed: true } — the DB trigger creates the profile. */}
-      <form className="space-y-4">
-        <div>
-          <label className="label" htmlFor="username">Username</label>
-          <input id="username" name="username" className="input" required />
-        </div>
-        <div>
-          <label className="label" htmlFor="email">Email</label>
-          <input id="email" name="email" type="email" className="input" required />
-        </div>
-        <div>
-          <label className="label" htmlFor="password">Password</label>
-          <input id="password" name="password" type="password" className="input" required />
-        </div>
-        <div>
-          <label className="label" htmlFor="dateOfBirth">Date of birth</label>
-          <input id="dateOfBirth" name="dateOfBirth" type="date" className="input" required />
-        </div>
-        <label className="flex items-start gap-3 text-sm">
-          <input type="checkbox" name="ageConfirmed" value="true" required className="mt-1 accent-accent-purple" />
-          <span>I confirm I am 18 or over, and I&apos;ll drink responsibly.</span>
-        </label>
-        <button type="button" className="btn-primary w-full">Create account</button>
-      </form>
+      <SignUpForm />
       <p className="text-text-secondary text-sm mt-6 text-center">
         Already in? <Link href="/sign-in" className="text-accent-purple">Sign in</Link>
       </p>

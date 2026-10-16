@@ -33,7 +33,8 @@ export async function middleware(request: NextRequest) {
   if (isPublicRoute) return response
 
   // ── 2. Age gate check ─────────────────────────────────────────────────
-  const ageVerified = request.cookies.get(AGE_COOKIE)?.value === 'true'
+  // Signed-in users already passed the 18+ DOB check + confirmation at sign-up (enforced in the DB)
+  const ageVerified = request.cookies.get(AGE_COOKIE)?.value === 'true' || Boolean(user)
   if (!ageVerified) {
     const url = request.nextUrl.clone()
     url.pathname = '/age-gate'

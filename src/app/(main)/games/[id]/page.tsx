@@ -7,10 +7,8 @@ import ReportButton from '@/components/ui/ReportButton'
 import CommentsSection from '@/components/social/CommentsSection'
 import RatingForm from '@/components/social/RatingForm'
 import SignInPrompt from '@/components/social/SignInPrompt'
-import VariationForm from '@/components/games/VariationForm'
-import { deleteVariation } from '../actions'
+import VariationsSection from '@/components/social/VariationsSection'
 import { getGameDetail } from '@/lib/queries/games'
-import { formatDate } from '@/lib/format'
 
 export default async function GamePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -60,29 +58,7 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
         {userId ? <RatingForm kind="game" targetId={game.id} myScore={rating.mine} /> : <SignInPrompt path={path} what="rate this game" />}
       </section>
 
-      <section className="space-y-3">
-        <h2 className="text-xl font-bold text-accent-cyan">🔀 House variations</h2>
-        {variations.length === 0 && <p className="text-text-secondary text-sm">No variations yet. Got house rules?</p>}
-        {variations.map((v) => (
-          <div key={v.id} className="card p-4" data-testid="variation">
-            <div className="flex justify-between gap-3">
-              <h3 className="font-bold">{v.title}</h3>
-              {v.author_id === userId ? (
-                <form action={deleteVariation}>
-                  <input type="hidden" name="gameId" value={game.id} />
-                  <input type="hidden" name="variationId" value={v.id} />
-                  <button className="text-xs text-text-muted hover:text-accent-pink">Delete</button>
-                </form>
-              ) : userId ? (
-                <ReportButton targetType="variation" targetId={v.id} />
-              ) : null}
-            </div>
-            <p className="text-sm whitespace-pre-line mt-1">{v.rules}</p>
-            <p className="text-text-muted text-xs mt-2">@{v.author?.username ?? 'someone'} · {formatDate(v.created_at)}</p>
-          </div>
-        ))}
-        {userId ? <VariationForm gameId={game.id} /> : <SignInPrompt path={path} what="add a variation" />}
-      </section>
+      <VariationsSection kind="game" targetId={game.id} variations={variations} userId={userId} path={path} />
 
       <CommentsSection kind="game" targetId={game.id} comments={comments} userId={userId} path={path} />
     </article>

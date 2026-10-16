@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { mockGames } from '@/lib/mock-data'
 import { HANGOVER_RATINGS, type HangoverRating } from '@/types/database'
-import { getSocial, type Author, type CommentRow, type RatingSummary } from './social'
+import { getSocial, type Author, type CommentRow, type RatingSummary, type VariationRow } from './social'
 
 export type GameListItem = (typeof mockGames)[number] & { avg_rating: number | null; rating_count: number }
 export type FeedSort = 'newest' | 'top'
@@ -43,7 +43,7 @@ export type GameDetail = {
     author: Author
   }
   comments: CommentRow[]
-  variations: { id: string; title: string; rules: string; created_at: string; author_id: string; author: Author }[]
+  variations: VariationRow[]
   rating: RatingSummary
   userId: string | null
 }
@@ -61,18 +61,15 @@ export async function getGameDetail(id: string): Promise<GameDetail | null> {
   }
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null
   const { data: { user } } = await supabase.auth.getUser()
-  const [{ data: game }, { data: variations }, social] = await Promise.all([
+  const [{ data: game }, social] = await Promise.all([
     supabase.from('games')
       .select('id, title, summary, rules, hangover_rating, min_players, max_players, equipment, tags, cover_image_url, author_id, author:profiles(username)')
-      .eq('id', id).maybeSingle(),
-    supabase.from('game_variations').select('id, title, rules, created_at, author_id, author:profiles(username)')
-      .eq('game_id', id).order('created_at', { ascending: true }),
+      .eq('id', id).eq('is_hidden', false).maybeSingle(),
     getSocial(supabase, 'game_id', id, user?.id ?? null),
   ])
   if (!game) return null
   return {
     game: game as unknown as GameDetail['game'],
-    variations: (variations ?? []) as unknown as GameDetail['variations'],
     ...social,
     userId: user?.id ?? null,
   }

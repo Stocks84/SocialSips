@@ -3,7 +3,8 @@ import { useActionState } from 'react'
 import { reportContent, type FormState } from '@/app/(main)/games/actions'
 import { REPORT_REASONS } from '@/lib/validators/comment'
 
-type Props = { targetType: 'game' | 'comment' | 'variation' | 'cocktail'; targetId: string }
+export type ReportTarget = 'game' | 'comment' | 'variation' | 'cocktail' | 'cocktail_variation' | 'meme'
+type Props = { targetType: ReportTarget; targetId: string }
 
 /** Small "Report" disclosure with reason + optional note. Only rendered for signed-in users. */
 export default function ReportButton({ targetType, targetId }: Props) {

@@ -1,0 +1,37 @@
+import { deleteVariation } from '@/app/(main)/games/actions'
+import ReportButton from '@/components/ui/ReportButton'
+import VariationForm from './VariationForm'
+import SignInPrompt from './SignInPrompt'
+import type { VariationRow } from '@/lib/queries/social'
+import { formatDate } from '@/lib/format'
+
+type Props = { kind: 'game' | 'cocktail'; targetId: string; variations: VariationRow[]; userId: string | null; path: string }
+
+export default function VariationsSection({ kind, targetId, variations, userId, path }: Props) {
+  return (
+    <section className="space-y-3">
+      <h2 className="text-xl font-bold text-accent-cyan">🔀 {kind === 'game' ? 'House variations' : 'Twists & variations'}</h2>
+      {variations.length === 0 && <p className="text-text-secondary text-sm">No variations yet. Got your own spin?</p>}
+      {variations.map((v) => (
+        <div key={v.id} className="card p-4" data-testid="variation">
+          <div className="flex justify-between gap-3">
+            <h3 className="font-bold">{v.title}</h3>
+            {v.author_id === userId ? (
+              <form action={deleteVariation}>
+                <input type="hidden" name="kind" value={kind} />
+                <input type="hidden" name="targetId" value={targetId} />
+                <input type="hidden" name="variationId" value={v.id} />
+                <button className="text-xs text-text-muted hover:text-accent-pink">Delete</button>
+              </form>
+            ) : userId ? (
+              <ReportButton targetType={kind === 'game' ? 'variation' : 'cocktail_variation'} targetId={v.id} />
+            ) : null}
+          </div>
+          <p className="text-sm whitespace-pre-line mt-1">{v.rules}</p>
+          <p className="text-text-muted text-xs mt-2">@{v.author?.username ?? 'someone'} · {formatDate(v.created_at)}</p>
+        </div>
+      ))}
+      {userId ? <VariationForm kind={kind} targetId={targetId} /> : <SignInPrompt path={path} what="add a variation" />}
+    </section>
+  )
+}

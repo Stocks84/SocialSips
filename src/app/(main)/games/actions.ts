@@ -2,26 +2,13 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { createClient } from '@/lib/supabase/server'
-import { storagePathFromUrl } from '@/lib/storage'
+import { requireUser, UUID } from '@/lib/server/auth'
+import { removeImage, uploadImage } from '@/lib/server/uploads'
+import { firstIssue } from '@/lib/validators/issues'
 import { gameSchema, splitList, variationSchema } from '@/lib/validators/game'
 import { commentSchema, ratingSchema, reportSchema } from '@/lib/validators/comment'
 
 export type FormState = { error?: string; ok?: boolean }
-
-const BUCKET = 'game-covers'
-const MAX_IMAGE_BYTES = 4 * 1024 * 1024
-const IMAGE_TYPES: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' }
-const UUID = /^[0-9a-f-]{36}$/i
-
-/** Signed-in Supabase client + user, or an error. All writes go through RLS as this user. */
-async function requireUser() {
-  const supabase = await createClient()
-  if (!supabase) return { error: 'Supabase is not configured.' } as const
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Please sign in first.' } as const
-  return { supabase, user } as const
-}
 
 const slugify = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50) || 'game'
@@ -39,28 +26,10 @@ function parseGame(formData: FormData) {
   })
 }
 
-/** Uploads the optional cover to game-covers/<user_id>/… Returns url, null (no file) or an error. */
-async function uploadCover(supabase: SupabaseClient, userId: string, formData: FormData) {
-  const file = formData.get('cover')
-  if (!(file instanceof File) || file.size === 0) return { url: null }
-  const ext = IMAGE_TYPES[file.type]
-  if (!ext) return { error: 'Cover must be a JPG, PNG, WebP or GIF' }
-  if (file.size > MAX_IMAGE_BYTES) return { error: 'Cover image must be under 4 MB' }
-  const path = `${userId}/${crypto.randomUUID()}.${ext}`
-  const { error } = await supabase.storage.from(BUCKET).upload(path, file, { contentType: file.type })
-  if (error) return { error: `Image upload failed: ${error.message}` }
-  return { url: supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl }
-}
+const uploadCover = (supabase: SupabaseClient, userId: string, formData: FormData) =>
+  uploadImage(supabase, 'game-covers', userId, formData)
+const removeCover = (supabase: SupabaseClient, url: string | null) => removeImage(supabase, 'game-covers', url)
 
-async function removeCover(supabase: SupabaseClient, url: string | null) {
-  const path = storagePathFromUrl(url, BUCKET)
-  if (path) await supabase.storage.from(BUCKET).remove([path])
-}
-
-const firstIssue = (issues: { path: PropertyKey[]; message: string }[]) => {
-  const i = issues[0]
-  return i ? `${String(i.path[0] ?? 'Form')}: ${i.message}` : 'Check the form'
-}
 
 // ─── Games ──────────────────────────────────────────────────────────────────
 
@@ -210,29 +179,35 @@ export async function rate(formData: FormData) {
   revalidatePath('/feed')
 }
 
-// ─── Variations ─────────────────────────────────────────────────────────────
+// ─── Variations (games or cocktails) ────────────────────────────────────────
+
+const variationTarget = (formData: FormData) => {
+  const t = target(formData)
+  return { ...t, table: t.kind === 'game' ? 'game_variations' : 'cocktail_variations' } as const
+}
 
 export async function addVariation(_prev: FormState, formData: FormData): Promise<FormState> {
   const auth = await requireUser()
   if ('error' in auth) return { error: auth.error }
-  const gameId = String(formData.get('gameId'))
+  const t = variationTarget(formData)
+  if (!UUID.test(t.id)) return { error: 'Unknown item' }
   const parsed = variationSchema.safeParse({
     title: String(formData.get('title') ?? '').trim(),
     rules: String(formData.get('rules') ?? '').trim(),
   })
-  if (!parsed.success) return { error: 'Give your variation a name (3+ chars) and rules (10+ chars)' }
-  const { error } = await auth.supabase.from('game_variations').insert({ game_id: gameId, author_id: auth.user.id, ...parsed.data })
+  if (!parsed.success) return { error: 'Give your variation a name (3+ chars) and details (10+ chars)' }
+  const { error } = await auth.supabase.from(t.table).insert({ [t.column]: t.id, author_id: auth.user.id, ...parsed.data })
   if (error) return { error: error.message }
-  revalidatePath(`/games/${gameId}`)
+  revalidatePath(t.path)
   return { ok: true }
 }
 
 export async function deleteVariation(formData: FormData) {
   const auth = await requireUser()
   if ('error' in auth) return
-  const gameId = String(formData.get('gameId'))
-  await auth.supabase.from('game_variations').delete().eq('id', String(formData.get('variationId'))).eq('author_id', auth.user.id)
-  revalidatePath(`/games/${gameId}`)
+  const t = variationTarget(formData)
+  await auth.supabase.from(t.table).delete().eq('id', String(formData.get('variationId'))).eq('author_id', auth.user.id)
+  revalidatePath(t.path)
 }
 
 // ─── Reports ────────────────────────────────────────────────────────────────

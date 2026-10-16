@@ -13,7 +13,7 @@ export const REPORT_REASONS = {
 } as const
 
 export const reportSchema = z.object({
-  targetType: z.enum(['game', 'comment', 'variation', 'cocktail']),
+  targetType: z.enum(['game', 'comment', 'variation', 'cocktail', 'cocktail_variation', 'meme']),
   targetId: z.string().uuid(),
   reason: z.enum(Object.keys(REPORT_REASONS) as [keyof typeof REPORT_REASONS, ...(keyof typeof REPORT_REASONS)[]]),
   note: z.string().max(500).optional(),

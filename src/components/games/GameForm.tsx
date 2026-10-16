@@ -3,7 +3,7 @@ import { useActionState } from 'react'
 import type { FormState } from '@/app/(main)/games/actions'
 import type { HangoverRating } from '@/types/database'
 import HangoverPicker from './HangoverPicker'
-import CoverInput from './CoverInput'
+import ImageInput from '@/components/ui/ImageInput'
 
 export type GameFormDefaults = {
   id?: string
@@ -61,7 +61,7 @@ export default function GameForm({ action: serverAction, defaults = {}, submitLa
         <input id="tags" name="tags" className="input" defaultValue={defaults.tags?.join(', ')} placeholder="party, cards, team" />
       </div>
       <HangoverPicker defaultValue={defaults.hangover_rating} />
-      <CoverInput label={defaults.cover_image_url ? 'Replace cover image (optional)' : undefined} />
+      <ImageInput label={defaults.cover_image_url ? 'Replace cover image (optional)' : undefined} />
       {defaults.cover_image_url && (
         <label className="flex items-center gap-2 text-sm text-text-secondary">
           <input type="checkbox" name="removeCover" value="true" className="accent-accent-pink" /> Remove current cover

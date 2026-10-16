@@ -28,17 +28,56 @@ export async function listGames({ q = '', hangover = '' }: { q?: string; hangove
   return data as GameListItem[]
 }
 
-export async function getGame(id: string) {
+
+type Author = { username: string } | null
+export type GameDetail = {
+  game: GameListItem & {
+    rules: string | null
+    max_players: number | null
+    equipment: string[]
+    cover_image_url: string | null
+    author: Author
+  }
+  comments: { id: string; body: string; created_at: string; author_id: string; author: Author }[]
+  variations: { id: string; title: string; rules: string; created_at: string; author_id: string; author: Author }[]
+  rating: { avg: number | null; count: number; mine: number | null }
+  userId: string | null
+}
+
+/** Everything the game page needs, in parallel. Null if not found. */
+export async function getGameDetail(id: string): Promise<GameDetail | null> {
   const supabase = await createClient()
   if (!supabase) {
     const g = mockGames.find((x) => x.id === id)
-    return g ? { ...g, rules: null as string | null } : null
+    if (!g) return null
+    return {
+      game: { ...g, rules: null, max_players: null, equipment: [], cover_image_url: null, author: null },
+      comments: [], variations: [], rating: { avg: null, count: 0, mine: null }, userId: null,
+    }
   }
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null
-  const { data } = await supabase
-    .from('games')
-    .select('id, title, summary, rules, hangover_rating, min_players, tags')
-    .eq('id', id)
-    .maybeSingle()
-  return data as (GameListItem & { rules: string | null }) | null
+  const [{ data: game }, { data: comments }, { data: variations }, { data: ratings }, { data: { user } }] = await Promise.all([
+    supabase.from('games')
+      .select('id, title, summary, rules, hangover_rating, min_players, max_players, equipment, tags, cover_image_url, author:profiles(username)')
+      .eq('id', id).maybeSingle(),
+    supabase.from('comments').select('id, body, created_at, author_id, author:profiles(username)')
+      .eq('game_id', id).order('created_at', { ascending: true }),
+    supabase.from('game_variations').select('id, title, rules, created_at, author_id, author:profiles(username)')
+      .eq('game_id', id).order('created_at', { ascending: true }),
+    supabase.from('ratings').select('user_id, score').eq('game_id', id),
+    supabase.auth.getUser(),
+  ])
+  if (!game) return null
+  const scores = (ratings ?? []) as { user_id: string; score: number }[]
+  return {
+    game: game as unknown as GameDetail['game'],
+    comments: (comments ?? []) as unknown as GameDetail['comments'],
+    variations: (variations ?? []) as unknown as GameDetail['variations'],
+    rating: {
+      avg: scores.length ? scores.reduce((a, r) => a + r.score, 0) / scores.length : null,
+      count: scores.length,
+      mine: scores.find((r) => r.user_id === user?.id)?.score ?? null,
+    },
+    userId: user?.id ?? null,
+  }
 }

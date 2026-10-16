@@ -1,16 +1,22 @@
 import { HANGOVER_LABELS, HANGOVER_RATINGS } from '@/types/database'
 
+/** Radio cards styled with the neon hangover badges. */
 export default function HangoverPicker({ name = 'hangoverRating' }: { name?: string }) {
   return (
-    <fieldset className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <fieldset>
       <legend className="label mb-2">Hangover rating</legend>
-      {HANGOVER_RATINGS.map((r, i) => (
-        <label key={r} className="card p-4 text-center cursor-pointer has-[:checked]:border-accent-purple">
-          <input type="radio" name={name} value={r} defaultChecked={i === 0} className="sr-only" />
-          <span className="text-3xl block" aria-hidden="true">{HANGOVER_LABELS[r].emoji}</span>
-          <span className="text-sm">{HANGOVER_LABELS[r].label}</span>
-        </label>
-      ))}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {HANGOVER_RATINGS.map((r, i) => (
+          <label
+            key={r}
+            className="card p-4 text-center cursor-pointer transition-all has-[:checked]:border-accent-purple has-[:checked]:shadow-neon-purple"
+          >
+            <input type="radio" name={name} value={r} defaultChecked={i === 0} className="sr-only" />
+            <span className="text-3xl block mb-2" aria-hidden="true">{HANGOVER_LABELS[r].emoji}</span>
+            <span className={`badge ${HANGOVER_LABELS[r].badge}`}>{HANGOVER_LABELS[r].label}</span>
+          </label>
+        ))}
+      </div>
     </fieldset>
   )
 }

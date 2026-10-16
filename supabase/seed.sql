@@ -4,7 +4,7 @@
 insert into auth.users (id, email, raw_user_meta_data, instance_id, aud, role, encrypted_password, email_confirmed_at, created_at, updated_at)
 values (
   '00000000-0000-0000-0000-000000000001', 'demo@socialsips.local',
-  '{"username":"neon_host","date_of_birth":"1998-05-20"}',
+  '{"username":"neon_host","date_of_birth":"1998-05-20","age_confirmed":true}',
   '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
   crypt('password123', gen_salt('bf')), now(), now(), now()
 );

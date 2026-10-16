@@ -11,6 +11,7 @@ export const signUpSchema = z.object({
   password: z.string().min(8, 'At least 8 characters'),
   username: z.string().regex(/^[a-z0-9_]{3,20}$/, '3–20 lowercase letters, numbers or _'),
   dateOfBirth: dobSchema,
+  ageConfirmed: z.literal(true, 'You must confirm you are 18 or over'),
 })
 
 export const signInSchema = z.object({

@@ -15,8 +15,12 @@ import { AGE_COOKIE } from '@/lib/age'
 // Routes that are ALWAYS accessible — no auth or age check needed
 const PUBLIC_ROUTES = ['/', '/sign-in', '/sign-up', '/age-gate', '/help', '/auth/callback', '/manifest.json', '/sw.js']
 
-// Routes that need a signed-in user (in addition to the age gate)
-const AUTH_ROUTES = ['/games/new']
+// Write routes that need a signed-in user (in addition to the age gate).
+// Guests may browse after the age gate. Comments/ratings are also enforced by RLS
+// (auth.uid() = author_id / user_id), so server actions fail for guests.
+const AUTH_ROUTES = ['/games/new', '/cocktails/new', '/memes/new', '/profile/edit']
+const isAuthRoute = (pathname: string) =>
+  AUTH_ROUTES.some((r) => pathname.startsWith(r)) || pathname.endsWith('/edit')
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -39,7 +43,7 @@ export async function middleware(request: NextRequest) {
 
   // ── 3. Auth check (only when Supabase is configured) ──────────────────
   const supabaseConfigured = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-  if (supabaseConfigured && !user && AUTH_ROUTES.some((r) => pathname.startsWith(r))) {
+  if (supabaseConfigured && !user && isAuthRoute(pathname)) {
     const url = request.nextUrl.clone()
     url.pathname = '/sign-in'
     url.searchParams.set('redirectTo', pathname)

@@ -20,6 +20,8 @@ export interface Profile {
   bio: string | null
   avatar_url: string | null
   date_of_birth: string
+  /** When the user ticked "I confirm I am 18 or over" at sign-up */
+  age_confirmed_at: string
   favourite_drink: string | null
   party_vibe: string | null
   created_at: string

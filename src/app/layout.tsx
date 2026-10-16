@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import ServiceWorkerRegister from '@/components/layout/ServiceWorkerRegister'
+import SiteFooter from '@/components/layout/SiteFooter'
 
 /**
  * Inter loaded via next/font — zero layout shift, self-hosted automatically.
@@ -119,6 +120,7 @@ export default function RootLayout({
          *   </Providers>
          */}
         {children}
+        <SiteFooter />
         <ServiceWorkerRegister />
       </body>
     </html>

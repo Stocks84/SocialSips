@@ -1,10 +1,11 @@
-import { rateGame } from '@/app/(main)/games/actions'
+import { rate } from '@/app/(main)/games/actions'
 
 /** 1–5 star buttons; each is its own submit (works without JS). */
-export default function RatingForm({ gameId, myScore }: { gameId: string; myScore: number | null }) {
+export default function RatingForm({ kind, targetId, myScore }: { kind: 'game' | 'cocktail'; targetId: string; myScore: number | null }) {
   return (
-    <form action={rateGame} className="flex items-center gap-1" aria-label="Rate this game">
-      <input type="hidden" name="gameId" value={gameId} />
+    <form action={rate} className="flex items-center gap-1" aria-label="Rate">
+      <input type="hidden" name="kind" value={kind} />
+      <input type="hidden" name="targetId" value={targetId} />
       {[1, 2, 3, 4, 5].map((n) => (
         <button
           key={n}

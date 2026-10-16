@@ -1,83 +1,79 @@
 import { createClient } from '@/lib/supabase/server'
 import { mockGames } from '@/lib/mock-data'
 import { HANGOVER_RATINGS, type HangoverRating } from '@/types/database'
+import { getSocial, type Author, type CommentRow, type RatingSummary } from './social'
 
-export type GameListItem = (typeof mockGames)[number]
+export type GameListItem = (typeof mockGames)[number] & { avg_rating: number | null; rating_count: number }
+export type FeedSort = 'newest' | 'top'
 
-/** Feed query. Reads from Supabase; falls back to mock data only when env is missing. */
-export async function listGames({ q = '', hangover = '' }: { q?: string; hangover?: string }): Promise<GameListItem[]> {
+/** Feed query via the feed_games() RPC (search across title/summary/rules/tags, sort). Mock data if env missing. */
+export async function listGames({ q = '', hangover = '', sort = 'newest' }: { q?: string; hangover?: string; sort?: string }): Promise<GameListItem[]> {
   const supabase = await createClient()
   const rating = HANGOVER_RATINGS.includes(hangover as HangoverRating) ? (hangover as HangoverRating) : null
+  const term = q.trim().slice(0, 100)
   if (!supabase) {
-    return mockGames.filter(
-      (g) => (!q || g.title.toLowerCase().includes(q.toLowerCase())) && (!rating || g.hangover_rating === rating),
-    )
+    const t = term.toLowerCase()
+    return mockGames
+      .filter((g) => (!t || [g.title, g.summary, ...g.tags].join(' ').toLowerCase().includes(t)) && (!rating || g.hangover_rating === rating))
+      .map((g) => ({ ...g, avg_rating: null, rating_count: 0 }))
   }
-  let query = supabase
-    .from('games')
-    .select('id, title, summary, hangover_rating, min_players, tags')
-    .order('created_at', { ascending: false })
-    .limit(50)
-  if (q) query = query.ilike('title', `%${q.replace(/[%_]/g, '')}%`)
-  if (rating) query = query.eq('hangover_rating', rating)
-  const { data, error } = await query
+  const { data, error } = await supabase.rpc('feed_games', {
+    q: term.replace(/[%_\\]/g, '') || null,
+    hangover: rating,
+    sort: sort === 'top' ? 'top' : 'newest',
+  })
   if (error) {
-    console.error('listGames', error.message)
+    console.error('feed_games', error.message)
     return []
   }
-  return data as GameListItem[]
+  return ((data ?? []) as GameListItem[]).map((g) => ({
+    ...g,
+    avg_rating: g.avg_rating === null ? null : Number(g.avg_rating),
+    rating_count: Number(g.rating_count),
+  }))
 }
 
-
-type Author = { username: string } | null
 export type GameDetail = {
-  game: GameListItem & {
+  game: (typeof mockGames)[number] & {
     rules: string | null
     max_players: number | null
     equipment: string[]
     cover_image_url: string | null
+    author_id: string | null
     author: Author
   }
-  comments: { id: string; body: string; created_at: string; author_id: string; author: Author }[]
+  comments: CommentRow[]
   variations: { id: string; title: string; rules: string; created_at: string; author_id: string; author: Author }[]
-  rating: { avg: number | null; count: number; mine: number | null }
+  rating: RatingSummary
   userId: string | null
 }
 
-/** Everything the game page needs, in parallel. Null if not found. */
+/** Everything the game page needs. Null if not found. */
 export async function getGameDetail(id: string): Promise<GameDetail | null> {
   const supabase = await createClient()
   if (!supabase) {
     const g = mockGames.find((x) => x.id === id)
     if (!g) return null
     return {
-      game: { ...g, rules: null, max_players: null, equipment: [], cover_image_url: null, author: null },
+      game: { ...g, rules: null, max_players: null, equipment: [], cover_image_url: null, author_id: null, author: null },
       comments: [], variations: [], rating: { avg: null, count: 0, mine: null }, userId: null,
     }
   }
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null
-  const [{ data: game }, { data: comments }, { data: variations }, { data: ratings }, { data: { user } }] = await Promise.all([
+  const { data: { user } } = await supabase.auth.getUser()
+  const [{ data: game }, { data: variations }, social] = await Promise.all([
     supabase.from('games')
-      .select('id, title, summary, rules, hangover_rating, min_players, max_players, equipment, tags, cover_image_url, author:profiles(username)')
+      .select('id, title, summary, rules, hangover_rating, min_players, max_players, equipment, tags, cover_image_url, author_id, author:profiles(username)')
       .eq('id', id).maybeSingle(),
-    supabase.from('comments').select('id, body, created_at, author_id, author:profiles(username)')
-      .eq('game_id', id).order('created_at', { ascending: true }),
     supabase.from('game_variations').select('id, title, rules, created_at, author_id, author:profiles(username)')
       .eq('game_id', id).order('created_at', { ascending: true }),
-    supabase.from('ratings').select('user_id, score').eq('game_id', id),
-    supabase.auth.getUser(),
+    getSocial(supabase, 'game_id', id, user?.id ?? null),
   ])
   if (!game) return null
-  const scores = (ratings ?? []) as { user_id: string; score: number }[]
   return {
     game: game as unknown as GameDetail['game'],
-    comments: (comments ?? []) as unknown as GameDetail['comments'],
     variations: (variations ?? []) as unknown as GameDetail['variations'],
-    rating: {
-      avg: scores.length ? scores.reduce((a, r) => a + r.score, 0) / scores.length : null,
-      count: scores.length,
-      mine: scores.find((r) => r.user_id === user?.id)?.score ?? null,
-    },
+    ...social,
     userId: user?.id ?? null,
   }
 }

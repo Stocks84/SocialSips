@@ -1,12 +1,14 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { getSupabaseConfig } from './config'
+import { authCookieOptions, isRemembered, REMEMBER_COOKIE } from './cookies'
 
-/** Refreshes the Supabase auth session cookie and returns the current user (or null). */
+/** Refreshes the Supabase auth session cookie (respecting ss_remember) and returns the current user (or null). */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request })
   const cfg = getSupabaseConfig()
   if (!cfg) return { response, user: null }
+  const remember = isRemembered(request.cookies.get(REMEMBER_COOKIE)?.value)
 
   const supabase = createServerClient(cfg.url, cfg.anonKey, {
     cookies: {
@@ -16,7 +18,9 @@ export async function updateSession(request: NextRequest) {
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
         response = NextResponse.next({ request })
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
+        cookiesToSet.forEach(({ name, value, options }) =>
+          response.cookies.set(name, value, authCookieOptions(value, options, remember)),
+        )
       },
     },
   })

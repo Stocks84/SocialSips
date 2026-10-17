@@ -17,6 +17,9 @@ export default function SignInForm() {
         <label className="label" htmlFor="password">Password</label>
         <input id="password" name="password" type="password" className="input" required />
       </div>
+      <label className="flex items-center gap-2 text-sm text-text-secondary">
+        <input type="checkbox" name="remember" value="1" defaultChecked className="accent-accent-purple" /> Keep me signed in
+      </label>
       {state.error && <p className="error-msg" role="alert">{state.error}</p>}
       <button className="btn-primary w-full" disabled={pending}>{pending ? 'Signing in…' : 'Sign in'}</button>
     </form>

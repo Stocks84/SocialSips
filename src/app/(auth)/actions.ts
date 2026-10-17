@@ -12,7 +12,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   const parsed = signUpSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
-    username: String(formData.get('username') ?? '').toLowerCase(),
+    username: String(formData.get('username') ?? '').trim().toLowerCase(),
     dateOfBirth: formData.get('dateOfBirth'),
     ageConfirmed: formData.get('ageConfirmed') === 'true',
   })

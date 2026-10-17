@@ -2,6 +2,8 @@
 import { useActionState } from 'react'
 import { signUp, type AuthState } from '../actions'
 
+const USERNAME_HINT = '3–20 characters: lowercase letters, numbers or _'
+
 export default function SignUpForm() {
   const [state, action, pending] = useActionState<AuthState, FormData>(signUp, {})
   if (state.message) return <p className="card-glass p-4 text-center">{state.message}</p>
@@ -9,7 +11,25 @@ export default function SignUpForm() {
     <form action={action} className="space-y-4">
       <div>
         <label className="label" htmlFor="username">Username</label>
-        <input id="username" name="username" className="input" required pattern="[a-z0-9_]{3,20}" />
+        <input
+          id="username"
+          name="username"
+          className="input"
+          required
+          pattern="[a-z0-9_]{3,20}"
+          title={USERNAME_HINT}
+          aria-describedby="username-hint"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          autoComplete="username"
+          onChange={(e) => {
+            const el = e.currentTarget
+            const clean = el.value.toLowerCase().trim()
+            if (clean !== el.value) el.value = clean
+          }}
+        />
+        <p id="username-hint" className="text-text-muted text-xs mt-1">{USERNAME_HINT}</p>
       </div>
       <div>
         <label className="label" htmlFor="email">Email</label>

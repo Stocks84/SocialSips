@@ -9,12 +9,15 @@ import RatingForm from '@/components/social/RatingForm'
 import SignInPrompt from '@/components/social/SignInPrompt'
 import VariationsSection from '@/components/social/VariationsSection'
 import { getGameDetail } from '@/lib/queries/games'
+import { getViewer } from '@/lib/server/viewer'
+import AdminControls from '@/components/admin/AdminControls'
 
 export default async function GamePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const detail = await getGameDetail(id)
   if (!detail) notFound()
   const { game, comments, variations, rating, userId } = detail
+  const { isAdmin } = await getViewer()
   const path = `/games/${game.id}`
   const isOwner = Boolean(userId && game.author_id === userId)
   const players = game.max_players ? `${game.min_players}–${game.max_players}` : `${game.min_players}+`
@@ -40,6 +43,7 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
             <span className="text-sm"><StarRating score={Math.round(rating.avg)} /> <span className="text-text-muted">({rating.count})</span></span>
           )}
         </div>
+        {isAdmin && <div className="mt-3"><AdminControls type="game" id={game.id} redirectTo="/feed" /></div>}
         <p className="text-text-secondary mt-4">{game.summary}</p>
         <p className="text-text-muted text-xs mt-2">
           {game.author && <>by <Link href={`/profile/${game.author.username}`} className="text-accent-purple">@{game.author.username}</Link> · </>}
@@ -58,9 +62,9 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
         {userId ? <RatingForm kind="game" targetId={game.id} myScore={rating.mine} /> : <SignInPrompt path={path} what="rate this game" />}
       </section>
 
-      <VariationsSection kind="game" targetId={game.id} variations={variations} userId={userId} path={path} />
+      <VariationsSection kind="game" targetId={game.id} variations={variations} userId={userId} path={path} isAdmin={isAdmin} />
 
-      <CommentsSection kind="game" targetId={game.id} comments={comments} userId={userId} path={path} />
+      <CommentsSection kind="game" targetId={game.id} comments={comments} userId={userId} path={path} isAdmin={isAdmin} />
     </article>
   )
 }

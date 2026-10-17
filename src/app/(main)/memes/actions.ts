@@ -41,3 +41,34 @@ export async function deleteMeme(formData: FormData) {
   if (!error) await removeImage(supabase, 'memes', data.image_url)
   revalidatePath('/memes')
 }
+
+export async function updateMeme(_prev: FormState, formData: FormData): Promise<FormState> {
+  const auth = await requireUser()
+  if ('error' in auth) return { error: auth.error }
+  const { supabase, user } = auth
+  const id = String(formData.get('memeId'))
+  const { data: existing } = await supabase.from('memes').select('author_id, image_url').eq('id', id).maybeSingle()
+  if (!existing || existing.author_id !== user.id) return { error: 'You can only edit your own memes.' }
+  const parsed = memeSchema.safeParse({
+    caption: String(formData.get('caption') ?? '').trim() || undefined,
+    jokeText: String(formData.get('jokeText') ?? '').trim() || undefined,
+  })
+  if (!parsed.success) return { error: 'Caption max 200 characters, joke max 500' }
+  const img = await uploadImage(supabase, 'memes', user.id, formData, 'image')
+  if ('error' in img) return { error: img.error }
+  const imageUrl = img.url ?? existing.image_url
+  if (!imageUrl && !parsed.data.jokeText) return { error: 'Keep an image or add a joke' }
+  const { data, error } = await supabase
+    .from('memes')
+    .update({ caption: parsed.data.caption ?? null, joke_text: parsed.data.jokeText ?? null, image_url: imageUrl })
+    .eq('id', id)
+    .eq('author_id', user.id)
+    .select('id')
+  if (error || !data?.length) {
+    await removeImage(supabase, 'memes', img.url)
+    return { error: error?.message ?? 'Could not save your changes.' }
+  }
+  if (img.url) await removeImage(supabase, 'memes', existing.image_url)
+  revalidatePath('/memes')
+  redirect('/memes')
+}

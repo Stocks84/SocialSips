@@ -5,6 +5,8 @@ import ReportButton from '@/components/ui/ReportButton'
 import { createClient } from '@/lib/supabase/server'
 import { formatDate } from '@/lib/format'
 import { deleteMeme } from './actions'
+import { getViewer } from '@/lib/server/viewer'
+import AdminControls from '@/components/admin/AdminControls'
 
 export const metadata = { title: 'Jokes & Memes' }
 
@@ -13,15 +15,11 @@ type MemeRow = { id: string; caption: string | null; image_url: string | null; j
 export default async function MemesPage() {
   const supabase = await createClient()
   let memes: MemeRow[] = []
-  let userId: string | null = null
+  const { userId, isAdmin } = await getViewer()
   if (supabase) {
-    const [{ data }, { data: auth }] = await Promise.all([
-      supabase.from('memes').select('id, caption, image_url, joke_text, created_at, author_id, author:profiles(username)')
-        .eq('is_hidden', false).order('created_at', { ascending: false }).limit(50),
-      supabase.auth.getUser(),
-    ])
+    const { data } = await supabase.from('memes').select('id, caption, image_url, joke_text, created_at, author_id, author:profiles(username)')
+      .eq('is_hidden', false).order('created_at', { ascending: false }).limit(50)
     memes = (data ?? []) as unknown as MemeRow[]
-    userId = auth.user?.id ?? null
   }
   return (
     <>
@@ -45,14 +43,18 @@ export default async function MemesPage() {
               <div className="flex items-center justify-between text-xs text-text-muted">
                 <span>@{m.author?.username ?? 'someone'} · {formatDate(m.created_at)}</span>
                 {m.author_id === userId ? (
-                  <form action={deleteMeme}>
-                    <input type="hidden" name="memeId" value={m.id} />
-                    <button className="hover:text-accent-pink" aria-label="Delete meme">Delete</button>
-                  </form>
+                  <span className="flex gap-3">
+                    <Link href={`/memes/${m.id}/edit`} className="hover:text-accent-cyan">Edit</Link>
+                    <form action={deleteMeme}>
+                      <input type="hidden" name="memeId" value={m.id} />
+                      <button className="hover:text-accent-pink" aria-label="Delete meme">Delete</button>
+                    </form>
+                  </span>
                 ) : userId ? (
                   <ReportButton targetType="meme" targetId={m.id} />
                 ) : null}
               </div>
+              {isAdmin && <AdminControls type="meme" id={m.id} compact />}
             </figcaption>
           </figure>
         ))}

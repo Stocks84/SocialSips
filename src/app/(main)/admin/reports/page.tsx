@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { resolveTarget, TARGETS, type TargetType } from '@/lib/server/moderation'
 import { REPORT_REASONS } from '@/lib/validators/comment'
 import { formatDate } from '@/lib/format'
-import { deleteItem, dismissReport, hideItem } from './actions'
+import { deleteItem, dismissReport, hideItem } from '../actions'
 
 export const metadata = { title: 'Reports', robots: { index: false } }
 export const dynamic = 'force-dynamic'
@@ -35,6 +35,7 @@ export default async function AdminReportsPage() {
   return (
     <>
       <PageHeader emoji="🛡️" title="Reports" subtitle={`${reports.length} open`} />
+      <p className="text-sm mb-6"><Link href="/admin/hidden" className="text-accent-purple">Hidden items →</Link></p>
       {reports.length === 0 && <p className="card-glass p-6 text-center text-text-secondary">All clear. No open reports 🎉</p>}
       <div className="space-y-4">
         {reports.map((r, i) => {

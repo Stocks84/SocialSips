@@ -1,13 +1,14 @@
 import { deleteComment } from '@/app/(main)/games/actions'
 import ReportButton from '@/components/ui/ReportButton'
+import AdminControls from '@/components/admin/AdminControls'
 import CommentForm from './CommentForm'
 import SignInPrompt from './SignInPrompt'
 import type { CommentRow } from '@/lib/queries/social'
 import { formatDate } from '@/lib/format'
 
-type Props = { kind: 'game' | 'cocktail'; targetId: string; comments: CommentRow[]; userId: string | null; path: string }
+type Props = { kind: 'game' | 'cocktail'; targetId: string; comments: CommentRow[]; userId: string | null; path: string; isAdmin?: boolean }
 
-export default function CommentsSection({ kind, targetId, comments, userId, path }: Props) {
+export default function CommentsSection({ kind, targetId, comments, userId, path, isAdmin = false }: Props) {
   return (
     <section className="space-y-3">
       <h2 className="text-xl font-bold text-accent-pink">💬 Comments ({comments.length})</h2>
@@ -27,6 +28,7 @@ export default function CommentsSection({ kind, targetId, comments, userId, path
             ) : null}
           </div>
           <p className="whitespace-pre-line">{c.body}</p>
+          {isAdmin && <div className="mt-2"><AdminControls type="comment" id={c.id} compact /></div>}
         </div>
       ))}
       {userId ? <CommentForm kind={kind} targetId={targetId} /> : <SignInPrompt path={path} what="comment" />}

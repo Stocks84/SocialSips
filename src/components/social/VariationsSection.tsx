@@ -1,13 +1,14 @@
 import { deleteVariation } from '@/app/(main)/games/actions'
 import ReportButton from '@/components/ui/ReportButton'
+import AdminControls from '@/components/admin/AdminControls'
 import VariationForm from './VariationForm'
 import SignInPrompt from './SignInPrompt'
 import type { VariationRow } from '@/lib/queries/social'
 import { formatDate } from '@/lib/format'
 
-type Props = { kind: 'game' | 'cocktail'; targetId: string; variations: VariationRow[]; userId: string | null; path: string }
+type Props = { kind: 'game' | 'cocktail'; targetId: string; variations: VariationRow[]; userId: string | null; path: string; isAdmin?: boolean }
 
-export default function VariationsSection({ kind, targetId, variations, userId, path }: Props) {
+export default function VariationsSection({ kind, targetId, variations, userId, path, isAdmin = false }: Props) {
   return (
     <section className="space-y-3">
       <h2 className="text-xl font-bold text-accent-cyan">🔀 {kind === 'game' ? 'House variations' : 'Twists & variations'}</h2>
@@ -29,6 +30,11 @@ export default function VariationsSection({ kind, targetId, variations, userId, 
           </div>
           <p className="text-sm whitespace-pre-line mt-1">{v.rules}</p>
           <p className="text-text-muted text-xs mt-2">@{v.author?.username ?? 'someone'} · {formatDate(v.created_at)}</p>
+          {isAdmin && (
+            <div className="mt-2">
+              <AdminControls type={kind === 'game' ? 'variation' : 'cocktail_variation'} id={v.id} compact />
+            </div>
+          )}
         </div>
       ))}
       {userId ? <VariationForm kind={kind} targetId={targetId} /> : <SignInPrompt path={path} what="add a variation" />}

@@ -8,12 +8,15 @@ import ReportButton from '@/components/ui/ReportButton'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getCocktailDetail } from '@/lib/queries/cocktails'
+import { getViewer } from '@/lib/server/viewer'
+import AdminControls from '@/components/admin/AdminControls'
 
 export default async function CocktailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const detail = await getCocktailDetail(id)
   if (!detail) notFound()
   const { cocktail: c, comments, variations, rating, userId } = detail
+  const { isAdmin } = await getViewer()
   const path = `/cocktails/${c.id}`
   return (
     <article className="max-w-3xl space-y-10">
@@ -35,6 +38,7 @@ export default async function CocktailPage({ params }: { params: Promise<{ id: s
             <span className="text-sm"><StarRating score={Math.round(rating.avg)} /> <span className="text-text-muted">({rating.count})</span></span>
           )}
         </div>
+        {isAdmin && <div className="mt-3"><AdminControls type="cocktail" id={c.id} redirectTo="/cocktails" /></div>}
         <p className="text-text-secondary mt-4">{c.description}</p>
         {c.author && <p className="text-text-muted text-xs mt-2">by <Link href={`/profile/${c.author.username}`} className="text-accent-purple">@{c.author.username}</Link></p>}
       </header>
@@ -56,8 +60,8 @@ export default async function CocktailPage({ params }: { params: Promise<{ id: s
         <h2 className="text-xl font-bold mb-3 text-accent-cyan">⭐ Rate it</h2>
         {userId ? <RatingForm kind="cocktail" targetId={c.id} myScore={rating.mine} /> : <SignInPrompt path={path} what="rate this cocktail" />}
       </section>
-      <VariationsSection kind="cocktail" targetId={c.id} variations={variations} userId={userId} path={path} />
-      <CommentsSection kind="cocktail" targetId={c.id} comments={comments} userId={userId} path={path} />
+      <VariationsSection kind="cocktail" targetId={c.id} variations={variations} userId={userId} path={path} isAdmin={isAdmin} />
+      <CommentsSection kind="cocktail" targetId={c.id} comments={comments} userId={userId} path={path} isAdmin={isAdmin} />
     </article>
   )
 }

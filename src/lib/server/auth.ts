@@ -14,9 +14,10 @@ export async function requireUser() {
 export async function requireAdmin() {
   const auth = await requireUser()
   if ('error' in auth) return auth
-  const { data } = await auth.supabase.from('profiles').select('is_admin').eq('id', auth.user.id).maybeSingle()
-  if (!data?.is_admin) return { error: 'Admins only.' } as const
+  // is_admin() is SECURITY DEFINER: profiles.is_admin is not readable by the API roles.
+  const { data } = await auth.supabase.rpc('is_admin')
+  if (data !== true) return { error: 'Admins only.' } as const
   return auth
 }
 
-export const UUID = /^[0-9a-f-]{36}$/i
+export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i

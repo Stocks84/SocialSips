@@ -1,4 +1,5 @@
 'use server'
+import { friendlyError } from '@/lib/server/errors'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -63,7 +64,7 @@ export async function createGame(_prev: FormState, formData: FormData): Promise<
     .single()
   if (error) {
     await removeCover(supabase, cover.url)
-    return { error: error.message }
+    return { error: friendlyError(error) }
   }
   revalidatePath('/feed')
   redirect(`/games/${data.id}`)
@@ -107,7 +108,7 @@ export async function updateGame(_prev: FormState, formData: FormData): Promise<
     .eq('author_id', user.id)
   if (error) {
     await removeCover(supabase, cover.url)
-    return { error: error.message }
+    return { error: friendlyError(error) }
   }
   if (dropOld) await removeCover(supabase, existing.cover_image_url)
 
@@ -121,6 +122,7 @@ export async function deleteGame(formData: FormData) {
   if ('error' in auth) return
   const { supabase, user } = auth
   const gameId = String(formData.get('gameId'))
+  if (!UUID.test(gameId)) return
   const { data: existing } = await supabase
     .from('games').select('author_id, cover_image_url').eq('id', gameId).maybeSingle()
   if (!existing || existing.author_id !== user.id) return
@@ -148,7 +150,7 @@ export async function addComment(_prev: FormState, formData: FormData): Promise<
   const parsed = commentSchema.safeParse({ body: String(formData.get('body') ?? '').trim() })
   if (!parsed.success) return { error: 'Write something first (max 1000 characters)' }
   const { error } = await auth.supabase.from('comments').insert({ author_id: auth.user.id, [t.column]: t.id, body: parsed.data.body })
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyError(error) }
   revalidatePath(t.path)
   return { ok: true }
 }
@@ -157,8 +159,10 @@ export async function deleteComment(formData: FormData) {
   const auth = await requireUser()
   if ('error' in auth) return
   const t = target(formData)
+  const commentId = String(formData.get('commentId'))
+  if (!UUID.test(commentId) || !UUID.test(t.id)) return
   // RLS only allows deleting your own; the author filter is belt and braces.
-  await auth.supabase.from('comments').delete().eq('id', String(formData.get('commentId'))).eq('author_id', auth.user.id)
+  await auth.supabase.from('comments').delete().eq('id', commentId).eq('author_id', auth.user.id)
   revalidatePath(t.path)
 }
 
@@ -195,9 +199,9 @@ export async function addVariation(_prev: FormState, formData: FormData): Promis
     title: String(formData.get('title') ?? '').trim(),
     rules: String(formData.get('rules') ?? '').trim(),
   })
-  if (!parsed.success) return { error: 'Give your variation a name (3+ chars) and details (10+ chars)' }
+  if (!parsed.success) return { error: "Give your variation a name (3–80 chars) and details (10–3000 chars)" }
   const { error } = await auth.supabase.from(t.table).insert({ [t.column]: t.id, author_id: auth.user.id, ...parsed.data })
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyError(error) }
   revalidatePath(t.path)
   return { ok: true }
 }
@@ -206,7 +210,9 @@ export async function deleteVariation(formData: FormData) {
   const auth = await requireUser()
   if ('error' in auth) return
   const t = variationTarget(formData)
-  await auth.supabase.from(t.table).delete().eq('id', String(formData.get('variationId'))).eq('author_id', auth.user.id)
+  const variationId = String(formData.get('variationId'))
+  if (!UUID.test(variationId) || !UUID.test(t.id)) return
+  await auth.supabase.from(t.table).delete().eq('id', variationId).eq('author_id', auth.user.id)
   revalidatePath(t.path)
 }
 
@@ -226,6 +232,6 @@ export async function reportContent(_prev: FormState, formData: FormData): Promi
   const { error } = await auth.supabase.from('reports').insert({
     reporter_id: auth.user.id, target_type: r.targetType, target_id: r.targetId, reason: r.reason, note: r.note ?? null,
   })
-  if (error && error.code !== '23505') return { error: error.message } // 23505 = already reported → fine
+  if (error && error.code !== '23505') return { error: friendlyError(error) } // 23505 = already reported → fine
   return { ok: true }
 }

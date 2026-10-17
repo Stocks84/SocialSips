@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { isOwnStorageUrl } from '@/lib/storage'
 import Link from 'next/link'
 import PageHeader from '@/components/ui/PageHeader'
 import ReportButton from '@/components/ui/ReportButton'
@@ -36,7 +37,7 @@ export default async function MemesPage() {
       <div className="grid gap-5 sm:grid-cols-2">
         {memes.map((m) => (
           <figure key={m.id} id={`meme-${m.id}`} className="card overflow-hidden" data-testid="meme">
-            {m.image_url && <Image src={m.image_url} alt={m.caption ?? 'Meme'} width={1200} height={900} className="w-full h-auto" />}
+            {isOwnStorageUrl(m.image_url) && <Image src={m.image_url} alt={m.caption ?? 'Meme'} width={1200} height={900} className="w-full h-auto" />}
             <figcaption className="p-4 space-y-2">
               {m.caption && <p className="font-semibold">{m.caption}</p>}
               {m.joke_text && <p className="whitespace-pre-line text-accent-pink">{m.joke_text}</p>}

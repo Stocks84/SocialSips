@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { isOwnStorageUrl } from '@/lib/storage'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import HangoverBadge from '@/components/ui/HangoverBadge'
@@ -25,7 +26,7 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
   return (
     <article className="space-y-10 max-w-3xl">
       <header>
-        {game.cover_image_url && (
+        {isOwnStorageUrl(game.cover_image_url) && (
           <Image src={game.cover_image_url} alt="" width={1200} height={630} className="rounded-2xl mb-6 w-full h-64 object-cover border border-border" />
         )}
         <div className="flex items-start justify-between gap-4">

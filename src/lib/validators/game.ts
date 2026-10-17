@@ -4,12 +4,12 @@ import { HANGOVER_RATINGS } from '@/types/database'
 export const gameSchema = z.object({
   title: z.string().min(3).max(80),
   summary: z.string().min(10).max(200),
-  rules: z.string().min(20),
-  equipment: z.array(z.string()).default([]),
+  rules: z.string().min(20).max(5000),
+  equipment: z.array(z.string().max(60)).default([]),
   minPlayers: z.coerce.number().int().min(1),
   maxPlayers: z.coerce.number().int().min(1).optional(),
   hangoverRating: z.enum(HANGOVER_RATINGS),
-  tags: z.array(z.string()).default([]),
+  tags: z.array(z.string().max(40)).default([]),
 }).refine((g) => !g.maxPlayers || g.maxPlayers >= g.minPlayers, {
   message: 'Max players must be at least min players',
   path: ['maxPlayers'],
@@ -25,7 +25,7 @@ export const splitList = (v: FormDataEntryValue | null, lower = false) =>
 
 export const variationSchema = z.object({
   title: z.string().min(3).max(80),
-  rules: z.string().min(10),
+  rules: z.string().min(10).max(3000),
 })
 
 export type GameInput = z.infer<typeof gameSchema>

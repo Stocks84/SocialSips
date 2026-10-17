@@ -59,7 +59,7 @@ export async function getGameDetail(id: string): Promise<GameDetail | null> {
       comments: [], variations: [], rating: { avg: null, count: 0, mine: null }, userId: null,
     }
   }
-  if (!/^[0-9a-f-]{36}$/i.test(id)) return null
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null
   const { data: { user } } = await supabase.auth.getUser()
   const [{ data: game }, social] = await Promise.all([
     supabase.from('games')

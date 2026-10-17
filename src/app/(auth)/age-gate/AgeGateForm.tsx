@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AGE_COOKIE } from '@/lib/age'
 import { dobSchema } from '@/lib/validators/auth'
+import { safePath } from '@/lib/safe-path'
 
 export default function AgeGateForm() {
   const router = useRouter()
@@ -19,7 +20,7 @@ export default function AgeGateForm() {
     }
     // Soft gate cookie (30 days). The hard check is date_of_birth on the profile (DB constraint).
     document.cookie = `${AGE_COOKIE}=true; path=/; max-age=${60 * 60 * 24 * 30}; samesite=lax`
-    router.push(params.get('redirectTo') ?? '/feed')
+    router.push(safePath(params.get('redirectTo')))
   }
 
   return (

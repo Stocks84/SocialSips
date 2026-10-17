@@ -8,6 +8,6 @@ export const getViewer = cache(async () => {
   if (!supabase) return { userId: null, isAdmin: false }
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { userId: null, isAdmin: false }
-  const { data } = await supabase.from('profiles').select('is_admin').eq('id', user.id).maybeSingle()
-  return { userId: user.id, isAdmin: Boolean(data?.is_admin) }
+  const { data } = await supabase.rpc('is_admin')
+  return { userId: user.id, isAdmin: data === true }
 })

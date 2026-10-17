@@ -1,4 +1,5 @@
 'use server'
+import { friendlyError } from '@/lib/server/errors'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireUser, UUID } from '@/lib/server/auth'
@@ -42,7 +43,7 @@ export async function createCocktail(_prev: FormState, formData: FormData): Prom
     .single()
   if (error) {
     await removeImage(supabase, 'cocktails', img.url)
-    return { error: error.message }
+    return { error: friendlyError(error) }
   }
   revalidatePath('/cocktails')
   redirect(`/cocktails/${data.id}`)
@@ -72,7 +73,7 @@ export async function updateCocktail(_prev: FormState, formData: FormData): Prom
     .eq('author_id', user.id)
   if (error) {
     await removeImage(supabase, 'cocktails', img.url)
-    return { error: error.message }
+    return { error: friendlyError(error) }
   }
   if (dropOld) await removeImage(supabase, 'cocktails', existing.image_url)
   revalidatePath('/cocktails')
@@ -85,6 +86,7 @@ export async function deleteCocktail(formData: FormData) {
   if ('error' in auth) return
   const { supabase, user } = auth
   const id = String(formData.get('cocktailId'))
+  if (!UUID.test(id)) return
   const { data: existing } = await supabase.from('cocktails').select('author_id, image_url').eq('id', id).maybeSingle()
   if (!existing || existing.author_id !== user.id) return
   const { error } = await supabase.from('cocktails').delete().eq('id', id).eq('author_id', user.id)

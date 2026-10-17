@@ -1,7 +1,8 @@
 'use server'
+import { friendlyError } from '@/lib/server/errors'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { requireUser } from '@/lib/server/auth'
+import { requireUser, UUID } from '@/lib/server/auth'
 import { removeImage, uploadImage } from '@/lib/server/uploads'
 import { memeSchema } from '@/lib/validators/cocktail'
 
@@ -24,7 +25,7 @@ export async function createMeme(_prev: FormState, formData: FormData): Promise<
   })
   if (error) {
     await removeImage(supabase, 'memes', img.url)
-    return { error: error.message }
+    return { error: friendlyError(error) }
   }
   revalidatePath('/memes')
   redirect('/memes')
@@ -35,6 +36,7 @@ export async function deleteMeme(formData: FormData) {
   if ('error' in auth) return
   const { supabase, user } = auth
   const id = String(formData.get('memeId'))
+  if (!UUID.test(id)) return
   const { data } = await supabase.from('memes').select('author_id, image_url').eq('id', id).maybeSingle()
   if (!data || data.author_id !== user.id) return
   const { error } = await supabase.from('memes').delete().eq('id', id).eq('author_id', user.id)
@@ -47,6 +49,7 @@ export async function updateMeme(_prev: FormState, formData: FormData): Promise<
   if ('error' in auth) return { error: auth.error }
   const { supabase, user } = auth
   const id = String(formData.get('memeId'))
+  if (!UUID.test(id)) return { error: 'Unknown meme' }
   const { data: existing } = await supabase.from('memes').select('author_id, image_url').eq('id', id).maybeSingle()
   if (!existing || existing.author_id !== user.id) return { error: 'You can only edit your own memes.' }
   const parsed = memeSchema.safeParse({
@@ -66,7 +69,7 @@ export async function updateMeme(_prev: FormState, formData: FormData): Promise<
     .select('id')
   if (error || !data?.length) {
     await removeImage(supabase, 'memes', img.url)
-    return { error: error?.message ?? 'Could not save your changes.' }
+    return { error: error ? friendlyError(error) : 'Could not save your changes.' }
   }
   if (img.url) await removeImage(supabase, 'memes', existing.image_url)
   revalidatePath('/memes')

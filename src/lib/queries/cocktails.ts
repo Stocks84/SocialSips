@@ -47,7 +47,7 @@ export async function getCocktailDetail(id: string): Promise<CocktailDetail | nu
     const c = mockCocktails.find((x) => x.id === id)
     return c ? { cocktail: c, comments: [], variations: [], rating: { avg: null, count: 0, mine: null }, userId: null } : null
   }
-  if (!/^[0-9a-f-]{36}$/i.test(id)) return null
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null
   const { data: { user } } = await supabase.auth.getUser()
   const [{ data: cocktail }, social] = await Promise.all([
     supabase.from('cocktails')

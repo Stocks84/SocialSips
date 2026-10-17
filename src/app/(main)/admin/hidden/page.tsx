@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import PageHeader from '@/components/ui/PageHeader'
 import { createClient } from '@/lib/supabase/server'
 import { getViewer } from '@/lib/server/viewer'
-import { resolveTarget, TARGETS, type TargetType } from '@/lib/server/moderation'
+import { resolveTargets, TARGETS, type TargetType } from '@/lib/server/moderation'
 import { formatDate } from '@/lib/format'
 import { deleteItem, unhideItem } from '../actions'
 
@@ -26,7 +26,7 @@ export default async function AdminHiddenPage() {
     }),
   )
   const items = lists.flat()
-  const resolved = await Promise.all(items.map((i) => resolveTarget(supabase, i.type, i.id)))
+  const resolved = await resolveTargets(supabase, items)
 
   return (
     <>

@@ -16,11 +16,16 @@ export async function uploadImage(supabase: SupabaseClient, bucket: Bucket, user
   if (file.size > MAX_IMAGE_BYTES) return { error: 'Image must be under 4 MB' }
   const path = `${userId}/${crypto.randomUUID()}.${ext}`
   const { error } = await supabase.storage.from(bucket).upload(path, file, { contentType: file.type })
-  if (error) return { error: `Image upload failed: ${error.message}` }
+  if (error) {
+    console.error('upload', error.message)
+    return { error: 'Image upload failed. Use a JPG, PNG, WebP or GIF under 4 MB.' }
+  }
   return { url: supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl }
 }
 
-export async function removeImage(supabase: SupabaseClient, bucket: Bucket, url: string | null | undefined) {
+/** Deletes the stored file behind `url`. With `ownerId`, only files in that user's folder are touched. */
+export async function removeImage(supabase: SupabaseClient, bucket: Bucket, url: string | null | undefined, ownerId?: string | null) {
   const path = storagePathFromUrl(url, bucket)
+  if (ownerId !== undefined && (!ownerId || !path?.startsWith(`${ownerId}/`))) return
   if (path) await supabase.storage.from(bucket).remove([path])
 }

@@ -36,7 +36,7 @@ export default function CocktailForm({ action: serverAction, defaults = {}, subm
       <IngredientRows initial={defaults.ingredients} />
       <div>
         <label className="label" htmlFor="method">Method</label>
-        <textarea id="method" name="method" rows={5} className="input" required minLength={10} defaultValue={defaults.method} />
+        <textarea id="method" name="method" rows={5} className="input" required maxLength={3000} minLength={10} defaultValue={defaults.method} />
       </div>
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" name="isAlcoholFree" value="true" defaultChecked={defaults.is_alcohol_free} className="accent-accent-cyan" /> Alcohol-free 🌱

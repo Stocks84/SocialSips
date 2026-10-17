@@ -40,7 +40,7 @@ export default function GameForm({ action: serverAction, defaults = {}, submitLa
       </div>
       <div>
         <label className="label" htmlFor="rules">Rules</label>
-        <textarea id="rules" name="rules" rows={7} className="input" required minLength={20} defaultValue={defaults.rules} />
+        <textarea id="rules" name="rules" rows={7} className="input" required maxLength={5000} minLength={20} defaultValue={defaults.rules} />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>

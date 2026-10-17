@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { requireAdmin, UUID } from '@/lib/server/auth'
 import { TARGETS, type TargetType } from '@/lib/server/moderation'
 import { removeImage } from '@/lib/server/uploads'
+import { safePath } from '@/lib/safe-path'
 
 /** Shared parse + admin check. Returns null if not allowed / bad input. */
 async function prep(formData: FormData) {
@@ -11,7 +12,7 @@ async function prep(formData: FormData) {
   if ('error' in auth) return null
   const type = String(formData.get('targetType')) as TargetType
   const targetId = String(formData.get('targetId'))
-  if (!(type in TARGETS) || !UUID.test(targetId)) return null
+  if (!Object.hasOwn(TARGETS, type) || !UUID.test(targetId)) return null
   const reportId = String(formData.get('reportId') ?? '')
   return { ...auth, type, targetId, reportId: UUID.test(reportId) ? reportId : null, cfg: TARGETS[type] }
 }
@@ -24,8 +25,8 @@ async function closeReports(p: Prepped, status: 'reviewed' | 'dismissed') {
 
 /** Optional post-action redirect (only same-site paths). */
 function maybeRedirect(formData: FormData) {
-  const to = String(formData.get('redirectTo') ?? '')
-  if (to.startsWith('/') && !to.startsWith('//')) redirect(to)
+  const to = formData.get('redirectTo')
+  if (to) redirect(safePath(to))
 }
 
 export async function dismissReport(formData: FormData) {
@@ -57,13 +58,17 @@ export async function deleteItem(formData: FormData) {
   const p = await prep(formData)
   if (!p) return
   let imageUrl: string | null = null
+  let ownerId: string | null = null
   if (p.cfg.imageCol) {
-    const { data } = await p.supabase.from(p.cfg.table).select(p.cfg.imageCol).eq('id', p.targetId).maybeSingle()
-    imageUrl = (data as Record<string, string | null> | null)?.[p.cfg.imageCol] ?? null
+    const { data } = await p.supabase.from(p.cfg.table).select(`${p.cfg.imageCol}, author_id`).eq('id', p.targetId).maybeSingle()
+    const row = data as Record<string, string | null> | null
+    imageUrl = row?.[p.cfg.imageCol] ?? null
+    ownerId = row?.author_id ?? null
   }
   const { error } = await p.supabase.from(p.cfg.table).delete().eq('id', p.targetId)
   if (error) return
-  if (p.cfg.bucket) await removeImage(p.supabase, p.cfg.bucket, imageUrl)
+  // Only touch the owner's folder; if the author account is gone (null), admins may still clean up.
+  if (p.cfg.bucket) await removeImage(p.supabase, p.cfg.bucket, imageUrl, ownerId ?? undefined)
   await closeReports(p, 'reviewed')
   revalidatePath('/', 'layout')
   maybeRedirect(formData)

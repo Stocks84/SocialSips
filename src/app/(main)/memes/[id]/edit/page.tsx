@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { isOwnStorageUrl } from '@/lib/storage'
 import { notFound, redirect } from 'next/navigation'
 import MemeForm from '@/components/memes/MemeForm'
 import PageHeader from '@/components/ui/PageHeader'
@@ -19,7 +20,7 @@ export default async function EditMemePage({ params }: { params: Promise<{ id: s
   return (
     <>
       <PageHeader emoji="✏️" title="Edit meme" />
-      {meme.image_url && <Image src={meme.image_url} alt="" width={600} height={450} className="rounded-2xl mb-6 max-w-sm h-auto border border-border" />}
+      {isOwnStorageUrl(meme.image_url) && <Image src={meme.image_url} alt="" width={600} height={450} className="rounded-2xl mb-6 max-w-sm h-auto border border-border" />}
       <MemeForm action={updateMeme} defaults={meme} submitLabel="Save changes" />
     </>
   )

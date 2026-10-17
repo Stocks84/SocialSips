@@ -2,7 +2,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import PageHeader from '@/components/ui/PageHeader'
 import { createClient } from '@/lib/supabase/server'
-import { resolveTarget, TARGETS, type TargetType } from '@/lib/server/moderation'
+import { getViewer } from '@/lib/server/viewer'
+import { resolveTargets, TARGETS, type TargetType } from '@/lib/server/moderation'
 import { REPORT_REASONS } from '@/lib/validators/comment'
 import { formatDate } from '@/lib/format'
 import { deleteItem, dismissReport, hideItem } from '../actions'
@@ -17,11 +18,8 @@ type ReportRow = {
 
 export default async function AdminReportsPage() {
   const supabase = await createClient()
-  if (!supabase) notFound()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) notFound()
-  const { data: me } = await supabase.from('profiles').select('is_admin').eq('id', user.id).maybeSingle()
-  if (!me?.is_admin) notFound()
+  const { isAdmin } = await getViewer()
+  if (!supabase || !isAdmin) notFound()
 
   const { data } = await supabase
     .from('reports')
@@ -30,7 +28,7 @@ export default async function AdminReportsPage() {
     .order('created_at', { ascending: true })
     .limit(100)
   const reports = (data ?? []) as unknown as ReportRow[]
-  const resolved = await Promise.all(reports.map((r) => resolveTarget(supabase, r.target_type, r.target_id)))
+  const resolved = await resolveTargets(supabase, reports.map((r) => ({ type: r.target_type, id: r.target_id })))
 
   return (
     <>

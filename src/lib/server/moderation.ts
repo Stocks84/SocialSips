@@ -15,36 +15,43 @@ export const TARGETS: Record<TargetType, { table: string; label: string; bucket?
 
 export type ResolvedTarget = { exists: boolean; href: string | null; preview: string; hidden: boolean }
 
-/** Looks up a reported item (admin RLS sees hidden rows) → link + short preview. */
-export async function resolveTarget(supabase: SupabaseClient, type: TargetType, id: string): Promise<ResolvedTarget> {
+/** Batched version of resolveTarget: one query per target type instead of one per item. */
+export async function resolveTargets(
+  supabase: SupabaseClient,
+  items: { type: TargetType; id: string }[],
+): Promise<ResolvedTarget[]> {
   const cut = (s: string | null | undefined) => (s ?? '').slice(0, 140)
-  const missing = { exists: false, href: null, preview: '(deleted)', hidden: false }
-  switch (type) {
-    case 'game': {
-      const { data } = await supabase.from('games').select('title, summary, is_hidden').eq('id', id).maybeSingle()
-      return data ? { exists: true, href: `/games/${id}`, preview: `${data.title}: ${cut(data.summary)}`, hidden: data.is_hidden } : missing
-    }
-    case 'cocktail': {
-      const { data } = await supabase.from('cocktails').select('name, description, is_hidden').eq('id', id).maybeSingle()
-      return data ? { exists: true, href: `/cocktails/${id}`, preview: `${data.name}: ${cut(data.description)}`, hidden: data.is_hidden } : missing
-    }
-    case 'comment': {
-      const { data } = await supabase.from('comments').select('body, game_id, cocktail_id, is_hidden').eq('id', id).maybeSingle()
-      if (!data) return missing
-      const href = data.game_id ? `/games/${data.game_id}` : `/cocktails/${data.cocktail_id}`
-      return { exists: true, href, preview: cut(data.body), hidden: data.is_hidden }
-    }
-    case 'variation': {
-      const { data } = await supabase.from('game_variations').select('title, rules, game_id, is_hidden').eq('id', id).maybeSingle()
-      return data ? { exists: true, href: `/games/${data.game_id}`, preview: `${data.title}: ${cut(data.rules)}`, hidden: data.is_hidden } : missing
-    }
-    case 'cocktail_variation': {
-      const { data } = await supabase.from('cocktail_variations').select('title, rules, cocktail_id, is_hidden').eq('id', id).maybeSingle()
-      return data ? { exists: true, href: `/cocktails/${data.cocktail_id}`, preview: `${data.title}: ${cut(data.rules)}`, hidden: data.is_hidden } : missing
-    }
-    case 'meme': {
-      const { data } = await supabase.from('memes').select('caption, joke_text, is_hidden').eq('id', id).maybeSingle()
-      return data ? { exists: true, href: `/memes#meme-${id}`, preview: cut(data.caption ?? data.joke_text ?? '(image)'), hidden: data.is_hidden } : missing
-    }
+  const missing: ResolvedTarget = { exists: false, href: null, preview: '(deleted)', hidden: false }
+  const cols: Record<TargetType, string> = {
+    game: 'id, title, summary, is_hidden',
+    cocktail: 'id, name, description, is_hidden',
+    comment: 'id, body, game_id, cocktail_id, is_hidden',
+    variation: 'id, title, rules, game_id, is_hidden',
+    cocktail_variation: 'id, title, rules, cocktail_id, is_hidden',
+    meme: 'id, caption, joke_text, is_hidden',
   }
+  type Row = Record<string, string | boolean | null>
+  const byType = new Map<TargetType, Map<string, Row>>()
+  const types = [...new Set(items.map((i) => i.type))]
+  await Promise.all(
+    types.map(async (type) => {
+      const ids = [...new Set(items.filter((i) => i.type === type).map((i) => i.id))]
+      const { data } = await supabase.from(TARGETS[type].table).select(cols[type]).in('id', ids)
+      byType.set(type, new Map(((data ?? []) as unknown as Row[]).map((r) => [String(r.id), r])))
+    }),
+  )
+  return items.map(({ type, id }) => {
+    const r = byType.get(type)?.get(id)
+    if (!r) return missing
+    const s = (k: string) => (r[k] as string | null) ?? null
+    const hidden = Boolean(r.is_hidden)
+    switch (type) {
+      case 'game': return { exists: true, href: `/games/${id}`, preview: `${s('title')}: ${cut(s('summary'))}`, hidden }
+      case 'cocktail': return { exists: true, href: `/cocktails/${id}`, preview: `${s('name')}: ${cut(s('description'))}`, hidden }
+      case 'comment': return { exists: true, href: s('game_id') ? `/games/${s('game_id')}` : `/cocktails/${s('cocktail_id')}`, preview: cut(s('body')), hidden }
+      case 'variation': return { exists: true, href: `/games/${s('game_id')}`, preview: `${s('title')}: ${cut(s('rules'))}`, hidden }
+      case 'cocktail_variation': return { exists: true, href: `/cocktails/${s('cocktail_id')}`, preview: `${s('title')}: ${cut(s('rules'))}`, hidden }
+      case 'meme': return { exists: true, href: `/memes#meme-${id}`, preview: cut(s('caption') ?? s('joke_text') ?? '(image)'), hidden }
+    }
+  })
 }

@@ -5,3 +5,6 @@ export const navItems = [
   { href: '/memes', label: 'Memes', emoji: '😂' },
   { href: '/help', label: 'Help', emoji: '🙏' },
 ] as const
+
+/** Only rendered when the server says the viewer is an admin (getViewer().isAdmin). */
+export const adminNavItem = { href: '/admin', label: 'Admin', emoji: '🛡️' } as const

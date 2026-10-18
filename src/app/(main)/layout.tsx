@@ -1,15 +1,17 @@
 import TopNav from '@/components/layout/TopNav'
 import BottomNav from '@/components/layout/BottomNav'
 import Footer from '@/components/layout/Footer'
+import { getViewer } from '@/lib/server/viewer'
 
 /** App shell for signed-in / age-verified areas: top nav (desktop), tab bar (mobile). */
-export default function MainLayout({ children }: { children: React.ReactNode }) {
+export default async function MainLayout({ children }: { children: React.ReactNode }) {
+  const { isAdmin } = await getViewer()
   return (
     <div className="min-h-screen bg-hero-glow">
-      <TopNav />
+      <TopNav isAdmin={isAdmin} />
       <main className="page-container py-8">{children}</main>
       <Footer />
-      <BottomNav />
+      <BottomNav isAdmin={isAdmin} />
     </div>
   )
 }

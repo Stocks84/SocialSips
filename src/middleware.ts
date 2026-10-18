@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
-import { AGE_COOKIE } from '@/lib/age'
+import { AGE_COOKIE, AGE_DENIED_COOKIE } from '@/lib/age'
 
 /**
  * middleware.ts — Route Protection
@@ -13,7 +13,7 @@ import { AGE_COOKIE } from '@/lib/age'
  */
 
 // Routes that are ALWAYS accessible — no auth or age check needed
-const PUBLIC_ROUTES = ['/', '/sign-in', '/sign-up', '/age-gate', '/help', '/auth/callback', '/manifest.json', '/sw.js']
+const PUBLIC_ROUTES = ['/', '/sign-in', '/sign-up', '/age-gate', '/age-gate/sorry', '/help', '/auth/callback', '/manifest.json', '/sw.js']
 
 // Write routes that need a signed-in user (in addition to the age gate).
 // Guests may browse after the age gate. Comments/ratings are also enforced by RLS
@@ -27,9 +27,16 @@ export async function middleware(request: NextRequest) {
   const { response, user } = await updateSession(request)
 
   // ── 1. Allow public routes through immediately ────────────────────────
-  const isPublicRoute = PUBLIC_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith('/api/')
-  )
+  // Under-18 answer in the last 24h: keep them on the exit page (no instant retry with another date)
+  const denied = !user && request.cookies.get(AGE_DENIED_COOKIE)?.value === '1'
+  if (denied && pathname !== '/age-gate/sorry' && !['/', '/help', '/manifest.json', '/sw.js'].includes(pathname)) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/age-gate/sorry'
+    url.search = ''
+    return NextResponse.redirect(url)
+  }
+
+  const isPublicRoute = PUBLIC_ROUTES.includes(pathname)
   if (isPublicRoute) return response
 
   // ── 2. Age gate check ─────────────────────────────────────────────────
@@ -38,7 +45,8 @@ export async function middleware(request: NextRequest) {
   if (!ageVerified) {
     const url = request.nextUrl.clone()
     url.pathname = '/age-gate'
-    url.searchParams.set('redirectTo', pathname)
+    url.search = ''
+    url.searchParams.set('redirectTo', pathname + request.nextUrl.search)
     return NextResponse.redirect(url)
   }
 

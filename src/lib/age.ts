@@ -14,3 +14,17 @@ export function ageFromDob(dob: string, today = new Date()): number {
 }
 
 export const isOfAge = (dob: string) => ageFromDob(dob) >= MIN_AGE
+
+/** Set when someone enters an under-18 DOB; keeps them on the exit page for a day (no instant retry). */
+export const AGE_DENIED_COOKIE = 'ss-age-denied'
+export const AGE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30 days
+export const AGE_DENIED_MAX_AGE = 60 * 60 * 24 // 24 hours
+
+/** Server-set, httpOnly cookie options (secure on HTTPS in production). */
+export const ageCookieOptions = (maxAge: number) => ({
+  path: '/',
+  maxAge,
+  httpOnly: true,
+  sameSite: 'lax' as const,
+  secure: process.env.NODE_ENV === 'production',
+})

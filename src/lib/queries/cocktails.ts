@@ -10,17 +10,21 @@ export type CocktailListItem = Pick<Cocktail, 'id' | 'name' | 'description' | 'i
 }
 
 /** Cocktail list via feed_cocktails() RPC: search name/description/ingredients, alcohol-free filter, sort. */
-export async function listCocktails({ q = '', alcoholFree = false, sort = 'newest' }: { q?: string; alcoholFree?: boolean; sort?: string } = {}): Promise<CocktailListItem[]> {
+export async function listCocktails({ q = '', alcoholFree = false, sort = 'newest', ing = '' }: { q?: string; alcoholFree?: boolean; sort?: string; ing?: string } = {}): Promise<CocktailListItem[]> {
   const supabase = await createClient()
   const term = q.trim().slice(0, 100)
+  const ingTerm = ing.trim().slice(0, 40)
   if (!supabase) {
     const t = term.toLowerCase()
-    return mockCocktails.filter((c) => (!t || `${c.name} ${c.description}`.toLowerCase().includes(t)) && (!alcoholFree || c.is_alcohol_free))
+    const it = ingTerm.toLowerCase() // mock rows have no ingredients; fall back to name/description
+    return mockCocktails.filter((c) => (!t || `${c.name} ${c.description}`.toLowerCase().includes(t)) && (!alcoholFree || c.is_alcohol_free)
+      && (!it || `${c.name} ${c.description}`.toLowerCase().includes(it)))
   }
   const { data, error } = await supabase.rpc('feed_cocktails', {
     q: term.replace(/[%_\\]/g, '') || null,
     alcohol_free: alcoholFree,
     sort: sort === 'top' ? 'top' : 'newest',
+    ing: ingTerm.replace(/[%_\\]/g, '') || null,
   })
   if (error) {
     console.error('feed_cocktails', error.message)

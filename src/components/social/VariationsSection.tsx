@@ -1,6 +1,7 @@
 import { deleteVariation } from '@/app/(main)/games/actions'
 import ReportButton from '@/components/ui/ReportButton'
 import AdminControls from '@/components/admin/AdminControls'
+import VariationEditForm from '@/components/admin/VariationEditForm'
 import VariationForm from './VariationForm'
 import SignInPrompt from './SignInPrompt'
 import type { VariationRow } from '@/lib/queries/social'
@@ -33,6 +34,7 @@ export default function VariationsSection({ kind, targetId, variations, userId, 
           {isAdmin && (
             <div className="mt-2">
               <AdminControls type={kind === 'game' ? 'variation' : 'cocktail_variation'} id={v.id} compact />
+              <VariationEditForm type={kind === 'game' ? 'variation' : 'cocktail_variation'} id={v.id} title={v.title} rules={v.rules} />
             </div>
           )}
         </div>

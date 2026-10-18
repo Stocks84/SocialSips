@@ -5,6 +5,7 @@ import { requireAdmin, UUID } from '@/lib/server/auth'
 import { TARGETS, type TargetType } from '@/lib/server/moderation'
 import { removeImage } from '@/lib/server/uploads'
 import { safePath } from '@/lib/safe-path'
+import { variationSchema } from '@/lib/validators/game'
 
 /** Shared parse + admin check. Returns null if not allowed / bad input. */
 async function prep(formData: FormData) {
@@ -70,6 +71,21 @@ export async function deleteItem(formData: FormData) {
   // Only touch the owner's folder; if the author account is gone (null), admins may still clean up.
   if (p.cfg.bucket) await removeImage(p.supabase, p.cfg.bucket, imageUrl, ownerId ?? undefined)
   await closeReports(p, 'reviewed')
+  revalidatePath('/', 'layout')
+  maybeRedirect(formData)
+}
+
+/** Admin-only: edit a variation's title and text (game or cocktail). RLS "admin update" + column grants back this up. */
+export async function editVariation(formData: FormData) {
+  const p = await prep(formData)
+  if (!p || (p.type !== 'variation' && p.type !== 'cocktail_variation')) return
+  const parsed = variationSchema.safeParse({
+    title: String(formData.get('title') ?? '').trim(),
+    rules: String(formData.get('rules') ?? '').trim(),
+  })
+  if (!parsed.success) return
+  const { error } = await p.supabase.from(p.cfg.table).update(parsed.data).eq('id', p.targetId)
+  if (error) return
   revalidatePath('/', 'layout')
   maybeRedirect(formData)
 }

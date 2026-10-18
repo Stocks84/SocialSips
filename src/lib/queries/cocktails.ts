@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { mockCocktails } from '@/lib/mock-data'
 import type { Cocktail } from '@/types/database'
+import { visibleTo } from './visibility'
 import { getSocial, type Author, type CommentRow, type RatingSummary, type VariationRow } from './social'
 
 export type CocktailListItem = Pick<Cocktail, 'id' | 'name' | 'description' | 'is_alcohol_free'> & {
@@ -38,7 +39,7 @@ export async function listCocktails({ q = '', alcoholFree = false, sort = 'newes
 }
 
 export type CocktailDetail = {
-  cocktail: CocktailListItem & Partial<Pick<Cocktail, 'ingredients' | 'method' | 'image_url' | 'author_id'>> & { author?: Author }
+  cocktail: CocktailListItem & Partial<Pick<Cocktail, 'ingredients' | 'method' | 'image_url' | 'author_id'>> & { author?: Author; is_hidden?: boolean }
   comments: CommentRow[]
   variations: VariationRow[]
   rating: RatingSummary
@@ -55,8 +56,8 @@ export async function getCocktailDetail(id: string): Promise<CocktailDetail | nu
   const { data: { user } } = await supabase.auth.getUser()
   const [{ data: cocktail }, social] = await Promise.all([
     supabase.from('cocktails')
-      .select('id, name, description, is_alcohol_free, ingredients, method, image_url, author_id, author:profiles(username)')
-      .eq('id', id).eq('is_hidden', false).maybeSingle(),
+      .select('id, name, description, is_alcohol_free, ingredients, method, image_url, author_id, is_hidden, author:profiles(username)')
+      .eq('id', id).or(visibleTo(user?.id)).maybeSingle(),
     getSocial(supabase, 'cocktail_id', id, user?.id ?? null),
   ])
   if (!cocktail) return null

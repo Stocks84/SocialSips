@@ -11,6 +11,7 @@ import SignInPrompt from '@/components/social/SignInPrompt'
 import VariationsSection from '@/components/social/VariationsSection'
 import { getGameDetail } from '@/lib/queries/games'
 import { getViewer } from '@/lib/server/viewer'
+import HiddenNotice from '@/components/ui/HiddenNotice'
 import AdminControls from '@/components/admin/AdminControls'
 
 export default async function GamePage({ params }: { params: Promise<{ id: string }> }) {
@@ -44,6 +45,7 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
             <span className="text-sm"><StarRating score={Math.round(rating.avg)} /> <span className="text-text-muted">({rating.count})</span></span>
           )}
         </div>
+        {game.is_hidden && <HiddenNotice />}
         {isAdmin && <div className="mt-3"><AdminControls type="game" id={game.id} redirectTo="/feed" /></div>}
         <p className="text-text-secondary mt-4">{game.summary}</p>
         <p className="text-text-muted text-xs mt-2">

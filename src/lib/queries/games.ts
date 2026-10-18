@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { mockGames } from '@/lib/mock-data'
 import { HANGOVER_RATINGS, type HangoverRating } from '@/types/database'
+import { visibleTo } from './visibility'
 import { getSocial, type Author, type CommentRow, type RatingSummary, type VariationRow } from './social'
 
 export type GameListItem = (typeof mockGames)[number] & { avg_rating: number | null; rating_count: number }
@@ -40,6 +41,7 @@ export type GameDetail = {
     equipment: string[]
     cover_image_url: string | null
     author_id: string | null
+    is_hidden?: boolean
     author: Author
   }
   comments: CommentRow[]
@@ -63,8 +65,8 @@ export async function getGameDetail(id: string): Promise<GameDetail | null> {
   const { data: { user } } = await supabase.auth.getUser()
   const [{ data: game }, social] = await Promise.all([
     supabase.from('games')
-      .select('id, title, summary, rules, hangover_rating, min_players, max_players, equipment, tags, cover_image_url, author_id, author:profiles(username)')
-      .eq('id', id).eq('is_hidden', false).maybeSingle(),
+      .select('id, title, summary, rules, hangover_rating, min_players, max_players, equipment, tags, cover_image_url, author_id, is_hidden, author:profiles(username)')
+      .eq('id', id).or(visibleTo(user?.id)).maybeSingle(),
     getSocial(supabase, 'game_id', id, user?.id ?? null),
   ])
   if (!game) return null

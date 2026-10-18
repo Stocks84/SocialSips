@@ -7,19 +7,21 @@ import { createClient } from '@/lib/supabase/server'
 import { formatDate } from '@/lib/format'
 import { deleteMeme } from './actions'
 import { getViewer } from '@/lib/server/viewer'
+import HiddenNotice from '@/components/ui/HiddenNotice'
+import { visibleTo } from '@/lib/queries/visibility'
 import AdminControls from '@/components/admin/AdminControls'
 
 export const metadata = { title: 'Jokes & Memes' }
 
-type MemeRow = { id: string; caption: string | null; image_url: string | null; joke_text: string | null; created_at: string; author_id: string; author: { username: string } | null }
+type MemeRow = { id: string; caption: string | null; image_url: string | null; joke_text: string | null; created_at: string; author_id: string; is_hidden?: boolean; author: { username: string } | null }
 
 export default async function MemesPage() {
   const supabase = await createClient()
   let memes: MemeRow[] = []
   const { userId, isAdmin } = await getViewer()
   if (supabase) {
-    const { data } = await supabase.from('memes').select('id, caption, image_url, joke_text, created_at, author_id, author:profiles(username)')
-      .eq('is_hidden', false).order('created_at', { ascending: false }).limit(50)
+    const { data } = await supabase.from('memes').select('id, caption, image_url, joke_text, created_at, author_id, is_hidden, author:profiles(username)')
+      .or(visibleTo(userId)).order('created_at', { ascending: false }).limit(50)
     memes = (data ?? []) as unknown as MemeRow[]
   }
   return (
@@ -39,6 +41,7 @@ export default async function MemesPage() {
           <figure key={m.id} id={`meme-${m.id}`} className="card overflow-hidden" data-testid="meme">
             {isOwnStorageUrl(m.image_url) && <Image src={m.image_url} alt={m.caption ?? 'Meme'} width={1200} height={900} className="w-full h-auto" />}
             <figcaption className="p-4 space-y-2">
+              {m.is_hidden && <HiddenNotice />}
               {m.caption && <p className="font-semibold">{m.caption}</p>}
               {m.joke_text && <p className="whitespace-pre-line text-accent-pink">{m.joke_text}</p>}
               <div className="flex items-center justify-between text-xs text-text-muted">

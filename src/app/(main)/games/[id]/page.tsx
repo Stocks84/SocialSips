@@ -62,12 +62,12 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
 
       <section>
         <h2 className="text-xl font-bold mb-3 text-accent-cyan">⭐ Rate it</h2>
-        {userId ? <RatingForm kind="game" targetId={game.id} myScore={rating.mine} /> : <SignInPrompt path={path} what="rate this game" />}
+        {game.is_hidden ? <HiddenNotice locked /> : userId ? <RatingForm kind="game" targetId={game.id} myScore={rating.mine} /> : <SignInPrompt path={path} what="rate this game" />}
       </section>
 
-      <VariationsSection kind="game" targetId={game.id} variations={variations} userId={userId} path={path} isAdmin={isAdmin} />
+      <VariationsSection kind="game" targetId={game.id} variations={variations} userId={userId} path={path} isAdmin={isAdmin} locked={Boolean(game.is_hidden)} />
 
-      <CommentsSection kind="game" targetId={game.id} comments={comments} userId={userId} path={path} isAdmin={isAdmin} />
+      <CommentsSection kind="game" targetId={game.id} comments={comments} userId={userId} path={path} isAdmin={isAdmin} locked={Boolean(game.is_hidden)} />
     </article>
   )
 }

@@ -61,10 +61,10 @@ export default async function CocktailPage({ params }: { params: Promise<{ id: s
       )}
       <section>
         <h2 className="text-xl font-bold mb-3 text-accent-cyan">⭐ Rate it</h2>
-        {userId ? <RatingForm kind="cocktail" targetId={c.id} myScore={rating.mine} /> : <SignInPrompt path={path} what="rate this cocktail" />}
+        {c.is_hidden ? <HiddenNotice locked /> : userId ? <RatingForm kind="cocktail" targetId={c.id} myScore={rating.mine} /> : <SignInPrompt path={path} what="rate this cocktail" />}
       </section>
-      <VariationsSection kind="cocktail" targetId={c.id} variations={variations} userId={userId} path={path} isAdmin={isAdmin} />
-      <CommentsSection kind="cocktail" targetId={c.id} comments={comments} userId={userId} path={path} isAdmin={isAdmin} />
+      <VariationsSection kind="cocktail" targetId={c.id} variations={variations} userId={userId} path={path} isAdmin={isAdmin} locked={Boolean(c.is_hidden)} />
+      <CommentsSection kind="cocktail" targetId={c.id} comments={comments} userId={userId} path={path} isAdmin={isAdmin} locked={Boolean(c.is_hidden)} />
     </article>
   )
 }

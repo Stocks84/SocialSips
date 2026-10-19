@@ -15,7 +15,9 @@ import { PREVIEW_HEADER } from '@/lib/preview'
  */
 
 // Routes that are ALWAYS accessible — no auth or age check needed
-const PUBLIC_ROUTES = ['/', '/sign-in', '/sign-up', '/age-gate', '/age-gate/sorry', '/help', '/auth/callback', '/manifest.json', '/sw.js']
+// Legal pages and the public report form are reachable without the age gate (Impressum, DSA Art. 11–16).
+const LEGAL_ROUTES = ['/impressum', '/privacy', '/terms', '/report']
+const PUBLIC_ROUTES = ['/', '/sign-in', '/sign-up', '/age-gate', '/age-gate/sorry', '/help', '/auth/callback', '/manifest.json', '/sw.js', ...LEGAL_ROUTES]
 
 // Known link-preview crawlers, and the only paths they may see without the age gate.
 const PREVIEW_BOTS = /facebookexternalhit|Facebot|Twitterbot|WhatsApp|Slackbot|LinkedInBot|Discordbot|TelegramBot/i
@@ -35,7 +37,7 @@ export async function middleware(request: NextRequest) {
   // ── 1. Allow public routes through immediately ────────────────────────
   // Under-18 answer in the last 24h: keep them on the exit page (no instant retry with another date)
   const denied = !user && request.cookies.get(AGE_DENIED_COOKIE)?.value === '1'
-  if (denied && pathname !== '/age-gate/sorry' && !['/', '/help', '/manifest.json', '/sw.js'].includes(pathname)) {
+  if (denied && pathname !== '/age-gate/sorry' && !['/', '/help', '/manifest.json', '/sw.js', ...LEGAL_ROUTES].includes(pathname)) {
     const url = request.nextUrl.clone()
     url.pathname = '/age-gate/sorry'
     url.search = ''

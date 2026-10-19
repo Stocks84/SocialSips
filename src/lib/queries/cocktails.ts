@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import type { MakeableCocktail } from '@/lib/pantry'
 import { mockCocktails } from '@/lib/mock-data'
 import type { Cocktail } from '@/types/database'
 import { parentVisibleTo } from './visibility'
@@ -65,4 +66,15 @@ export async function getCocktailDetail(id: string): Promise<CocktailDetail | nu
   ])
   if (!cocktail) return null
   return { cocktail: cocktail as unknown as CocktailDetail['cocktail'], ...social, userId: user?.id ?? null }
+}
+
+/** Every visible cocktail with its ingredient lines, for "What can I make?" (matching happens in the browser). */
+export async function listMakeableCocktails(): Promise<MakeableCocktail[]> {
+  const supabase = await createClient()
+  if (!supabase) return []
+  const { data, error } = await supabase.from('cocktails')
+    .select('id, name, description, is_alcohol_free, image_url, ingredients')
+    .eq('is_hidden', false).order('name').limit(300)
+  if (error) console.error('listMakeableCocktails', error.message)
+  return (data ?? []) as unknown as MakeableCocktail[]
 }

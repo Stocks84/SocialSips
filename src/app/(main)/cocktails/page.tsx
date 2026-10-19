@@ -14,7 +14,10 @@ export default async function CocktailsPage({ searchParams }: { searchParams: Pr
     <>
       <div className="flex items-start justify-between gap-4">
         <PageHeader emoji="🍹" title="Cocktail Recipes" subtitle="Shake, stir, share. Alcohol-free options included." />
-        <Link href="/cocktails/new" className="btn-primary text-sm shrink-0">+ Add cocktail</Link>
+        <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+          <Link href="/cocktails/make" className="btn-secondary text-sm text-center" data-testid="make-link">🧊 What can I make?</Link>
+          <Link href="/cocktails/new" className="btn-primary text-sm text-center">+ Add cocktail</Link>
+        </div>
       </div>
       <CocktailFilters q={q} alcoholFree={alcoholFree} sort={sort} ing={ing} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

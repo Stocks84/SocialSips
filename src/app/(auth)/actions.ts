@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { signInSchema, signUpSchema } from '@/lib/validators/auth'
 import { REMEMBER_COOKIE, rememberCookieOptions } from '@/lib/supabase/cookies'
 import { safePath } from '@/lib/safe-path'
+import { LEGAL } from '@/lib/legal'
 import { recordFailure, throttleOk } from '@/lib/server/throttle'
 
 /** Stores the "Keep me signed in" choice so token refreshes keep the same cookie lifetime. */
@@ -23,6 +24,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     username: String(formData.get('username') ?? '').trim().toLowerCase(),
     dateOfBirth: formData.get('dateOfBirth'),
     ageConfirmed: formData.get('ageConfirmed') === 'true',
+    termsAccepted: formData.get('termsAccepted') === 'true',
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Check your details' }
 
@@ -37,13 +39,14 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     password,
     options: {
       emailRedirectTo: `${origin}/auth/callback`,
-      data: { username, date_of_birth: dateOfBirth, age_confirmed: true },
+      data: { username, date_of_birth: dateOfBirth, age_confirmed: true, accepted_terms_version: LEGAL.termsVersion },
     },
   })
   if (error) {
     const msg = error.message
     if (msg.includes('date_of_birth')) return { error: 'You must be 18 or over to join Social Sips.' }
     if (msg.includes('Age confirmation')) return { error: 'Please confirm you are 18 or over.' }
+    if (msg.includes('Terms required')) return { error: 'Please accept the Terms of Use and Privacy Policy.' }
     if (msg.includes('username') || msg.includes('duplicate')) return { error: 'That username is taken.' }
     if (msg.includes('Database error')) return { error: 'Could not create your account. Try another username.' }
     if (/password/i.test(msg)) return { error: 'Password is too weak. Use at least 8 characters.' }

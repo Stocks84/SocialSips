@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { useActionState } from 'react'
 import { signUp, type AuthState } from '../actions'
 
@@ -46,6 +47,10 @@ export default function SignUpForm() {
       <label className="flex items-start gap-3 text-sm">
         <input type="checkbox" name="ageConfirmed" value="true" required className="mt-1 accent-accent-purple" />
         <span>I confirm I am 18 or over, and I&apos;ll drink responsibly.</span>
+      </label>
+      <label className="flex items-start gap-3 text-sm">
+        <input type="checkbox" name="termsAccepted" value="true" required className="mt-1 accent-accent-purple" data-testid="terms-checkbox" />
+        <span>I accept the <Link href="/terms" target="_blank" className="text-accent-purple underline">Terms of Use</Link> and have read the <Link href="/privacy" target="_blank" className="text-accent-purple underline">Privacy Policy</Link>.</span>
       </label>
       {state.error && <p className="error-msg" role="alert">{state.error}</p>}
       <button className="btn-primary w-full" disabled={pending}>{pending ? 'Creating…' : 'Create account'}</button>

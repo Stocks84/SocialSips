@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { cache } from 'react'
 import { getViewer } from '@/lib/server/viewer'
 import ProfileHeader from '@/components/profile/ProfileHeader'
+import SavedBanner from '@/components/ui/SavedBanner'
 import ComingSoon from '@/components/ui/ComingSoon'
 import HiddenNotice from '@/components/ui/HiddenNotice'
 import { createClient } from '@/lib/supabase/server'
@@ -16,7 +17,7 @@ type Post = { id: string; title: string; is_hidden: boolean; created_at: string;
 const getProfile = cache(async (username: string) => {
   const supabase = await createClient()
   if (!supabase) return null
-  const { data } = await supabase.from('profiles').select('id, username').eq('username', username).maybeSingle()
+  const { data } = await supabase.from('profiles').select('id, username, display_name, bio, avatar_url').eq('username', username).maybeSingle()
   return data
 })
 
@@ -46,8 +47,9 @@ async function getReactionTotals(profile: { id: string }): Promise<Record<string
   return Object.fromEntries(((data ?? []) as { emoji: string; n: number }[]).map((r) => [r.emoji, Number(r.n)]))
 }
 
-export default async function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
+export default async function ProfilePage({ params, searchParams }: { params: Promise<{ username: string }>; searchParams: Promise<{ saved?: string }> }) {
   const { username } = await params
+  const { saved } = await searchParams
   let name = username
   try { name = decodeURIComponent(username) } catch { /* already decoded */ }
   const supabase = await createClient()
@@ -57,7 +59,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
   const totalReactions = totals ? Object.values(totals).reduce((a, b) => a + b, 0) : 0
   return (
     <>
-      <ProfileHeader username={name} />
+      <SavedBanner show={saved === '1'} />
+      <ProfileHeader username={profile?.username ?? name} displayName={profile?.display_name} bio={profile?.bio} avatarUrl={profile?.avatar_url} isOwner={Boolean(result?.isOwner)} />
       {totals && (
         <section className="card p-5 mb-8" data-testid="reaction-totals">
           <h2 className="font-bold mb-3">😂 Meme reactions received <span className="text-text-muted text-sm font-normal">({totalReactions})</span></h2>

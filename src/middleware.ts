@@ -24,7 +24,7 @@ const PREVIEW_PATH = /^\/memes\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-
 // Write routes that need a signed-in user (in addition to the age gate).
 // Guests may browse after the age gate. Comments/ratings are also enforced by RLS
 // (auth.uid() = author_id / user_id), so server actions fail for guests.
-const AUTH_ROUTES = ['/games/new', '/cocktails/new', '/memes/new', '/profile/edit']
+const AUTH_ROUTES = ['/games/new', '/cocktails/new', '/memes/new', '/profile/edit', '/settings']
 const isAuthRoute = (pathname: string) =>
   AUTH_ROUTES.some((r) => pathname.startsWith(r)) || pathname.endsWith('/edit')
 

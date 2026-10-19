@@ -10,7 +10,7 @@ export function friendlyError(error: DbError, context = 'db'): string {
   if (error.hint === 'rate_limit' || msg.startsWith('Slow down')) return msg || 'Slow down a bit 🍹'
   if (msg.includes('Only admins can hide or unhide')) return 'Only moderators can hide or unhide posts.'
   if (/fetch failed|network|ECONN|ETIMEDOUT|timeout/i.test(msg)) return 'We couldn’t reach the server. Check your connection and try again.'
-  if (/row-level security/i.test(msg)) return 'You can’t change this. It may not be yours, or it’s been hidden or removed.'
+  if (/row-level security/i.test(msg)) return 'You can’t do this here. It may not be yours, it may have been hidden or removed, or the author isn’t accepting comments from you.'
   switch (error.code) {
     case '23514': {
       if (msg.includes('memes_check')) return 'Add an image or a joke.'

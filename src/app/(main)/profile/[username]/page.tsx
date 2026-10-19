@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { NoticeBody, type Notice } from '@/components/moderation/StatementOfReasons'
+import { setBlock } from '../../settings/actions'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'
 import { getViewer } from '@/lib/server/viewer'
@@ -56,11 +58,26 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
   const profile = supabase ? await getProfile(name) : null
   if (supabase && !profile) notFound() // unknown usernames get a real 404, not a made-up profile
   const [result, totals] = profile ? await Promise.all([getPosts(profile), getReactionTotals(profile)]) : [null, null]
+  const { userId: viewerId } = await getViewer()
+  const canBlock = Boolean(supabase && profile && viewerId && viewerId !== profile.id)
+  const [blocking, notices] = await Promise.all([
+    canBlock ? supabase!.from('blocks').select('blocked_id').eq('blocker_id', viewerId!).eq('blocked_id', profile!.id).maybeSingle().then((r) => Boolean(r.data)) : false,
+    result?.isOwner ? supabase!.from('moderation_notices').select('id, target_type, target_id, reason, explanation, preview, created_at, reversed_at').eq('author_id', profile!.id).order('created_at', { ascending: false }).limit(20).then((r) => (r.data ?? []) as Notice[]) : [],
+  ])
   const totalReactions = totals ? Object.values(totals).reduce((a, b) => a + b, 0) : 0
   return (
     <>
       <SavedBanner show={saved === '1'} />
       <ProfileHeader username={profile?.username ?? name} displayName={profile?.display_name} bio={profile?.bio} avatarUrl={profile?.avatar_url} isOwner={Boolean(result?.isOwner)} />
+      {canBlock && (
+        <form action={setBlock} className="mb-6 flex flex-wrap items-center gap-3" data-testid="block-form">
+          <input type="hidden" name="userId" value={profile!.id} />
+          <input type="hidden" name="back" value={`/profile/${profile!.username}`} />
+          <input type="hidden" name="block" value={blocking ? '0' : '1'} />
+          {blocking && <span className="text-sm text-text-secondary" data-testid="blocked-note">🚫 You&apos;ve blocked @{profile!.username}. You won&apos;t see their posts or comments, and they can&apos;t comment on yours.</span>}
+          <button className="btn-secondary text-sm py-1.5 px-3" data-testid={blocking ? 'unblock-btn' : 'block-btn'}>{blocking ? 'Unblock' : '🚫 Block'}</button>
+        </form>
+      )}
       {totals && (
         <section className="card p-5 mb-8" data-testid="reaction-totals">
           <h2 className="font-bold mb-3">😂 Meme reactions received <span className="text-text-muted text-sm font-normal">({totalReactions})</span></h2>
@@ -92,6 +109,13 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
       )}
       {result?.isOwner && result.posts.some((p) => p.is_hidden) && (
         <p className="text-text-muted text-xs mt-3">🙈 Hidden posts were taken down by a moderator. Only you can see them.</p>
+      )}
+      {notices.length > 0 && (
+        <section className="mt-8" data-testid="moderation-notices">
+          <h2 className="text-xl font-bold mb-3">🛡️ Moderation notices</h2>
+          <p className="text-text-muted text-xs mb-3">Only you can see these.</p>
+          <ul className="space-y-3">{notices.map((n) => <li key={n.id} className="card p-4"><NoticeBody n={n} /></li>)}</ul>
+        </section>
       )}
     </>
   )

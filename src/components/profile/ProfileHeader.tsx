@@ -28,6 +28,7 @@ export default function ProfileHeader({ username, displayName, bio, avatarUrl, i
         )}
       </div>
       {isOwner && <Link href="/settings/profile" className="btn-secondary text-sm py-2 px-4 shrink-0 self-start" data-testid="edit-profile-link">✏️ Edit profile</Link>}
+      {isOwner && <Link href="/settings/account" className="btn-secondary text-sm py-2 px-4 shrink-0 self-start" data-testid="account-link">🔐 Account</Link>}
     </div>
   )
 }

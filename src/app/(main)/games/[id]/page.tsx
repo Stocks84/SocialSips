@@ -35,9 +35,9 @@ export default async function GamePage({ params, searchParams }: { params: Promi
         )}
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-4xl font-black mb-3">{game.title}</h1>
-          {isOwner ? (
+          {isOwner && !game.is_hidden ? (
             <Link href={`${path}/edit`} className="btn-secondary text-sm py-2 px-4 shrink-0">✏️ Edit</Link>
-          ) : userId ? (
+          ) : userId && !isOwner ? (
             <ReportButton targetType="game" targetId={game.id} />
           ) : null}
         </div>

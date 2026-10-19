@@ -1,5 +1,5 @@
 'use server'
-import { friendlyError, NOT_SAVED } from '@/lib/server/errors'
+import { friendlyError, HIDDEN_LOCKED, NOT_SAVED } from '@/lib/server/errors'
 import { fieldErrors, formValues, type EditState } from '@/lib/validators/issues'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -63,8 +63,9 @@ export async function updateMeme(_prev: FormState, formData: FormData): Promise<
   const { supabase, user } = auth
   const id = String(formData.get('memeId'))
   if (!UUID.test(id)) return { error: 'Unknown meme' }
-  const { data: existing } = await supabase.from('memes').select('author_id, image_url').eq('id', id).maybeSingle()
+  const { data: existing } = await supabase.from('memes').select('author_id, image_url, is_hidden').eq('id', id).maybeSingle()
   if (!existing || existing.author_id !== user.id) return fail(formData, 'You can only edit your own memes.')
+  if (existing.is_hidden) return fail(formData, HIDDEN_LOCKED)
   const parsed = memeSchema.safeParse({
     caption: String(formData.get('caption') ?? '').trim() || undefined,
     jokeText: String(formData.get('jokeText') ?? '').trim() || undefined,

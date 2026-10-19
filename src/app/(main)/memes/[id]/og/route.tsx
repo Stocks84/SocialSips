@@ -22,6 +22,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         <div style={{ display: 'flex', fontSize: 28, color: '#94A3B8' }}>😂 Jokes &amp; Memes · 18+</div>
       </div>
     ),
-    { width: 1200, height: 630, headers: { 'Cache-Control': 'public, max-age=3600' } },
+    { width: 1200, height: 630, headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300' } },
   )
 }

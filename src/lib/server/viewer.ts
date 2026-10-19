@@ -3,11 +3,12 @@ import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 
 /** Current user id + admin flag, memoised per request. */
-export const getViewer = cache(async () => {
+export const getViewer = cache(async (): Promise<{ userId: string | null; isAdmin: boolean }> => {
   const supabase = await createClient()
   if (!supabase) return { userId: null, isAdmin: false }
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { userId: null, isAdmin: false }
+  const { data: auth } = await supabase.auth.getClaims()
+  const userId = auth?.claims?.sub ?? null
+  if (!userId) return { userId: null, isAdmin: false }
   const { data } = await supabase.rpc('is_admin')
-  return { userId: user.id, isAdmin: data === true }
+  return { userId, isAdmin: data === true }
 })

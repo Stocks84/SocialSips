@@ -15,11 +15,13 @@ export default async function EditGamePage({ params }: { params: Promise<{ id: s
   return (
     <>
       <PageHeader emoji="✏️" title="Edit game" subtitle={g.title} />
-      <GameForm
-        action={updateGame}
-        submitLabel="Save changes"
-        defaults={{ ...g, rules: g.rules ?? '' }}
-      />
+      {g.is_hidden ? <p className="card-glass p-4 text-sm text-text-secondary max-w-2xl" data-testid="edit-locked">🙈 A moderator has hidden this post, so it can&apos;t be edited right now.</p> : (
+        <GameForm
+          action={updateGame}
+          submitLabel="Save changes"
+          defaults={{ ...g, rules: g.rules ?? '' }}
+        />
+      )}
       <form action={deleteGame} className="card p-6 mt-8 max-w-2xl border-accent-pink/40">
         <input type="hidden" name="gameId" value={g.id} />
         <h2 className="font-bold text-accent-pink mb-2">Danger zone</h2>

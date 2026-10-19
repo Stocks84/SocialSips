@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 import { AGE_COOKIE, AGE_DENIED_COOKIE } from '@/lib/age'
+import { verifyAgeToken } from '@/lib/age-token'
+import { PREVIEW_HEADER } from '@/lib/preview'
 
 /**
  * middleware.ts — Route Protection
@@ -43,12 +45,22 @@ export async function middleware(request: NextRequest) {
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname)
   if (isPublicRoute) return response
 
-  // Link-preview bots may read a meme's share page and its OG image only (they can't pass the age gate).
-  if (PREVIEW_PATH.test(pathname) && PREVIEW_BOTS.test(request.headers.get('user-agent') ?? '')) return response
+  // Link-preview bots may GET a meme's share page and its OG image only (they can't pass the age gate).
+  // Without an age cookie or session the page renders a metadata-only stub (no comments, no counts), and
+  // only GET/HEAD are allowed, so a spoofed user agent gets nothing beyond the share preview.
+  const isPreviewBot = PREVIEW_PATH.test(pathname) && PREVIEW_BOTS.test(request.headers.get('user-agent') ?? '')
+  const hasAgeCookie = Boolean(user) || (await verifyAgeToken(request.cookies.get(AGE_COOKIE)?.value))
+  if (isPreviewBot && !hasAgeCookie && ['GET', 'HEAD'].includes(request.method)) {
+    const headers = new Headers(request.headers)
+    headers.set(PREVIEW_HEADER, '1')
+    const stub = NextResponse.next({ request: { headers } })
+    response.cookies.getAll().forEach((c) => stub.cookies.set(c))
+    return stub
+  }
 
   // ── 2. Age gate check ─────────────────────────────────────────────────
   // Signed-in users already passed the 18+ DOB check + confirmation at sign-up (enforced in the DB)
-  const ageVerified = request.cookies.get(AGE_COOKIE)?.value === 'true' || Boolean(user)
+  const ageVerified = hasAgeCookie
   if (!ageVerified) {
     const url = request.nextUrl.clone()
     url.pathname = '/age-gate'
@@ -80,6 +92,6 @@ export async function middleware(request: NextRequest) {
  */
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon\\.ico|icons/|images/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml)$).*)',
+    '/((?!_next/static|_next/image|favicon\\.ico$|icons/|images/|robots\\.txt$|[^/]+\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

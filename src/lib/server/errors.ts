@@ -31,3 +31,4 @@ export function friendlyError(error: DbError, context = 'db'): string {
 
 /** Shown when an update matched no rows (removed, or RLS filtered it out). */
 export const NOT_SAVED = 'We couldn’t save your changes. The item may have been removed, or it’s not yours.'
+export const HIDDEN_LOCKED = 'A moderator has hidden this post, so it can’t be edited right now.'

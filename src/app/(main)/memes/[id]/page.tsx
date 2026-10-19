@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { headers } from 'next/headers'
+import { PREVIEW_HEADER } from '@/lib/preview'
 import { notFound } from 'next/navigation'
 import MemeCard from '@/components/memes/MemeCard'
 import CommentsSection from '@/components/social/CommentsSection'
@@ -33,8 +35,19 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function MemePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {
   const { id } = await params
   const { saved } = await searchParams
+  if ((await headers()).get(PREVIEW_HEADER) === '1') {
+    // Link-preview bot: the share tags come from generateMetadata; the body stays a stub.
+    const data = await getMeme(id, null)
+    if (!data) notFound()
+    return (
+      <article className="max-w-3xl space-y-4" data-testid="preview-stub">
+        <p className="font-semibold text-lg">{data.meme.caption ?? 'A meme on Social Sips'}</p>
+        <Link href={`/memes/${data.meme.id}`} className="btn-primary text-sm">Open on Social Sips (18+)</Link>
+      </article>
+    )
+  }
   const { userId, isAdmin } = await getViewer()
-  const data = await getMeme(id, userId)
+  const data = await getMeme(id, userId, isAdmin)
   if (!data) notFound()
   const { meme, comments } = data
   const path = `/memes/${meme.id}`

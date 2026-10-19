@@ -26,8 +26,10 @@ export async function updateSession(request: NextRequest) {
   })
 
   try {
-    const { data: { user } } = await supabase.auth.getUser()
-    return { response, user }
+    // getClaims() verifies the JWT locally (asymmetric keys) and refreshes an expired session; no Auth round trip.
+    const { data } = await supabase.auth.getClaims()
+    const sub = data?.claims?.sub
+    return { response, user: sub ? { id: sub } : null }
   } catch {
     return { response, user: null }
   }

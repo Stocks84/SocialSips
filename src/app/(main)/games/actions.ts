@@ -1,5 +1,5 @@
 'use server'
-import { friendlyError, NOT_SAVED } from '@/lib/server/errors'
+import { friendlyError, HIDDEN_LOCKED, NOT_SAVED } from '@/lib/server/errors'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -82,8 +82,9 @@ export async function updateGame(_prev: FormState, formData: FormData): Promise<
   if (!UUID.test(gameId)) return { error: 'Unknown game' }
 
   const { data: existing } = await supabase
-    .from('games').select('author_id, cover_image_url').eq('id', gameId).maybeSingle()
+    .from('games').select('author_id, cover_image_url, is_hidden').eq('id', gameId).maybeSingle()
   if (!existing || existing.author_id !== user.id) return fail(formData, 'You can only edit your own games.')
+  if (existing.is_hidden) return fail(formData, HIDDEN_LOCKED)
 
   const parsed = parseGame(formData)
   if (!parsed.success) return fail(formData, firstIssue(parsed.error.issues), fieldErrors(parsed.error.issues))

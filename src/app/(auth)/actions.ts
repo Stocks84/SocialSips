@@ -70,8 +70,10 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
   const remember = formData.get('remember') === '1'
   const supabase = await createClient({ remember })
   if (!supabase) return { error: NOT_CONFIGURED }
-  // DB-backed throttle (works across serverless instances): failures per IP and per email.
-  const keys = [`ip:${await clientIp()}`, `email:${parsed.data.email.trim().toLowerCase()}`]
+  // DB-backed throttle (works across serverless instances): failures per IP and per (email, IP) pair,
+  // so nobody can lock a victim's email out from their own IP.
+  const ip = await clientIp()
+  const keys = [`ip:${ip}`, `email-ip:${parsed.data.email.trim().toLowerCase()}|${ip}`]
   if (!(await throttleOk(supabase, keys))) return { error: THROTTLED }
   const { error } = await supabase.auth.signInWithPassword(parsed.data)
   if (error) {

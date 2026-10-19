@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { visibleTo } from './visibility'
+import { parentVisibleTo, visibleTo } from './visibility'
 import type { CommentRow } from './social'
 
 export type MemeRow = {
@@ -58,11 +58,11 @@ export async function latestMemes(limit = 20): Promise<MemeWithStats[]> {
 }
 
 /** One meme with stats + comments (viewer's own hidden comments included, badged). Null if not visible. */
-export async function getMeme(id: string, userId: string | null) {
+export async function getMeme(id: string, userId: string | null, isAdmin = false) {
   const supabase = await createClient()
   if (!supabase || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null
   const [{ data: meme }, { data: comments }] = await Promise.all([
-    supabase.from('memes').select(COLS).eq('id', id).or(visibleTo(userId)).maybeSingle(),
+    supabase.from('memes').select(COLS).eq('id', id).or(parentVisibleTo(userId, isAdmin)).maybeSingle(),
     supabase.from('comments').select('id, body, created_at, author_id, is_hidden, author:profiles(username)')
       .eq('meme_id', id).or(visibleTo(userId)).order('created_at', { ascending: true }).limit(100),
   ])

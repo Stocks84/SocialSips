@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { mockCocktails } from '@/lib/mock-data'
 import type { Cocktail } from '@/types/database'
-import { visibleTo } from './visibility'
+import { parentVisibleTo } from './visibility'
+import { getViewer } from '@/lib/server/viewer'
 import { getSocial, type Author, type CommentRow, type RatingSummary, type VariationRow } from './social'
 
 export type CocktailListItem = Pick<Cocktail, 'id' | 'name' | 'description' | 'is_alcohol_free'> & {
@@ -53,11 +54,13 @@ export async function getCocktailDetail(id: string): Promise<CocktailDetail | nu
     return c ? { cocktail: c, comments: [], variations: [], rating: { avg: null, count: 0, mine: null }, userId: null } : null
   }
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null
-  const { data: { user } } = await supabase.auth.getUser()
+  const { userId, isAdmin } = await getViewer()
+  const user = userId ? { id: userId } : null
+  const parentFilter = parentVisibleTo(userId, isAdmin)
   const [{ data: cocktail }, social] = await Promise.all([
     supabase.from('cocktails')
       .select('id, name, description, is_alcohol_free, ingredients, method, image_url, author_id, is_hidden, author:profiles(username)')
-      .eq('id', id).or(visibleTo(user?.id)).maybeSingle(),
+      .eq('id', id).or(parentFilter).maybeSingle(),
     getSocial(supabase, 'cocktail_id', id, user?.id ?? null),
   ])
   if (!cocktail) return null

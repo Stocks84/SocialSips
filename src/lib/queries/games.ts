@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { mockGames } from '@/lib/mock-data'
 import { HANGOVER_RATINGS, type HangoverRating } from '@/types/database'
-import { visibleTo } from './visibility'
+import { parentVisibleTo } from './visibility'
+import { getViewer } from '@/lib/server/viewer'
 import { getSocial, type Author, type CommentRow, type RatingSummary, type VariationRow } from './social'
 
 export type GameListItem = (typeof mockGames)[number] & { avg_rating: number | null; rating_count: number; created_at?: string }
@@ -62,11 +63,13 @@ export async function getGameDetail(id: string): Promise<GameDetail | null> {
     }
   }
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null
-  const { data: { user } } = await supabase.auth.getUser()
+  const { userId, isAdmin } = await getViewer()
+  const user = userId ? { id: userId } : null
+  const parentFilter = parentVisibleTo(userId, isAdmin)
   const [{ data: game }, social] = await Promise.all([
     supabase.from('games')
       .select('id, title, summary, rules, hangover_rating, min_players, max_players, equipment, tags, cover_image_url, author_id, is_hidden, author:profiles(username)')
-      .eq('id', id).or(visibleTo(user?.id)).maybeSingle(),
+      .eq('id', id).or(parentFilter).maybeSingle(),
     getSocial(supabase, 'game_id', id, user?.id ?? null),
   ])
   if (!game) return null

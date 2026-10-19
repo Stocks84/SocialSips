@@ -1,5 +1,5 @@
 'use server'
-import { friendlyError, NOT_SAVED } from '@/lib/server/errors'
+import { friendlyError, HIDDEN_LOCKED, NOT_SAVED } from '@/lib/server/errors'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireUser, UUID } from '@/lib/server/auth'
@@ -57,8 +57,9 @@ export async function updateCocktail(_prev: FormState, formData: FormData): Prom
   const { supabase, user } = auth
   const id = String(formData.get('cocktailId'))
   if (!UUID.test(id)) return { error: 'Unknown cocktail' }
-  const { data: existing } = await supabase.from('cocktails').select('author_id, image_url').eq('id', id).maybeSingle()
+  const { data: existing } = await supabase.from('cocktails').select('author_id, image_url, is_hidden').eq('id', id).maybeSingle()
   if (!existing || existing.author_id !== user.id) return fail(formData, 'You can only edit your own cocktails.')
+  if (existing.is_hidden) return fail(formData, HIDDEN_LOCKED)
   const parsed = parseCocktail(formData)
   if (!parsed.success) return fail(formData, firstIssue(parsed.error.issues), fieldErrors(parsed.error.issues))
   const c = parsed.data

@@ -37,7 +37,7 @@ export default function MemeCard({ meme: m, userId, isAdmin, detail = false }: P
           </span>
           {m.author_id === userId ? (
             <span className="flex gap-3">
-              <Link href={`${path}/edit`} className="hover:text-accent-cyan">Edit</Link>
+              {!m.is_hidden && <Link href={`${path}/edit`} className="hover:text-accent-cyan">Edit</Link>}
               <form action={deleteMeme}>
                 <input type="hidden" name="memeId" value={m.id} />
                 <ConfirmSubmit message="Delete this meme? There's no undo." className="hover:text-accent-pink" label="Delete meme">Delete</ConfirmSubmit>

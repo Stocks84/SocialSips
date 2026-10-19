@@ -1,5 +1,5 @@
 'use client'
-import { useOptimistic, useState, useTransition } from 'react'
+import { useOptimistic, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { setReaction } from '@/app/(main)/memes/reactions'
 import { REACTIONS } from '@/lib/memes'
@@ -19,20 +19,20 @@ export default function Reactions({ memeId, counts, mine, signedIn, disabled = f
   const [, start] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
+  // Each tap gets a sequence number; only the newest reply is rendered, so out-of-order replies can't win.
+  const seq = useRef(0)
+
   function react(emoji: string) {
     if (!signedIn || disabled) return
     const next = optimistic.mine === emoji ? null : emoji
+    const mySeq = ++seq.current
     setError(null)
     start(async () => {
       apply(next)
       const res = await setReaction(memeId, next)
+      if (mySeq !== seq.current) return
       if (res.error) setError(res.error)
-      else setState((s) => {
-        const c = { ...s.counts }
-        if (s.mine) c[s.mine] = Math.max(0, (c[s.mine] ?? 1) - 1)
-        if (next) c[next] = (c[next] ?? 0) + 1
-        return { counts: c, mine: next }
-      })
+      else setState({ counts: res.counts ?? {}, mine: res.mine ?? null })
     })
   }
 

@@ -32,9 +32,9 @@ export default async function CocktailPage({ params, searchParams }: { params: P
         )}
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-4xl font-black gradient-text mb-3">{c.name}</h1>
-          {userId && c.author_id === userId ? (
+          {userId && c.author_id === userId && !c.is_hidden ? (
             <Link href={`${path}/edit`} className="btn-secondary text-sm py-2 px-4 shrink-0">✏️ Edit</Link>
-          ) : userId ? (
+          ) : userId && c.author_id !== userId ? (
             <ReportButton targetType="cocktail" targetId={c.id} />
           ) : null}
         </div>

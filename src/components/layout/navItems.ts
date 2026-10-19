@@ -3,6 +3,7 @@ export const navItems = [
   { href: '/cocktails', label: 'Cocktails', emoji: '🍹' },
   { href: '/games/new', label: 'Add', emoji: '➕' },
   { href: '/memes', label: 'Memes', emoji: '😂' },
+  { href: '/play', label: 'Play', emoji: '🎲' },
   { href: '/help', label: 'Help', emoji: '🙏' },
 ] as const
 

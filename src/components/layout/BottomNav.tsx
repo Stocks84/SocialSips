@@ -5,7 +5,8 @@ import { navItems, adminNavItem } from './navItems'
 
 /** Mobile app-style tab bar. */
 export default function BottomNav({ isAdmin = false }: { isAdmin?: boolean }) {
-  const items = isAdmin ? [...navItems, adminNavItem] : navItems
+  // Help lives in the top bar/footer on mobile so the tab bar keeps 6 (7 for admins) tabs.
+  const items = (isAdmin ? [...navItems, adminNavItem] : [...navItems]).filter((i) => i.href !== '/help')
   const pathname = usePathname()
   return (
     <nav className="sm:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-surface/95 backdrop-blur safe-bottom" aria-label="Tab bar">

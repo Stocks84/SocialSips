@@ -2,6 +2,7 @@ import GameCard from '@/components/games/GameCard'
 import GameFilters from '@/components/games/GameFilters'
 import FeedMemeCard from '@/components/memes/FeedMemeCard'
 import PageHeader from '@/components/ui/PageHeader'
+import ChallengeBanner from '@/components/challenge/ChallengeBanner'
 import { listGames } from '@/lib/queries/games'
 import { latestMemes } from '@/lib/queries/memes'
 
@@ -19,6 +20,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
   return (
     <>
       <PageHeader emoji="🎮" title="Drinking Games" subtitle="Fresh from the community, rated by hangover." />
+      <ChallengeBanner />
       <GameFilters q={q} hangover={hangover} sort={sort} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((it) => it.kind === 'game' ? <GameCard key={`g-${it.g.id}`} {...it.g} /> : <FeedMemeCard key={`m-${it.m.id}`} meme={it.m} />)}

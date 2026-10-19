@@ -4,6 +4,7 @@ export const navItems = [
   { href: '/games/new', label: 'Add', emoji: '➕' },
   { href: '/memes', label: 'Memes', emoji: '😂' },
   { href: '/play', label: 'Play', emoji: '🎲' },
+  { href: '/challenge', label: 'Challenge', emoji: '🏆' },
   { href: '/help', label: 'Help', emoji: '🙏' },
 ] as const
 

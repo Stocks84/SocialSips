@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { NoticeBody, type Notice } from '@/components/moderation/StatementOfReasons'
 import { setBlock } from '../../settings/actions'
+import { getUserWins } from '@/lib/queries/challenges'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'
 import { getViewer } from '@/lib/server/viewer'
@@ -60,6 +61,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
   const [result, totals] = profile ? await Promise.all([getPosts(profile), getReactionTotals(profile)]) : [null, null]
   const { userId: viewerId } = await getViewer()
   const canBlock = Boolean(supabase && profile && viewerId && viewerId !== profile.id)
+  const wins = profile ? await getUserWins(profile.id) : []
   const [blocking, notices] = await Promise.all([
     canBlock ? supabase!.from('blocks').select('blocked_id').eq('blocker_id', viewerId!).eq('blocked_id', profile!.id).maybeSingle().then((r) => Boolean(r.data)) : false,
     result?.isOwner ? supabase!.from('moderation_notices').select('id, target_type, target_id, reason, explanation, preview, created_at, reversed_at').eq('author_id', profile!.id).order('created_at', { ascending: false }).limit(20).then((r) => (r.data ?? []) as Notice[]) : [],
@@ -77,6 +79,11 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
           {blocking && <span className="text-sm text-text-secondary" data-testid="blocked-note">🚫 You&apos;ve blocked @{profile!.username}. You won&apos;t see their posts or comments, and they can&apos;t comment on yours.</span>}
           <button className="btn-secondary text-sm py-1.5 px-3" data-testid={blocking ? 'unblock-btn' : 'block-btn'}>{blocking ? 'Unblock' : '🚫 Block'}</button>
         </form>
+      )}
+      {wins.length > 0 && (
+        <section className="mb-6 flex flex-wrap gap-2" data-testid="challenge-wins">
+          {wins.map((w) => <Link key={w.challenge_id} href={`/challenge/${w.challenge_id}`} className="badge badge-purple" data-testid="win-badge">🏆 Winner · {w.theme}</Link>)}
+        </section>
       )}
       {totals && (
         <section className="card p-5 mb-8" data-testid="reaction-totals">

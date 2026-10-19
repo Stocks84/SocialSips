@@ -87,5 +87,6 @@ export async function updateMeme(_prev: FormState, formData: FormData): Promise<
   }
   if (dropOld) await removeImage(supabase, 'memes', existing.image_url)
   revalidatePath('/memes')
-  redirect(`/memes?saved=1#meme-${id}`)
+  revalidatePath(`/memes/${id}`)
+  redirect(`/memes/${id}?saved=1`)
 }

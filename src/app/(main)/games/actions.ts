@@ -147,10 +147,17 @@ const target = (formData: FormData) => {
   return { kind, id, column: kind === 'game' ? 'game_id' : 'cocktail_id', path: `/${kind === 'game' ? 'games' : 'cocktails'}/${id}` } as const
 }
 
+/** Comments can also hang off memes (no ratings/variations there). */
+const commentTarget = (formData: FormData) => {
+  if (formData.get('kind') !== 'meme') return target(formData)
+  const id = String(formData.get('targetId') ?? '')
+  return { kind: 'meme', id, column: 'meme_id', path: `/memes/${id}` } as const
+}
+
 export async function addComment(_prev: FormState, formData: FormData): Promise<FormState> {
   const auth = await requireUser()
   if ('error' in auth) return { error: auth.error }
-  const t = target(formData)
+  const t = commentTarget(formData)
   if (!UUID.test(t.id)) return { error: 'Unknown item' }
   const parsed = commentSchema.safeParse({ body: String(formData.get('body') ?? '').trim() })
   if (!parsed.success) return fail(formData, 'Write something first (max 1000 characters)', { body: 'Write 1–1000 characters' })
@@ -163,7 +170,7 @@ export async function addComment(_prev: FormState, formData: FormData): Promise<
 export async function deleteComment(formData: FormData) {
   const auth = await requireUser()
   if ('error' in auth) return
-  const t = target(formData)
+  const t = commentTarget(formData)
   const commentId = String(formData.get('commentId'))
   if (!UUID.test(commentId) || !UUID.test(t.id)) return
   // RLS only allows deleting your own; the author filter is belt and braces.

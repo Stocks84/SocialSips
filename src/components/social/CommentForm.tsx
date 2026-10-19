@@ -2,7 +2,7 @@
 import { useActionState, useEffect, useRef } from 'react'
 import { addComment, type FormState } from '@/app/(main)/games/actions'
 
-export default function CommentForm({ kind, targetId }: { kind: 'game' | 'cocktail'; targetId: string }) {
+export default function CommentForm({ kind, targetId }: { kind: 'game' | 'cocktail' | 'meme'; targetId: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(addComment, {})
   const ref = useRef<HTMLFormElement>(null)
   const val = (k: string) => { const v = state.values?.[k]; return typeof v === 'string' ? v : undefined }

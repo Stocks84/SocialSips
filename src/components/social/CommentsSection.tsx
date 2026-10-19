@@ -7,7 +7,7 @@ import HiddenNotice from '@/components/ui/HiddenNotice'
 import type { CommentRow } from '@/lib/queries/social'
 import { formatDate } from '@/lib/format'
 
-type Props = { kind: 'game' | 'cocktail'; targetId: string; comments: CommentRow[]; userId: string | null; path: string; isAdmin?: boolean; locked?: boolean }
+type Props = { kind: 'game' | 'cocktail' | 'meme'; targetId: string; comments: CommentRow[]; userId: string | null; path: string; isAdmin?: boolean; locked?: boolean }
 
 export default function CommentsSection({ kind, targetId, comments, userId, path, isAdmin = false, locked = false }: Props) {
   return (

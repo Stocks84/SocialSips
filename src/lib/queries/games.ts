@@ -4,7 +4,7 @@ import { HANGOVER_RATINGS, type HangoverRating } from '@/types/database'
 import { visibleTo } from './visibility'
 import { getSocial, type Author, type CommentRow, type RatingSummary, type VariationRow } from './social'
 
-export type GameListItem = (typeof mockGames)[number] & { avg_rating: number | null; rating_count: number }
+export type GameListItem = (typeof mockGames)[number] & { avg_rating: number | null; rating_count: number; created_at?: string }
 export type FeedSort = 'newest' | 'top'
 
 /** Feed query via the feed_games() RPC (search across title/summary/rules/tags, sort). Mock data if env missing. */

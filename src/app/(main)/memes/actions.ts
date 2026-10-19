@@ -34,17 +34,27 @@ export async function createMeme(_prev: FormState, formData: FormData): Promise<
   redirect('/memes')
 }
 
+/** Delete-result codes shown as a banner on /memes (codes, not free text, so the URL can't inject messages). */
+export type DeleteResult = 'deleted' | 'signin' | 'gone' | 'notyours' | 'failed'
+
 export async function deleteMeme(formData: FormData) {
+  const back = (r: DeleteResult): never => redirect(`/memes?deleted=${r}`)
   const auth = await requireUser()
-  if ('error' in auth) return
+  if ('error' in auth) return back('signin')
   const { supabase, user } = auth
   const id = String(formData.get('memeId'))
-  if (!UUID.test(id)) return
+  if (!UUID.test(id)) return back('gone')
   const { data } = await supabase.from('memes').select('author_id, image_url').eq('id', id).maybeSingle()
-  if (!data || data.author_id !== user.id) return
-  const { error } = await supabase.from('memes').delete().eq('id', id).eq('author_id', user.id)
-  if (!error) await removeImage(supabase, 'memes', data.image_url)
+  if (!data) return back('gone')
+  if (data.author_id !== user.id) back('notyours')
+  const { data: gone, error } = await supabase.from('memes').delete().eq('id', id).eq('author_id', user.id).select('id')
+  if (error || !gone?.length) {
+    if (error) friendlyError(error, 'deleteMeme') // logs the original
+    back('failed')
+  }
+  await removeImage(supabase, 'memes', data.image_url)
   revalidatePath('/memes')
+  back('deleted')
 }
 
 export async function updateMeme(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -62,7 +72,8 @@ export async function updateMeme(_prev: FormState, formData: FormData): Promise<
   if (!parsed.success) return fail(formData, 'Caption max 200 characters, joke max 500', fieldErrors(parsed.error.issues))
   const img = await uploadImage(supabase, 'memes', user.id, formData, 'image')
   if ('error' in img) return fail(formData, img.error ?? 'Image upload failed', { image: img.error ?? 'Image upload failed' })
-  const imageUrl = img.url ?? existing.image_url
+  const dropOld = Boolean(img.url) || formData.get('removeImage') === 'true'
+  const imageUrl = img.url ?? (dropOld ? null : existing.image_url)
   if (!imageUrl && !parsed.data.jokeText) return fail(formData, 'Keep an image or add a joke', { jokeText: 'Keep an image or add a joke' })
   const { data, error } = await supabase
     .from('memes')
@@ -74,7 +85,7 @@ export async function updateMeme(_prev: FormState, formData: FormData): Promise<
     await removeImage(supabase, 'memes', img.url)
     return fail(formData, error ? friendlyError(error) : NOT_SAVED)
   }
-  if (img.url) await removeImage(supabase, 'memes', existing.image_url)
+  if (dropOld) await removeImage(supabase, 'memes', existing.image_url)
   revalidatePath('/memes')
   redirect(`/memes?saved=1#meme-${id}`)
 }

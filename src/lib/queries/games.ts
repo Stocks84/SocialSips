@@ -79,3 +79,12 @@ export async function getGameDetail(id: string): Promise<GameDetail | null> {
     userId: user?.id ?? null,
   }
 }
+
+/** Newest games by people the viewer follows. */
+export async function followingGames(): Promise<GameListItem[]> {
+  const supabase = await createClient()
+  if (!supabase) return []
+  const { data, error } = await supabase.rpc('following_feed_games', { max_rows: 50 })
+  if (error) { console.error('following_feed_games', error.message); return [] }
+  return ((data ?? []) as GameListItem[]).map((g) => ({ ...g, avg_rating: g.avg_rating === null ? null : Number(g.avg_rating), rating_count: Number(g.rating_count) }))
+}

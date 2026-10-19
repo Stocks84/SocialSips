@@ -11,7 +11,7 @@ export async function GET() {
   if (!user) return new NextResponse('Sign in first', { status: 401 })
   const uid = user.id
   const q = <T,>(p: PromiseLike<{ data: T | null }>) => Promise.resolve(p).then((r) => r.data ?? [])
-  const [profile, games, cocktails, memes, comments, gameVariations, cocktailVariations, ratings, reactions, reports, blocks, entries, votes, notices] = await Promise.all([
+  const [profile, games, cocktails, memes, comments, gameVariations, cocktailVariations, ratings, reactions, reports, blocks, entries, votes, notices, following, followers, notifs] = await Promise.all([
     supabase.rpc('my_profile').then((r) => r.data),
     q(supabase.from('games').select('*').eq('author_id', uid)),
     q(supabase.from('cocktails').select('*').eq('author_id', uid)),
@@ -26,12 +26,15 @@ export async function GET() {
     q(supabase.from('challenge_entries').select('challenge_id, meme_id, cocktail_variation_id, created_at').eq('user_id', uid)),
     q(supabase.from('challenge_votes').select('challenge_id, entry_id, created_at').eq('voter_id', uid)),
     q(supabase.from('moderation_notices').select('target_type, target_id, reason, explanation, preview, created_at, reversed_at').eq('author_id', uid)),
+    q(supabase.from('follows').select('followee_id, created_at').eq('follower_id', uid)),
+    q(supabase.from('follows').select('follower_id, created_at').eq('followee_id', uid)),
+    q(supabase.from('notifications').select('kind, target_type, target_id, preview, count, read_at, created_at, updated_at').eq('user_id', uid).limit(1000)),
   ])
   const body = {
     exported_at: new Date().toISOString(),
     account: { id: uid, email: user.email, created_at: user.created_at, last_sign_in_at: user.last_sign_in_at },
     profile, games, cocktails, memes, comments, game_variations: gameVariations, cocktail_variations: cocktailVariations,
-    ratings, meme_reactions: reactions, reports_filed: reports, blocked_users: blocks, moderation_notices: notices, challenge_entries: entries, challenge_votes: votes,
+    ratings, meme_reactions: reactions, reports_filed: reports, blocked_users: blocks, moderation_notices: notices, challenge_entries: entries, challenge_votes: votes, following, followers, notifications: notifs,
     note: 'Uploaded images are linked by URL in the items above.',
   }
   return new NextResponse(JSON.stringify(body, null, 2), {

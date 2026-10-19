@@ -70,3 +70,15 @@ export async function getMeme(id: string, userId: string | null, isAdmin = false
   const [withStats] = await attachStats(supabase, [meme as unknown as MemeRow])
   return { meme: withStats, comments: (comments ?? []) as unknown as CommentRow[] }
 }
+
+/** Newest visible memes by people the viewer follows (for the feed's Following tab). */
+export async function followingMemes(limit = 20): Promise<MemeWithStats[]> {
+  const supabase = await createClient()
+  if (!supabase) return []
+  const { data: ids, error } = await supabase.rpc('following_meme_ids', { max_rows: limit })
+  if (error) { console.error('following_meme_ids', error.message); return [] }
+  const list = (ids ?? []) as string[]
+  if (!list.length) return []
+  const { data } = await supabase.from('memes').select(COLS).in('id', list).order('created_at', { ascending: false })
+  return attachStats(supabase, (data ?? []) as unknown as MemeRow[])
+}

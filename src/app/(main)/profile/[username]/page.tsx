@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { NoticeBody, type Notice } from '@/components/moderation/StatementOfReasons'
 import { setBlock } from '../../settings/actions'
 import { getUserWins } from '@/lib/queries/challenges'
+import { getFollowCounts, isFollowing } from '@/lib/queries/follows'
+import FollowButton from '@/components/social/FollowButton'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'
 import { getViewer } from '@/lib/server/viewer'
@@ -50,9 +52,9 @@ async function getReactionTotals(profile: { id: string }): Promise<Record<string
   return Object.fromEntries(((data ?? []) as { emoji: string; n: number }[]).map((r) => [r.emoji, Number(r.n)]))
 }
 
-export default async function ProfilePage({ params, searchParams }: { params: Promise<{ username: string }>; searchParams: Promise<{ saved?: string }> }) {
+export default async function ProfilePage({ params, searchParams }: { params: Promise<{ username: string }>; searchParams: Promise<{ saved?: string; followError?: string }> }) {
   const { username } = await params
-  const { saved } = await searchParams
+  const { saved, followError } = await searchParams
   let name = username
   try { name = decodeURIComponent(username) } catch { /* already decoded */ }
   const supabase = await createClient()
@@ -61,7 +63,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
   const [result, totals] = profile ? await Promise.all([getPosts(profile), getReactionTotals(profile)]) : [null, null]
   const { userId: viewerId } = await getViewer()
   const canBlock = Boolean(supabase && profile && viewerId && viewerId !== profile.id)
-  const wins = profile ? await getUserWins(profile.id) : []
+  const [wins, counts, following] = profile ? await Promise.all([getUserWins(profile.id), getFollowCounts(profile.id), viewerId && viewerId !== profile.id ? isFollowing(viewerId, profile.id) : Promise.resolve(false)]) : [[], { followers: 0, following: 0 }, false]
   const [blocking, notices] = await Promise.all([
     canBlock ? supabase!.from('blocks').select('blocked_id').eq('blocker_id', viewerId!).eq('blocked_id', profile!.id).maybeSingle().then((r) => Boolean(r.data)) : false,
     result?.isOwner ? supabase!.from('moderation_notices').select('id, target_type, target_id, reason, explanation, preview, created_at, reversed_at').eq('author_id', profile!.id).order('created_at', { ascending: false }).limit(20).then((r) => (r.data ?? []) as Notice[]) : [],
@@ -71,6 +73,14 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
     <>
       <SavedBanner show={saved === '1'} />
       <ProfileHeader username={profile?.username ?? name} displayName={profile?.display_name} bio={profile?.bio} avatarUrl={profile?.avatar_url} isOwner={Boolean(result?.isOwner)} />
+      {profile && (
+        <section className="mb-6 flex flex-wrap items-center gap-4 text-sm" data-testid="follow-bar">
+          <Link href={`/profile/${profile.username}/followers`} className="hover:text-accent-cyan" data-testid="followers-link"><strong data-testid="followers-count">{counts.followers}</strong> follower{counts.followers === 1 ? '' : 's'}</Link>
+          <Link href={`/profile/${profile.username}/following`} className="hover:text-accent-cyan" data-testid="following-link"><strong data-testid="following-count">{counts.following}</strong> following</Link>
+          {canBlock && !blocking && <FollowButton userId={profile.id} username={profile.username} following={following} />}
+          {followError && <span role="alert" className="text-red-400" data-testid="follow-error">{followError.slice(0, 120)}</span>}
+        </section>
+      )}
       {canBlock && (
         <form action={setBlock} className="mb-6 flex flex-wrap items-center gap-3" data-testid="block-form">
           <input type="hidden" name="userId" value={profile!.id} />

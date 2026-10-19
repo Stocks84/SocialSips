@@ -97,3 +97,24 @@ export async function deleteAccount(_prev: EditState, formData: FormData): Promi
   for (const c of jar.getAll()) if (c.name.startsWith('sb-')) jar.delete(c.name)
   redirect('/?deleted=1')
 }
+
+// ─── Follows ─────────────────────────────────────────────────────────────────
+
+/** Follow / unfollow. RLS refuses following yourself or anyone in a block with you; a trigger rate-limits. */
+export async function setFollow(formData: FormData) {
+  const auth = await requireUser()
+  if ('error' in auth) redirect('/sign-in')
+  const target = String(formData.get('userId') ?? '')
+  const back = String(formData.get('back') ?? '')
+  const safeBack = back.startsWith('/') && !back.startsWith('//') ? back : '/feed'
+  if (!UUID.test(target) || target === auth.user.id) redirect(safeBack)
+  let err = ''
+  if (formData.get('follow') === '1') {
+    const { error } = await auth.supabase.from('follows').insert({ follower_id: auth.user.id, followee_id: target })
+    if (error && error.code !== '23505') err = error.hint === 'rate_limit' || error.message.startsWith('Slow down') || error.message.startsWith('You can follow') ? error.message : 'You can’t follow this person.'
+  } else {
+    await auth.supabase.from('follows').delete().eq('follower_id', auth.user.id).eq('followee_id', target)
+  }
+  revalidatePath(safeBack)
+  redirect(err ? `${safeBack}?followError=${encodeURIComponent(err)}` : safeBack)
+}

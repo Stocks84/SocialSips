@@ -11,10 +11,12 @@ import Link from 'next/link'
 import { getCocktailDetail } from '@/lib/queries/cocktails'
 import { getViewer } from '@/lib/server/viewer'
 import HiddenNotice from '@/components/ui/HiddenNotice'
+import SavedBanner from '@/components/ui/SavedBanner'
 import AdminControls from '@/components/admin/AdminControls'
 
-export default async function CocktailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CocktailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {
   const { id } = await params
+  const { saved } = await searchParams
   const detail = await getCocktailDetail(id)
   if (!detail) notFound()
   const { cocktail: c, comments, variations, rating, userId } = detail
@@ -23,6 +25,7 @@ export default async function CocktailPage({ params }: { params: Promise<{ id: s
   return (
     <article className="max-w-3xl space-y-10">
       <header>
+        <SavedBanner show={saved === '1'} />
         {c.is_hidden && <HiddenNotice />}
         {isOwnStorageUrl(c.image_url) && (
           <Image src={c.image_url} alt="" width={1200} height={630} className="rounded-2xl mb-6 w-full h-64 object-cover border border-border" />

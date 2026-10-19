@@ -1,8 +1,10 @@
 'use client'
 import { useActionState } from 'react'
 import { shrinkImage } from '@/lib/image'
+import FieldError from '@/components/ui/FieldError'
+import type { EditState } from '@/lib/validators/issues'
 
-type FormState = { error?: string }
+type FormState = EditState
 type Props = {
   action: (prev: FormState, fd: FormData) => Promise<FormState>
   defaults?: { id: string; caption: string | null; joke_text: string | null; image_url: string | null }
@@ -12,6 +14,8 @@ type Props = {
 /** Shared create/edit meme form. Images are shrunk to 1200px in the browser. */
 export default function MemeForm({ action: serverAction, defaults, submitLabel }: Props) {
   const [state, action, pending] = useActionState<FormState, FormData>(serverAction, {})
+  const val = (k: string, d?: string | null) => { const v = state.values?.[k]; return typeof v === 'string' ? v : (d ?? '') }
+  const err = (k: string) => state.fieldErrors?.[k]
 
   async function onImage(e: React.ChangeEvent<HTMLInputElement>) {
     const input = e.currentTarget
@@ -33,14 +37,17 @@ export default function MemeForm({ action: serverAction, defaults, submitLabel }
         <label className="label" htmlFor="image">{defaults?.image_url ? 'Replace image (optional)' : 'Meme image'}</label>
         <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="input" onChange={onImage} />
         <p className="text-text-muted text-xs mt-1">Resized to max 1200px before upload.</p>
+        <FieldError id="image" message={err('image')} />
       </div>
       <div>
         <label className="label" htmlFor="caption">Caption</label>
-        <input id="caption" name="caption" maxLength={200} className="input" defaultValue={defaults?.caption ?? ''} />
+        <input id="caption" name="caption" maxLength={200} className="input" defaultValue={val('caption', defaults?.caption)} />
+        <FieldError id="caption" message={err('caption')} />
       </div>
       <div>
         <label className="label" htmlFor="jokeText">…or just a joke (optional)</label>
-        <textarea id="jokeText" name="jokeText" maxLength={500} rows={3} className="input" defaultValue={defaults?.joke_text ?? ''} />
+        <textarea id="jokeText" name="jokeText" maxLength={500} rows={3} className="input" defaultValue={val('jokeText', defaults?.joke_text)} />
+        <FieldError id="jokeText" message={err('jokeText')} />
       </div>
       {state.error && <p className="error-msg" role="alert">{state.error}</p>}
       <button className="btn-primary" disabled={pending}>{pending ? 'Saving…' : submitLabel}</button>

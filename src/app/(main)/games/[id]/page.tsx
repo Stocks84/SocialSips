@@ -12,10 +12,12 @@ import VariationsSection from '@/components/social/VariationsSection'
 import { getGameDetail } from '@/lib/queries/games'
 import { getViewer } from '@/lib/server/viewer'
 import HiddenNotice from '@/components/ui/HiddenNotice'
+import SavedBanner from '@/components/ui/SavedBanner'
 import AdminControls from '@/components/admin/AdminControls'
 
-export default async function GamePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function GamePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {
   const { id } = await params
+  const { saved } = await searchParams
   const detail = await getGameDetail(id)
   if (!detail) notFound()
   const { game, comments, variations, rating, userId } = detail
@@ -27,6 +29,7 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
   return (
     <article className="space-y-10 max-w-3xl">
       <header>
+        <SavedBanner show={saved === '1'} />
         {isOwnStorageUrl(game.cover_image_url) && (
           <Image src={game.cover_image_url} alt="" width={1200} height={630} className="rounded-2xl mb-6 w-full h-64 object-cover border border-border" />
         )}

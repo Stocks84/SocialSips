@@ -1,13 +1,15 @@
 'use server'
-import { friendlyError } from '@/lib/server/errors'
+import { friendlyError, NOT_SAVED } from '@/lib/server/errors'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireUser, UUID } from '@/lib/server/auth'
 import { removeImage, uploadImage } from '@/lib/server/uploads'
 import { cocktailSchema } from '@/lib/validators/cocktail'
-import { firstIssue } from '@/lib/validators/issues'
+import { fieldErrors, firstIssue, formValues, type EditState } from '@/lib/validators/issues'
 
-type FormState = { error?: string; ok?: boolean }
+type FormState = EditState
+const fail = (formData: FormData, error: string, fields?: Record<string, string>): FormState =>
+  ({ error, fieldErrors: fields, values: formValues(formData) })
 
 function parseCocktail(formData: FormData) {
   const amounts = formData.getAll('ingredientAmount').map(String)
@@ -29,10 +31,10 @@ export async function createCocktail(_prev: FormState, formData: FormData): Prom
   if ('error' in auth) return { error: auth.error }
   const { supabase, user } = auth
   const parsed = parseCocktail(formData)
-  if (!parsed.success) return { error: firstIssue(parsed.error.issues) }
+  if (!parsed.success) return fail(formData, firstIssue(parsed.error.issues), fieldErrors(parsed.error.issues))
   const c = parsed.data
   const img = await uploadImage(supabase, 'cocktails', user.id, formData)
-  if ('error' in img) return { error: img.error }
+  if ('error' in img) return fail(formData, img.error ?? 'Image upload failed', { cover: img.error ?? 'Image upload failed' })
   const { data, error } = await supabase
     .from('cocktails')
     .insert({
@@ -43,7 +45,7 @@ export async function createCocktail(_prev: FormState, formData: FormData): Prom
     .single()
   if (error) {
     await removeImage(supabase, 'cocktails', img.url)
-    return { error: friendlyError(error) }
+    return fail(formData, friendlyError(error))
   }
   revalidatePath('/cocktails')
   redirect(`/cocktails/${data.id}`)
@@ -56,14 +58,14 @@ export async function updateCocktail(_prev: FormState, formData: FormData): Prom
   const id = String(formData.get('cocktailId'))
   if (!UUID.test(id)) return { error: 'Unknown cocktail' }
   const { data: existing } = await supabase.from('cocktails').select('author_id, image_url').eq('id', id).maybeSingle()
-  if (!existing || existing.author_id !== user.id) return { error: 'You can only edit your own cocktails.' }
+  if (!existing || existing.author_id !== user.id) return fail(formData, 'You can only edit your own cocktails.')
   const parsed = parseCocktail(formData)
-  if (!parsed.success) return { error: firstIssue(parsed.error.issues) }
+  if (!parsed.success) return fail(formData, firstIssue(parsed.error.issues), fieldErrors(parsed.error.issues))
   const c = parsed.data
   const img = await uploadImage(supabase, 'cocktails', user.id, formData)
-  if ('error' in img) return { error: img.error }
+  if ('error' in img) return fail(formData, img.error ?? 'Image upload failed', { cover: img.error ?? 'Image upload failed' })
   const dropOld = Boolean(img.url) || formData.get('removeCover') === 'true'
-  const { error } = await supabase
+  const { data: saved, error } = await supabase
     .from('cocktails')
     .update({
       name: c.name, description: c.description, ingredients: c.ingredients, method: c.method,
@@ -71,14 +73,15 @@ export async function updateCocktail(_prev: FormState, formData: FormData): Prom
     })
     .eq('id', id)
     .eq('author_id', user.id)
-  if (error) {
+    .select('id')
+  if (error || !saved?.length) {
     await removeImage(supabase, 'cocktails', img.url)
-    return { error: friendlyError(error) }
+    return fail(formData, error ? friendlyError(error) : NOT_SAVED)
   }
   if (dropOld) await removeImage(supabase, 'cocktails', existing.image_url)
   revalidatePath('/cocktails')
   revalidatePath(`/cocktails/${id}`)
-  redirect(`/cocktails/${id}`)
+  redirect(`/cocktails/${id}?saved=1`)
 }
 
 export async function deleteCocktail(formData: FormData) {

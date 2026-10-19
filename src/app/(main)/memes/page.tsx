@@ -9,13 +9,15 @@ import { deleteMeme } from './actions'
 import { getViewer } from '@/lib/server/viewer'
 import HiddenNotice from '@/components/ui/HiddenNotice'
 import { visibleTo } from '@/lib/queries/visibility'
+import SavedBanner from '@/components/ui/SavedBanner'
 import AdminControls from '@/components/admin/AdminControls'
 
 export const metadata = { title: 'Jokes & Memes' }
 
 type MemeRow = { id: string; caption: string | null; image_url: string | null; joke_text: string | null; created_at: string; author_id: string; is_hidden?: boolean; author: { username: string } | null }
 
-export default async function MemesPage() {
+export default async function MemesPage({ searchParams }: { searchParams: Promise<{ saved?: string }> }) {
+  const { saved } = await searchParams
   const supabase = await createClient()
   let memes: MemeRow[] = []
   const { userId, isAdmin } = await getViewer()
@@ -26,6 +28,7 @@ export default async function MemesPage() {
   }
   return (
     <>
+      <SavedBanner show={saved === '1'} />
       <div className="flex items-start justify-between gap-4">
         <PageHeader emoji="😂" title="Jokes & Memes" subtitle="Party-approved laughs from the community." />
         <Link href="/memes/new" className="btn-primary text-sm shrink-0">+ Post</Link>

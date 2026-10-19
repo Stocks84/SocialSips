@@ -6,6 +6,8 @@ import { TARGETS, type TargetType } from '@/lib/server/moderation'
 import { removeImage } from '@/lib/server/uploads'
 import { safePath } from '@/lib/safe-path'
 import { variationSchema } from '@/lib/validators/game'
+import { friendlyError, NOT_SAVED } from '@/lib/server/errors'
+import { fieldErrors, formValues, type EditState } from '@/lib/validators/issues'
 
 /** Shared parse + admin check. Returns null if not allowed / bad input. */
 async function prep(formData: FormData) {
@@ -76,16 +78,18 @@ export async function deleteItem(formData: FormData) {
 }
 
 /** Admin-only: edit a variation's title and text (game or cocktail). RLS "admin update" + column grants back this up. */
-export async function editVariation(formData: FormData) {
+export async function editVariation(_prev: EditState, formData: FormData): Promise<EditState> {
+  const values = formValues(formData)
   const p = await prep(formData)
-  if (!p || (p.type !== 'variation' && p.type !== 'cocktail_variation')) return
+  if (!p || (p.type !== 'variation' && p.type !== 'cocktail_variation')) return { error: 'Only moderators can edit variations.', values }
   const parsed = variationSchema.safeParse({
     title: String(formData.get('title') ?? '').trim(),
     rules: String(formData.get('rules') ?? '').trim(),
   })
-  if (!parsed.success) return
-  const { error } = await p.supabase.from(p.cfg.table).update(parsed.data).eq('id', p.targetId)
-  if (error) return
+  if (!parsed.success) return { error: 'Name 3–80 characters, details 10–3000.', fieldErrors: fieldErrors(parsed.error.issues), values }
+  const { data, error } = await p.supabase.from(p.cfg.table).update(parsed.data).eq('id', p.targetId).select('id')
+  if (error || !data?.length) return { error: error ? friendlyError(error) : NOT_SAVED, values }
   revalidatePath('/', 'layout')
   maybeRedirect(formData)
+  return { ok: true }
 }

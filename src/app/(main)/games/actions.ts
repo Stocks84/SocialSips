@@ -1,15 +1,19 @@
 'use server'
-import { friendlyError } from '@/lib/server/errors'
+import { friendlyError, NOT_SAVED } from '@/lib/server/errors'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { requireUser, UUID } from '@/lib/server/auth'
 import { removeImage, uploadImage } from '@/lib/server/uploads'
-import { firstIssue } from '@/lib/validators/issues'
+import { fieldErrors, firstIssue, formValues, type EditState } from '@/lib/validators/issues'
 import { gameSchema, splitList, variationSchema } from '@/lib/validators/game'
 import { commentSchema, ratingSchema, reportSchema } from '@/lib/validators/comment'
 
-export type FormState = { error?: string; ok?: boolean }
+export type FormState = EditState
+
+/** Failed submit: message + per-field errors + the typed values so the form keeps them. */
+const fail = (formData: FormData, error: string, fields?: Record<string, string>): FormState =>
+  ({ error, fieldErrors: fields, values: formValues(formData) })
 
 const slugify = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50) || 'game'
@@ -39,11 +43,11 @@ export async function createGame(_prev: FormState, formData: FormData): Promise<
   if ('error' in auth) return { error: auth.error }
   const { supabase, user } = auth
   const parsed = parseGame(formData)
-  if (!parsed.success) return { error: firstIssue(parsed.error.issues) }
+  if (!parsed.success) return fail(formData, firstIssue(parsed.error.issues), fieldErrors(parsed.error.issues))
   const g = parsed.data
 
   const cover = await uploadCover(supabase, user.id, formData)
-  if ('error' in cover) return { error: cover.error }
+  if ('error' in cover) return fail(formData, cover.error ?? 'Image upload failed', { cover: cover.error ?? 'Image upload failed' })
 
   const { data, error } = await supabase
     .from('games')
@@ -64,7 +68,7 @@ export async function createGame(_prev: FormState, formData: FormData): Promise<
     .single()
   if (error) {
     await removeCover(supabase, cover.url)
-    return { error: friendlyError(error) }
+    return fail(formData, friendlyError(error))
   }
   revalidatePath('/feed')
   redirect(`/games/${data.id}`)
@@ -79,18 +83,18 @@ export async function updateGame(_prev: FormState, formData: FormData): Promise<
 
   const { data: existing } = await supabase
     .from('games').select('author_id, cover_image_url').eq('id', gameId).maybeSingle()
-  if (!existing || existing.author_id !== user.id) return { error: 'You can only edit your own games.' }
+  if (!existing || existing.author_id !== user.id) return fail(formData, 'You can only edit your own games.')
 
   const parsed = parseGame(formData)
-  if (!parsed.success) return { error: firstIssue(parsed.error.issues) }
+  if (!parsed.success) return fail(formData, firstIssue(parsed.error.issues), fieldErrors(parsed.error.issues))
   const g = parsed.data
 
   const cover = await uploadCover(supabase, user.id, formData)
-  if ('error' in cover) return { error: cover.error }
+  if ('error' in cover) return fail(formData, cover.error ?? 'Image upload failed', { cover: cover.error ?? 'Image upload failed' })
   const dropOld = Boolean(cover.url) || formData.get('removeCover') === 'true'
   const coverUrl = cover.url ?? (dropOld ? null : existing.cover_image_url)
 
-  const { error } = await supabase
+  const { data: saved, error } = await supabase
     .from('games')
     .update({
       title: g.title,
@@ -106,15 +110,16 @@ export async function updateGame(_prev: FormState, formData: FormData): Promise<
     })
     .eq('id', gameId)
     .eq('author_id', user.id)
-  if (error) {
+    .select('id')
+  if (error || !saved?.length) {
     await removeCover(supabase, cover.url)
-    return { error: friendlyError(error) }
+    return fail(formData, error ? friendlyError(error) : NOT_SAVED)
   }
   if (dropOld) await removeCover(supabase, existing.cover_image_url)
 
   revalidatePath('/feed')
   revalidatePath(`/games/${gameId}`)
-  redirect(`/games/${gameId}`)
+  redirect(`/games/${gameId}?saved=1`)
 }
 
 export async function deleteGame(formData: FormData) {
@@ -148,9 +153,9 @@ export async function addComment(_prev: FormState, formData: FormData): Promise<
   const t = target(formData)
   if (!UUID.test(t.id)) return { error: 'Unknown item' }
   const parsed = commentSchema.safeParse({ body: String(formData.get('body') ?? '').trim() })
-  if (!parsed.success) return { error: 'Write something first (max 1000 characters)' }
+  if (!parsed.success) return fail(formData, 'Write something first (max 1000 characters)', { body: 'Write 1–1000 characters' })
   const { error } = await auth.supabase.from('comments').insert({ author_id: auth.user.id, [t.column]: t.id, body: parsed.data.body })
-  if (error) return { error: friendlyError(error) }
+  if (error) return fail(formData, friendlyError(error))
   revalidatePath(t.path)
   return { ok: true }
 }
@@ -199,9 +204,9 @@ export async function addVariation(_prev: FormState, formData: FormData): Promis
     title: String(formData.get('title') ?? '').trim(),
     rules: String(formData.get('rules') ?? '').trim(),
   })
-  if (!parsed.success) return { error: "Give your variation a name (3–80 chars) and details (10–3000 chars)" }
+  if (!parsed.success) return fail(formData, 'Give your variation a name (3–80 chars) and details (10–3000 chars)', fieldErrors(parsed.error.issues))
   const { error } = await auth.supabase.from(t.table).insert({ [t.column]: t.id, author_id: auth.user.id, ...parsed.data })
-  if (error) return { error: friendlyError(error) }
+  if (error) return fail(formData, friendlyError(error))
   revalidatePath(t.path)
   return { ok: true }
 }

@@ -4,6 +4,7 @@ import ComingSoon from '@/components/ui/ComingSoon'
 import HiddenNotice from '@/components/ui/HiddenNotice'
 import { createClient } from '@/lib/supabase/server'
 import { visibleTo } from '@/lib/queries/visibility'
+import { REACTIONS } from '@/lib/memes'
 
 type Post = { id: string; title: string; is_hidden: boolean; created_at: string; href: string; emoji: string }
 
@@ -26,13 +27,37 @@ async function getPosts(username: string): Promise<{ posts: Post[]; isOwner: boo
   return { posts, isOwner: user?.id === profile.id }
 }
 
+/** Reactions received on the user's visible memes, by emoji. */
+async function getReactionTotals(username: string): Promise<Record<string, number> | null> {
+  const supabase = await createClient()
+  if (!supabase) return null
+  const { data: profile } = await supabase.from('profiles').select('id').eq('username', username).maybeSingle()
+  if (!profile) return null
+  const { data, error } = await supabase.rpc('profile_reaction_totals', { p_user: profile.id })
+  if (error) { console.error('profile_reaction_totals', error.message); return null }
+  return Object.fromEntries(((data ?? []) as { emoji: string; n: number }[]).map((r) => [r.emoji, Number(r.n)]))
+}
+
 export default async function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params
   const name = decodeURIComponent(username)
-  const result = await getPosts(name)
+  const [result, totals] = await Promise.all([getPosts(name), getReactionTotals(name)])
+  const totalReactions = totals ? Object.values(totals).reduce((a, b) => a + b, 0) : 0
   return (
     <>
       <ProfileHeader username={name} />
+      {totals && (
+        <section className="card p-5 mb-8" data-testid="reaction-totals">
+          <h2 className="font-bold mb-3">😂 Meme reactions received <span className="text-text-muted text-sm font-normal">({totalReactions})</span></h2>
+          <ul className="flex flex-wrap gap-2">
+            {REACTIONS.map((e) => (
+              <li key={e} className="px-3 py-1 rounded-full border border-border text-sm" aria-label={`${e} ${totals[e] ?? 0}`} data-testid="reaction-total">
+                {e} <span className="text-text-secondary">{totals[e] ?? 0}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <h2 className="text-xl font-bold mb-3">{result?.isOwner ? 'Your posts' : 'Games and cocktails they\u2019ve shared'}</h2>
       {!result ? (
         <ComingSoon />

@@ -63,7 +63,7 @@ export async function getMeme(id: string, userId: string | null, isAdmin = false
   if (!supabase || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null
   const [{ data: meme }, { data: comments }] = await Promise.all([
     supabase.from('memes').select(COLS).eq('id', id).or(parentVisibleTo(userId, isAdmin)).maybeSingle(),
-    supabase.from('comments').select('id, body, created_at, author_id, is_hidden, author:profiles(username)')
+    supabase.from('comments').select('id, body, created_at, edited_at, author_id, is_hidden, author:profiles(username)')
       .eq('meme_id', id).or(visibleTo(userId)).order('created_at', { ascending: true }).limit(100),
   ])
   if (!meme) return null

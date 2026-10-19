@@ -1,4 +1,5 @@
-import { deleteVariation } from '@/app/(main)/games/actions'
+import { deleteVariation, updateOwnVariation } from '@/app/(main)/games/actions'
+import InlineEdit, { EditedMark } from './InlineEdit'
 import ReportButton from '@/components/ui/ReportButton'
 import AdminControls from '@/components/admin/AdminControls'
 import VariationEditForm from '@/components/admin/VariationEditForm'
@@ -30,8 +31,15 @@ export default function VariationsSection({ kind, targetId, variations, userId, 
               <ReportButton targetType={kind === 'game' ? 'variation' : 'cocktail_variation'} targetId={v.id} />
             ) : null}
           </div>
-          <p className="text-sm whitespace-pre-line mt-1">{v.rules}</p>
-          <p className="text-text-muted text-xs mt-2">@{v.author?.username ?? 'someone'} · {formatDate(v.created_at)}</p>
+          {v.author_id === userId && !v.is_hidden && !locked ? (
+            <InlineEdit action={updateOwnVariation} testId="variation" hidden={{ kind, targetId, variationId: v.id }}
+              fields={[{ name: 'title', label: 'Variation name', value: v.title, max: 80 }, { name: 'rules', label: 'Variation details', value: v.rules, max: 3000, rows: 4 }]}>
+              <p className="text-sm whitespace-pre-line mt-1" data-testid="variation-rules">{v.rules}</p>
+            </InlineEdit>
+          ) : (
+            <p className="text-sm whitespace-pre-line mt-1" data-testid="variation-rules">{v.rules}</p>
+          )}
+          <p className="text-text-muted text-xs mt-2">@{v.author?.username ?? 'someone'} · {formatDate(v.created_at)}<EditedMark at={v.edited_at} /></p>
           {isAdmin && (
             <div className="mt-2">
               <AdminControls type={kind === 'game' ? 'variation' : 'cocktail_variation'} id={v.id} compact />

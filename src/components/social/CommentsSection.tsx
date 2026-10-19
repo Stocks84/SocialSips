@@ -1,4 +1,5 @@
-import { deleteComment } from '@/app/(main)/games/actions'
+import { deleteComment, updateOwnComment } from '@/app/(main)/games/actions'
+import InlineEdit, { EditedMark } from './InlineEdit'
 import ReportButton from '@/components/ui/ReportButton'
 import AdminControls from '@/components/admin/AdminControls'
 import CommentForm from './CommentForm'
@@ -16,7 +17,7 @@ export default function CommentsSection({ kind, targetId, comments, userId, path
       {comments.map((c) => (
         <div key={c.id} className="card p-4" data-testid="comment">
           <div className="flex justify-between gap-3 text-xs text-text-muted mb-1">
-            <span><span className="text-accent-purple">@{c.author?.username ?? 'someone'}</span> · {formatDate(c.created_at)}{c.is_hidden && <> <HiddenNotice compact /></>}</span>
+            <span><span className="text-accent-purple">@{c.author?.username ?? 'someone'}</span> · {formatDate(c.created_at)}<EditedMark at={c.edited_at} />{c.is_hidden && <> <HiddenNotice compact /></>}</span>
             {c.author_id === userId ? (
               <form action={deleteComment}>
                 <input type="hidden" name="kind" value={kind} />
@@ -28,7 +29,14 @@ export default function CommentsSection({ kind, targetId, comments, userId, path
               <ReportButton targetType="comment" targetId={c.id} />
             ) : null}
           </div>
-          <p className="whitespace-pre-line">{c.body}</p>
+          {c.author_id === userId && !c.is_hidden && !locked ? (
+            <InlineEdit action={updateOwnComment} testId="comment" hidden={{ kind, targetId, commentId: c.id }}
+              fields={[{ name: 'body', label: 'Edit comment', value: c.body, max: 1000, rows: 3 }]}>
+              <p className="whitespace-pre-line" data-testid="comment-body">{c.body}</p>
+            </InlineEdit>
+          ) : (
+            <p className="whitespace-pre-line" data-testid="comment-body">{c.body}</p>
+          )}
           {isAdmin && <div className="mt-2"><AdminControls type="comment" id={c.id} compact /></div>}
         </div>
       ))}

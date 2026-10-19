@@ -229,6 +229,47 @@ export async function deleteVariation(formData: FormData) {
   revalidatePath(t.path)
 }
 
+/** Author edits their own comment. RLS refuses hidden comments and comments under hidden posts. */
+export async function updateOwnComment(_prev: FormState, formData: FormData): Promise<FormState> {
+  const auth = await requireUser()
+  if ('error' in auth) return { error: auth.error }
+  const t = commentTarget(formData)
+  const commentId = String(formData.get('commentId'))
+  if (!UUID.test(commentId) || !UUID.test(t.id)) return { error: 'Unknown comment' }
+  const parsed = commentSchema.safeParse({ body: String(formData.get('body') ?? '').trim() })
+  if (!parsed.success) return fail(formData, 'Comments are 1–1000 characters', fieldErrors(parsed.error.issues))
+  const { data: existing } = await auth.supabase.from('comments').select('author_id, is_hidden').eq('id', commentId).maybeSingle()
+  if (!existing || existing.author_id !== auth.user.id) return fail(formData, 'You can only edit your own comments.')
+  if (existing.is_hidden) return fail(formData, HIDDEN_LOCKED)
+  const { data, error } = await auth.supabase.from('comments').update({ body: parsed.data.body })
+    .eq('id', commentId).eq('author_id', auth.user.id).select('id')
+  if (error || !data?.length) return fail(formData, error ? friendlyError(error) : NOT_SAVED)
+  revalidatePath(t.path)
+  return { ok: true }
+}
+
+/** Author edits their own game or cocktail variation. Same hidden rules as comments. */
+export async function updateOwnVariation(_prev: FormState, formData: FormData): Promise<FormState> {
+  const auth = await requireUser()
+  if ('error' in auth) return { error: auth.error }
+  const t = variationTarget(formData)
+  const variationId = String(formData.get('variationId'))
+  if (!UUID.test(variationId) || !UUID.test(t.id)) return { error: 'Unknown variation' }
+  const parsed = variationSchema.safeParse({
+    title: String(formData.get('title') ?? '').trim(),
+    rules: String(formData.get('rules') ?? '').trim(),
+  })
+  if (!parsed.success) return fail(formData, 'Give your variation a name (3–80 chars) and details (10–3000 chars)', fieldErrors(parsed.error.issues))
+  const { data: existing } = await auth.supabase.from(t.table).select('author_id, is_hidden').eq('id', variationId).maybeSingle()
+  if (!existing || existing.author_id !== auth.user.id) return fail(formData, 'You can only edit your own variations.')
+  if (existing.is_hidden) return fail(formData, HIDDEN_LOCKED)
+  const { data, error } = await auth.supabase.from(t.table).update(parsed.data)
+    .eq('id', variationId).eq('author_id', auth.user.id).select('id')
+  if (error || !data?.length) return fail(formData, error ? friendlyError(error) : NOT_SAVED)
+  revalidatePath(t.path)
+  return { ok: true }
+}
+
 // ─── Reports ────────────────────────────────────────────────────────────────
 
 export async function reportContent(_prev: FormState, formData: FormData): Promise<FormState> {

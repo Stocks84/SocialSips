@@ -15,6 +15,10 @@ import { AGE_COOKIE, AGE_DENIED_COOKIE } from '@/lib/age'
 // Routes that are ALWAYS accessible — no auth or age check needed
 const PUBLIC_ROUTES = ['/', '/sign-in', '/sign-up', '/age-gate', '/age-gate/sorry', '/help', '/auth/callback', '/manifest.json', '/sw.js']
 
+// Known link-preview crawlers, and the only paths they may see without the age gate.
+const PREVIEW_BOTS = /facebookexternalhit|Facebot|Twitterbot|WhatsApp|Slackbot|LinkedInBot|Discordbot|TelegramBot/i
+const PREVIEW_PATH = /^\/memes\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(\/og)?$/i
+
 // Write routes that need a signed-in user (in addition to the age gate).
 // Guests may browse after the age gate. Comments/ratings are also enforced by RLS
 // (auth.uid() = author_id / user_id), so server actions fail for guests.
@@ -38,6 +42,9 @@ export async function middleware(request: NextRequest) {
 
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname)
   if (isPublicRoute) return response
+
+  // Link-preview bots may read a meme's share page and its OG image only (they can't pass the age gate).
+  if (PREVIEW_PATH.test(pathname) && PREVIEW_BOTS.test(request.headers.get('user-agent') ?? '')) return response
 
   // ── 2. Age gate check ─────────────────────────────────────────────────
   // Signed-in users already passed the 18+ DOB check + confirmation at sign-up (enforced in the DB)

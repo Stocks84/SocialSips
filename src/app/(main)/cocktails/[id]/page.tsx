@@ -5,12 +5,14 @@ import RatingForm from '@/components/social/RatingForm'
 import SignInPrompt from '@/components/social/SignInPrompt'
 import VariationsSection from '@/components/social/VariationsSection'
 import ReportButton from '@/components/ui/ReportButton'
+import PublicReportLink from '@/components/ui/PublicReportLink'
 import Image from 'next/image'
 import { isOwnStorageUrl } from '@/lib/storage'
 import Link from 'next/link'
 import { getCocktailDetail } from '@/lib/queries/cocktails'
 import { getViewer } from '@/lib/server/viewer'
 import HiddenNotice from '@/components/ui/HiddenNotice'
+import StatementOfReasons from '@/components/moderation/StatementOfReasons'
 import SavedBanner from '@/components/ui/SavedBanner'
 import AdminControls from '@/components/admin/AdminControls'
 
@@ -26,7 +28,7 @@ export default async function CocktailPage({ params, searchParams }: { params: P
     <article className="max-w-3xl space-y-10">
       <header>
         <SavedBanner show={saved === '1'} />
-        {c.is_hidden && <HiddenNotice />}
+        {c.is_hidden && <><HiddenNotice />{userId && c.author_id === userId && <StatementOfReasons type="cocktail" id={c.id} />}</>}
         {isOwnStorageUrl(c.image_url) && (
           <Image src={c.image_url} alt="" width={1200} height={630} className="rounded-2xl mb-6 w-full h-64 object-cover border border-border" />
         )}
@@ -36,7 +38,7 @@ export default async function CocktailPage({ params, searchParams }: { params: P
             <Link href={`${path}/edit`} className="btn-secondary text-sm py-2 px-4 shrink-0">✏️ Edit</Link>
           ) : userId && c.author_id !== userId ? (
             <ReportButton targetType="cocktail" targetId={c.id} />
-          ) : null}
+          ) : !userId ? <PublicReportLink targetType="cocktail" targetId={c.id} /> : null}
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {c.is_alcohol_free && <span className="badge badge-cyan">Alcohol-free</span>}

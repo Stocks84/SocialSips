@@ -1,6 +1,7 @@
 import { deleteVariation, updateOwnVariation } from '@/app/(main)/games/actions'
 import InlineEdit, { EditedMark } from './InlineEdit'
 import ReportButton from '@/components/ui/ReportButton'
+import PublicReportLink from '@/components/ui/PublicReportLink'
 import AdminControls from '@/components/admin/AdminControls'
 import VariationEditForm from '@/components/admin/VariationEditForm'
 import VariationForm from './VariationForm'
@@ -29,7 +30,7 @@ export default function VariationsSection({ kind, targetId, variations, userId, 
               </form>
             ) : userId ? (
               <ReportButton targetType={kind === 'game' ? 'variation' : 'cocktail_variation'} targetId={v.id} />
-            ) : null}
+            ) : <PublicReportLink targetType={kind === 'game' ? 'variation' : 'cocktail_variation'} targetId={v.id} />}
           </div>
           {v.author_id === userId && !v.is_hidden && !locked ? (
             <InlineEdit action={updateOwnVariation} testId="variation" hidden={{ kind, targetId, variationId: v.id }}

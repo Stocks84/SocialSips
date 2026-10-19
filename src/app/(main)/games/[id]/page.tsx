@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import HangoverBadge from '@/components/ui/HangoverBadge'
 import StarRating from '@/components/ui/StarRating'
 import ReportButton from '@/components/ui/ReportButton'
+import PublicReportLink from '@/components/ui/PublicReportLink'
 import CommentsSection from '@/components/social/CommentsSection'
 import RatingForm from '@/components/social/RatingForm'
 import SignInPrompt from '@/components/social/SignInPrompt'
@@ -12,6 +13,7 @@ import VariationsSection from '@/components/social/VariationsSection'
 import { getGameDetail } from '@/lib/queries/games'
 import { getViewer } from '@/lib/server/viewer'
 import HiddenNotice from '@/components/ui/HiddenNotice'
+import StatementOfReasons from '@/components/moderation/StatementOfReasons'
 import SavedBanner from '@/components/ui/SavedBanner'
 import AdminControls from '@/components/admin/AdminControls'
 
@@ -39,7 +41,7 @@ export default async function GamePage({ params, searchParams }: { params: Promi
             <Link href={`${path}/edit`} className="btn-secondary text-sm py-2 px-4 shrink-0">✏️ Edit</Link>
           ) : userId && !isOwner ? (
             <ReportButton targetType="game" targetId={game.id} />
-          ) : null}
+          ) : !userId ? <PublicReportLink targetType="game" targetId={game.id} /> : null}
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <HangoverBadge rating={game.hangover_rating} />
@@ -48,7 +50,7 @@ export default async function GamePage({ params, searchParams }: { params: Promi
             <span className="text-sm"><StarRating score={Math.round(rating.avg)} /> <span className="text-text-muted">({rating.count})</span></span>
           )}
         </div>
-        {game.is_hidden && <HiddenNotice />}
+        {game.is_hidden && <><HiddenNotice />{isOwner && <StatementOfReasons type="game" id={game.id} />}</>}
         {isAdmin && <div className="mt-3"><AdminControls type="game" id={game.id} redirectTo="/feed" /></div>}
         <p className="text-text-secondary mt-4">{game.summary}</p>
         <p className="text-text-muted text-xs mt-2">

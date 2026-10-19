@@ -1,6 +1,7 @@
 import { deleteComment, updateOwnComment } from '@/app/(main)/games/actions'
 import InlineEdit, { EditedMark } from './InlineEdit'
 import ReportButton from '@/components/ui/ReportButton'
+import PublicReportLink from '@/components/ui/PublicReportLink'
 import AdminControls from '@/components/admin/AdminControls'
 import CommentForm from './CommentForm'
 import SignInPrompt from './SignInPrompt'
@@ -27,7 +28,7 @@ export default function CommentsSection({ kind, targetId, comments, userId, path
               </form>
             ) : userId ? (
               <ReportButton targetType="comment" targetId={c.id} />
-            ) : null}
+            ) : !userId ? <PublicReportLink targetType="comment" targetId={c.id} /> : null}
           </div>
           {c.author_id === userId && !c.is_hidden && !locked ? (
             <InlineEdit action={updateOwnComment} testId="comment" hidden={{ kind, targetId, commentId: c.id }}

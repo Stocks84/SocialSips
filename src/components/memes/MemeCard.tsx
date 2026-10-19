@@ -3,7 +3,9 @@ import Link from 'next/link'
 import { isOwnStorageUrl } from '@/lib/storage'
 import { formatDate } from '@/lib/format'
 import ReportButton from '@/components/ui/ReportButton'
+import PublicReportLink from '@/components/ui/PublicReportLink'
 import HiddenNotice from '@/components/ui/HiddenNotice'
+import StatementOfReasons from '@/components/moderation/StatementOfReasons'
 import ConfirmSubmit from '@/components/ui/ConfirmSubmit'
 import AdminControls from '@/components/admin/AdminControls'
 import Reactions from './Reactions'
@@ -22,7 +24,7 @@ export default function MemeCard({ meme: m, userId, isAdmin, detail = false }: P
     <figure id={`meme-${m.id}`} className="card overflow-hidden" data-testid="meme">
       {img && (detail ? img : <Link href={path} aria-label="Open meme">{img}</Link>)}
       <figcaption className="p-4 space-y-3">
-        {m.is_hidden && <HiddenNotice />}
+        {m.is_hidden && <><HiddenNotice />{m.author_id === userId && <StatementOfReasons type="meme" id={m.id} />}</>}
         {m.caption && (detail ? <p className="font-semibold text-lg">{m.caption}</p> : <Link href={path} className="font-semibold block hover:text-accent-cyan">{m.caption}</Link>)}
         {m.joke_text && <p className="whitespace-pre-line text-accent-pink">{m.joke_text}</p>}
         {m.is_hidden ? (
@@ -45,7 +47,7 @@ export default function MemeCard({ meme: m, userId, isAdmin, detail = false }: P
             </span>
           ) : userId ? (
             <ReportButton targetType="meme" targetId={m.id} />
-          ) : null}
+          ) : <PublicReportLink targetType="meme" targetId={m.id} />}
         </div>
         {isAdmin && <AdminControls type="meme" id={m.id} compact redirectTo={detail ? '/memes' : undefined} />}
       </figcaption>

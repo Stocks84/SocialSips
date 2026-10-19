@@ -7,13 +7,14 @@ import { resolveTargets, TARGETS, type TargetType } from '@/lib/server/moderatio
 import { REPORT_REASONS } from '@/lib/validators/comment'
 import { formatDate } from '@/lib/format'
 import { deleteItem, dismissReport, hideItem } from '../actions'
+import ModReasonFields from '@/components/admin/ModReasonFields'
 
 export const metadata = { title: 'Reports', robots: { index: false } }
 export const dynamic = 'force-dynamic'
 
 type ReportRow = {
-  id: string; target_type: TargetType; target_id: string; reason: keyof typeof REPORT_REASONS
-  note: string | null; created_at: string; reporter: { username: string } | null
+  id: string; target_type: TargetType | 'link'; target_id: string | null; target_url: string | null; reason: keyof typeof REPORT_REASONS
+  note: string | null; reporter_email: string | null; created_at: string; reporter: { username: string } | null
 }
 
 export default async function AdminReportsPage() {
@@ -23,12 +24,16 @@ export default async function AdminReportsPage() {
 
   const { data } = await supabase
     .from('reports')
-    .select('id, target_type, target_id, reason, note, created_at, reporter:profiles(username)')
+    .select('id, target_type, target_id, target_url, reason, note, reporter_email, created_at, reporter:profiles(username)')
     .eq('status', 'open')
     .order('created_at', { ascending: true })
     .limit(100)
   const reports = (data ?? []) as unknown as ReportRow[]
-  const resolved = await resolveTargets(supabase, reports.map((r) => ({ type: r.target_type, id: r.target_id })))
+  const typed = reports.filter((r): r is ReportRow & { target_type: TargetType; target_id: string } => r.target_type !== 'link' && Boolean(r.target_id))
+  const resolvedTyped = await resolveTargets(supabase, typed.map((r) => ({ type: r.target_type, id: r.target_id })))
+  const byId = new Map(typed.map((r, i) => [r.id, resolvedTyped[i]]))
+  const linkTarget = (r: ReportRow) => ({ exists: false, href: null, preview: r.target_url ?? '(no link)', hidden: false })
+  const resolved = reports.map((r) => byId.get(r.id) ?? linkTarget(r))
 
   return (
     <>
@@ -42,26 +47,30 @@ export default async function AdminReportsPage() {
             <>
               <input type="hidden" name="reportId" value={r.id} />
               <input type="hidden" name="targetType" value={r.target_type} />
-              <input type="hidden" name="targetId" value={r.target_id} />
+              <input type="hidden" name="targetId" value={r.target_id ?? ''} />
             </>
           )
           return (
             <div key={r.id} className="card p-5" data-testid="report">
               <div className="flex flex-wrap items-center gap-2 text-xs mb-2">
-                <span className="badge badge-purple">{TARGETS[r.target_type].label}</span>
+                <span className="badge badge-purple">{r.target_type === 'link' ? 'Link' : TARGETS[r.target_type].label}</span>
                 <span className="badge badge-pink">{REPORT_REASONS[r.reason] ?? r.reason}</span>
                 {t.hidden && <span className="badge badge-cyan">Hidden</span>}
-                <span className="text-text-muted">by @{r.reporter?.username ?? 'someone'} · {formatDate(r.created_at)}</span>
+                <span className="text-text-muted" data-testid="reporter">by {r.reporter ? `@${r.reporter.username}` : 'a signed-out visitor'}{r.reporter_email ? ` (${r.reporter_email})` : ''} · {formatDate(r.created_at)}</span>
               </div>
               <p className="text-sm mb-1">
-                {t.href ? <Link href={t.href} className="text-accent-cyan hover:underline">{t.preview || 'View item'}</Link> : <span className="text-text-muted">{t.preview}</span>}
+                {t.href ? <Link href={t.href} className="text-accent-cyan hover:underline">{t.preview || 'View item'}</Link> : <span className="text-text-muted break-all">{t.preview}</span>}
               </p>
               {r.note && <p className="text-text-secondary text-sm italic">“{r.note}”</p>}
-              <div className="flex flex-wrap gap-2 mt-4">
-                <form action={dismissReport}>{hidden}<button className="btn-ghost text-sm">Dismiss</button></form>
-                {t.exists && !t.hidden && <form action={hideItem}>{hidden}<button className="btn-secondary text-sm py-2 px-4">Hide item</button></form>}
-                {t.exists && <form action={deleteItem}>{hidden}<button className="btn-danger text-sm py-2 px-4">Delete item</button></form>}
-              </div>
+              <form className="mt-4 space-y-2 max-w-md">
+                {hidden}
+                {t.exists && <ModReasonFields defaultReason={r.reason} />}
+                <div className="flex flex-wrap gap-2">
+                  <button formAction={dismissReport} formNoValidate className="btn-ghost text-sm" data-testid="report-dismiss">{t.exists ? 'Dismiss' : 'Close report'}</button>
+                  {t.exists && !t.hidden && <button formAction={hideItem} className="btn-secondary text-sm py-2 px-4" data-testid="report-hide">Hide item</button>}
+                  {t.exists && <button formAction={deleteItem} className="btn-danger text-sm py-2 px-4">Delete item</button>}
+                </div>
+              </form>
             </div>
           )
         })}

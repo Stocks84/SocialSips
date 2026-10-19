@@ -66,6 +66,8 @@ SocialSips/
 4. **Database:** with the [Supabase CLI](https://supabase.com/docs/guides/cli): `supabase link --project-ref <ref>` then `supabase db push`. Or paste `supabase/migrations/0001_init.sql` into the SQL editor. For local dev, `supabase start && supabase db reset` also loads `seed.sql`.
 5. **Run:** `npm run dev` → http://localhost:3000
 
+**Uploads:** images are checked and re-encoded on the server (metadata such as GPS is stripped) and need `AUTH_THROTTLE_SECRET` set (same value as `private.app_config.auth_throttle_secret`); the browser can't write to Storage directly. Each user can upload 20 images / 40 MB per 24 h. To delete orphaned images (no post points at them, older than 1 h), run `SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/cleanup-orphan-media.mjs --dry-run` and then without `--dry-run`.
+
 The app builds and renders without Supabase configured (it falls back to mock data and skips auth checks).
 
 ## Deployment

@@ -4,6 +4,8 @@ import { updateSession } from '@/lib/supabase/middleware'
 import { AGE_COOKIE, AGE_DENIED_COOKIE } from '@/lib/age'
 import { verifyAgeToken } from '@/lib/age-token'
 import { PREVIEW_HEADER } from '@/lib/preview'
+import { LEGAL } from '@/lib/legal'
+import { signTermsToken, TERMS_COOKIE, termsCookieOptions, verifyTermsToken } from '@/lib/terms-token'
 
 /**
  * middleware.ts — Route Protection
@@ -17,7 +19,7 @@ import { PREVIEW_HEADER } from '@/lib/preview'
 // Routes that are ALWAYS accessible — no auth or age check needed
 // Legal pages and the public report form are reachable without the age gate (Impressum, DSA Art. 11–16).
 const LEGAL_ROUTES = ['/impressum', '/privacy', '/terms', '/report']
-const PUBLIC_ROUTES = ['/', '/sign-in', '/sign-up', '/age-gate', '/age-gate/sorry', '/help', '/auth/callback', '/manifest.json', '/sw.js', ...LEGAL_ROUTES]
+const PUBLIC_ROUTES = ['/', '/accept-terms', '/sign-in', '/sign-up', '/age-gate', '/age-gate/sorry', '/help', '/auth/callback', '/manifest.json', '/sw.js', ...LEGAL_ROUTES]
 
 // Known link-preview crawlers, and the only paths they may see without the age gate.
 const PREVIEW_BOTS = /facebookexternalhit|Facebot|Twitterbot|WhatsApp|Slackbot|LinkedInBot|Discordbot|TelegramBot/i
@@ -30,9 +32,39 @@ const AUTH_ROUTES = ['/games/new', '/cocktails/new', '/memes/new', '/profile/edi
 const isAuthRoute = (pathname: string) =>
   AUTH_ROUTES.some((r) => pathname.startsWith(r)) || pathname.endsWith('/edit')
 
+// While a signed-in user hasn't accepted the current Terms version, only these paths work:
+// the acceptance page, the legal pages, and the account page (download data / delete account).
+// Sign out is a button on /accept-terms (server actions POST to the page they're on).
+const TERMS_PENDING_OK = ['/accept-terms', '/auth/callback', '/manifest.json', '/sw.js', ...LEGAL_ROUTES]
+const termsPendingOk = (p: string) => TERMS_PENDING_OK.includes(p) || p === '/settings/account' || p === '/settings/account/export'
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const { response, user } = await updateSession(request)
+  const { response, user, supabase } = await updateSession(request)
+
+  // ── 0. Terms re-acceptance (signed-in users) ──────────────────────────
+  // Cheap path: a signed cookie bound to (user id, current version). Only without it do we ask the DB once.
+  if (user && supabase && !termsPendingOk(pathname)) {
+    const ok = await verifyTermsToken(request.cookies.get(TERMS_COOKIE)?.value, user.id, LEGAL.termsVersion)
+    if (!ok) {
+      const { data: accepted, error } = await supabase.rpc('my_terms_version')
+      if (!error && accepted === LEGAL.termsVersion) {
+        const token = await signTermsToken(user.id, LEGAL.termsVersion)
+        if (token) response.cookies.set(TERMS_COOKIE, token, termsCookieOptions)
+      } else if (error) {
+        console.error('my_terms_version', error.message) // fail open on a DB hiccup; RLS still protects data
+      } else {
+        if (!['GET', 'HEAD'].includes(request.method)) return new NextResponse('Please accept the updated Terms first.', { status: 403 })
+        const url = request.nextUrl.clone()
+        url.pathname = '/accept-terms'
+        url.search = ''
+        if (pathname !== '/') url.searchParams.set('next', pathname + request.nextUrl.search)
+        const redirect = NextResponse.redirect(url)
+        response.cookies.getAll().forEach((c) => redirect.cookies.set(c))
+        return redirect
+      }
+    }
+  }
 
   // ── 1. Allow public routes through immediately ────────────────────────
   // Under-18 answer in the last 24h: keep them on the exit page (no instant retry with another date)

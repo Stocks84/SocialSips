@@ -7,7 +7,7 @@ import { authCookieOptions, isRemembered, REMEMBER_COOKIE } from './cookies'
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request })
   const cfg = getSupabaseConfig()
-  if (!cfg) return { response, user: null }
+  if (!cfg) return { response, user: null, supabase: null }
   const remember = isRemembered(request.cookies.get(REMEMBER_COOKIE)?.value)
 
   const supabase = createServerClient(cfg.url, cfg.anonKey, {
@@ -29,8 +29,8 @@ export async function updateSession(request: NextRequest) {
     // getClaims() verifies the JWT locally (asymmetric keys) and refreshes an expired session; no Auth round trip.
     const { data } = await supabase.auth.getClaims()
     const sub = data?.claims?.sub
-    return { response, user: sub ? { id: sub } : null }
+    return { response, user: sub ? { id: sub } : null, supabase }
   } catch {
-    return { response, user: null }
+    return { response, user: null, supabase }
   }
 }

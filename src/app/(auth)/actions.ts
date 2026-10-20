@@ -86,7 +86,12 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
     return { error: SIGN_IN_FAILED }
   }
   await setRemember(remember)
-  redirect(safePath(formData.get('redirectTo')))
+  const dest = safePath(formData.get('redirectTo'))
+  // A server-action redirect renders the target in this same request (no middleware run), so check
+  // the Terms version here too; the middleware covers every later request.
+  const { data: accepted } = await supabase.rpc('my_terms_version')
+  if (accepted !== LEGAL.termsVersion) redirect(`/accept-terms?next=${encodeURIComponent(dest)}`)
+  redirect(dest)
 }
 
 export async function signOut() {

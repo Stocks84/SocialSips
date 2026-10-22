@@ -99,7 +99,11 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/age-gate'
     url.search = ''
-    url.searchParams.set('redirectTo', pathname + request.nextUrl.search)
+    const dest = pathname + request.nextUrl.search
+    // Single hop: a guest heading for a sign-in-only route goes age gate -> sign-in -> destination,
+    // instead of age gate -> route -> 307 -> sign-in. (Same destination the auth check below would pick.)
+    const supabaseOn = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    url.searchParams.set('redirectTo', supabaseOn && !user && isAuthRoute(pathname) ? `/sign-in?redirectTo=${encodeURIComponent(pathname)}` : dest)
     return NextResponse.redirect(url)
   }
 
@@ -126,6 +130,6 @@ export async function middleware(request: NextRequest) {
  */
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon\\.ico$|icons/|images/|robots\\.txt$|[^/]+\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!_next/static|_next/image|favicon\\.ico$|manifest\\.json$|sw\\.js$|icons/|images/|robots\\.txt$|[^/]+\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

@@ -8,6 +8,10 @@ export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request })
   const cfg = getSupabaseConfig()
   if (!cfg) return { response, user: null, supabase: null }
+  // No Supabase auth cookie => guest. Skip building the client / claims check entirely (no work, no network).
+  if (!request.cookies.getAll().some((c) => c.name.startsWith('sb-') && c.name.includes('-auth-token'))) {
+    return { response, user: null, supabase: null }
+  }
   const remember = isRemembered(request.cookies.get(REMEMBER_COOKIE)?.value)
 
   const supabase = createServerClient(cfg.url, cfg.anonKey, {

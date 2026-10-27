@@ -22,7 +22,7 @@ const target = (formData: FormData) => {
 const commentTarget = (formData: FormData) => {
   if (formData.get('kind') !== 'meme') return target(formData)
   const id = String(formData.get('targetId') ?? '')
-  return { kind: 'meme', id, column: 'meme_id', path: `/memes/${id}` } as const
+  return { kind: 'meme' as const, id, column: 'meme_id' as const, path: `/memes/${id}` }
 }
 
 export async function addComment(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -32,7 +32,11 @@ export async function addComment(_prev: FormState, formData: FormData): Promise<
   if (!UUID.test(t.id)) return { error: 'Unknown item' }
   const parsed = commentSchema.safeParse({ body: String(formData.get('body') ?? '').trim() })
   if (!parsed.success) return fail(formData, 'Write something first (max 1000 characters)', { body: 'Write 1–1000 characters' })
-  const { error } = await auth.supabase.from('comments').insert({ author_id: auth.user.id, [t.column]: t.id, body: parsed.data.body })
+  const body = parsed.data.body
+  const { error } =
+    t.column === 'game_id' ? await auth.supabase.from('comments').insert({ author_id: auth.user.id, body, game_id: t.id })
+    : t.column === 'cocktail_id' ? await auth.supabase.from('comments').insert({ author_id: auth.user.id, body, cocktail_id: t.id })
+    : await auth.supabase.from('comments').insert({ author_id: auth.user.id, body, meme_id: t.id })
   if (error) return fail(formData, friendlyError(error))
   revalidatePath(t.path)
   return { ok: true }
@@ -58,9 +62,11 @@ export async function rate(formData: FormData) {
     console.error('rate: invalid input', t.id, formData.get('score'))
     return
   }
-  const { error } = await auth.supabase
-    .from('ratings')
-    .upsert({ user_id: auth.user.id, [t.column]: t.id, score: parsed.data.score }, { onConflict: `user_id,${t.column}` })
+  const score = parsed.data.score
+  const { error } =
+    t.column === 'game_id'
+      ? await auth.supabase.from('ratings').upsert({ user_id: auth.user.id, game_id: t.id, score }, { onConflict: 'user_id,game_id' })
+      : await auth.supabase.from('ratings').upsert({ user_id: auth.user.id, cocktail_id: t.id, score }, { onConflict: 'user_id,cocktail_id' })
   if (error) console.error('rate', error.message)
   revalidatePath(t.path)
   revalidatePath('/feed')
@@ -70,7 +76,7 @@ export async function rate(formData: FormData) {
 
 const variationTarget = (formData: FormData) => {
   const t = target(formData)
-  return { ...t, table: t.kind === 'game' ? 'game_variations' : 'cocktail_variations' } as const
+  return { ...t, table: t.kind === 'game' ? 'game_variations' as const : 'cocktail_variations' as const }
 }
 
 export async function addVariation(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -83,7 +89,11 @@ export async function addVariation(_prev: FormState, formData: FormData): Promis
     rules: String(formData.get('rules') ?? '').trim(),
   })
   if (!parsed.success) return fail(formData, 'Give your variation a name (3–80 chars) and details (10–3000 chars)', fieldErrors(parsed.error.issues))
-  const { error } = await auth.supabase.from(t.table).insert({ [t.column]: t.id, author_id: auth.user.id, ...parsed.data })
+  const { title, rules } = parsed.data
+  const { error } =
+    t.table === 'game_variations'
+      ? await auth.supabase.from('game_variations').insert({ game_id: t.id, author_id: auth.user.id, title, rules })
+      : await auth.supabase.from('cocktail_variations').insert({ cocktail_id: t.id, author_id: auth.user.id, title, rules })
   if (error) return fail(formData, friendlyError(error))
   revalidatePath(t.path)
   return { ok: true }

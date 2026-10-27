@@ -1,10 +1,25 @@
 import 'server-only'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '@/types/supabase'
 import type { Bucket } from './uploads'
 
 export type TargetType = 'game' | 'comment' | 'variation' | 'cocktail' | 'cocktail_variation' | 'meme'
 
-export const TARGETS: Record<TargetType, { table: string; label: string; bucket?: Bucket; imageCol?: string }> = {
+/** Tables admins can hide / delete / preview via TARGETS. */
+export type ModerationTable =
+  | 'games'
+  | 'comments'
+  | 'game_variations'
+  | 'cocktails'
+  | 'cocktail_variations'
+  | 'memes'
+
+type AppClient = SupabaseClient<Database>
+
+export const TARGETS: Record<
+  TargetType,
+  { table: ModerationTable; label: string; bucket?: Bucket; imageCol?: string }
+> = {
   game: { table: 'games', label: 'Game', bucket: 'game-covers', imageCol: 'cover_image_url' },
   comment: { table: 'comments', label: 'Comment' },
   variation: { table: 'game_variations', label: 'Game variation' },
@@ -17,7 +32,7 @@ export type ResolvedTarget = { exists: boolean; href: string | null; preview: st
 
 /** Batched version of resolveTarget: one query per target type instead of one per item. */
 export async function resolveTargets(
-  supabase: SupabaseClient,
+  supabase: AppClient,
   items: { type: TargetType; id: string }[],
 ): Promise<ResolvedTarget[]> {
   const cut = (s: string | null | undefined) => (s ?? '').slice(0, 140)

@@ -124,7 +124,10 @@ export async function editVariation(_prev: EditState, formData: FormData): Promi
     rules: String(formData.get('rules') ?? '').trim(),
   })
   if (!parsed.success) return { error: 'Name 3–80 characters, details 10–3000.', fieldErrors: fieldErrors(parsed.error.issues), values }
-  const { data, error } = await p.supabase.from(p.cfg.table).update(parsed.data).eq('id', p.targetId).select('id')
+  const { data, error } =
+    p.type === 'variation'
+      ? await p.supabase.from('game_variations').update(parsed.data).eq('id', p.targetId).select('id')
+      : await p.supabase.from('cocktail_variations').update(parsed.data).eq('id', p.targetId).select('id')
   if (error || !data?.length) return { error: error ? friendlyError(error) : NOT_SAVED, values }
   revalidatePath('/', 'layout')
   maybeRedirect(formData)

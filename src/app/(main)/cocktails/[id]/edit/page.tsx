@@ -15,7 +15,7 @@ export default async function EditCocktailPage({ params }: { params: Promise<{ i
   return (
     <>
       <PageHeader emoji="✏️" title="Edit cocktail" subtitle={c.name} />
-      {c.is_hidden ? <p className="card-glass p-4 text-sm text-text-secondary max-w-2xl" data-testid="edit-locked">🙈 A moderator has hidden this post, so it can&apos;t be edited right now.</p> : <CocktailForm action={updateCocktail} submitLabel="Save changes" defaults={{ ...c, method: c.method ?? '' }} />}
+      {c.is_hidden ? <p className="card-glass p-4 text-sm text-text-secondary max-w-2xl" data-testid="edit-locked">🙈 A moderator has hidden this post, so it can&apos;t be edited right now.</p> : <CocktailForm action={updateCocktail} submitLabel="Save changes" defaults={{ ...c, method: c.method ?? '', ingredients: c.ingredients ?? undefined }} />}
       <form action={deleteCocktail} className="card p-6 mt-8 max-w-2xl">
         <input type="hidden" name="cocktailId" value={c.id} />
         <h2 className="font-bold text-accent-pink mb-2">Danger zone</h2>

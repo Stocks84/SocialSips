@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import type { Database } from '@/types/supabase'
 import { cookies } from 'next/headers'
 import { getSupabaseConfig } from './config'
 import { authCookieOptions, isRemembered, REMEMBER_COOKIE } from './cookies'
@@ -11,7 +12,7 @@ export async function createClient(opts: { remember?: boolean } = {}) {
   const cfg = getSupabaseConfig()
   if (!cfg) return null
   const cookieStore = await cookies()
-  return createServerClient(cfg.url, cfg.anonKey, {
+  return createServerClient<Database>(cfg.url, cfg.anonKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll()

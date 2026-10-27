@@ -5,11 +5,8 @@ import { redirect } from 'next/navigation'
 import { requireUser, UUID } from '@/lib/server/auth'
 import { removeImage, uploadImage } from '@/lib/server/uploads'
 import { cocktailSchema } from '@/lib/validators/cocktail'
-import { fieldErrors, firstIssue, formValues, type EditState } from '@/lib/validators/issues'
-
-type FormState = EditState
-const fail = (formData: FormData, error: string, fields?: Record<string, string>): FormState =>
-  ({ error, fieldErrors: fields, values: formValues(formData) })
+import { fail, type FormState } from '@/lib/server/forms'
+import { fieldErrors, firstIssue } from '@/lib/validators/issues'
 
 function parseCocktail(formData: FormData) {
   const amounts = formData.getAll('ingredientAmount').map(String)

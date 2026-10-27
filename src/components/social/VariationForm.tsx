@@ -1,6 +1,6 @@
 'use client'
 import { useActionState, useEffect, useRef } from 'react'
-import { addVariation, type FormState } from '@/app/(main)/games/actions'
+import { addVariation, type FormState } from '@/lib/actions/social'
 
 export default function VariationForm({ kind, targetId }: { kind: 'game' | 'cocktail'; targetId: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(addVariation, {})

@@ -1,6 +1,6 @@
 'use client'
 import { useActionState, useEffect, useRef } from 'react'
-import { addComment, type FormState } from '@/app/(main)/games/actions'
+import { addComment, type FormState } from '@/lib/actions/social'
 
 export default function CommentForm({ kind, targetId }: { kind: 'game' | 'cocktail' | 'meme'; targetId: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(addComment, {})

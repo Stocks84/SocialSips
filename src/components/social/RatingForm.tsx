@@ -1,4 +1,4 @@
-import { rate } from '@/app/(main)/games/actions'
+import { rate } from '@/lib/actions/social'
 
 /** 1–5 star buttons; each is its own submit (works without JS). */
 export default function RatingForm({ kind, targetId, myScore }: { kind: 'game' | 'cocktail'; targetId: string; myScore: number | null }) {

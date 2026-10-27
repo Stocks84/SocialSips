@@ -4,16 +4,15 @@ import { shrinkImage } from '@/lib/image'
 import FieldError from '@/components/ui/FieldError'
 import type { EditState } from '@/lib/validators/issues'
 
-type FormState = EditState
 type Props = {
-  action: (prev: FormState, fd: FormData) => Promise<FormState>
+  action: (prev: EditState, fd: FormData) => Promise<EditState>
   defaults?: { id: string; caption: string | null; joke_text: string | null; image_url: string | null }
   submitLabel: string
 }
 
 /** Shared create/edit meme form. Images are shrunk to 1200px in the browser. */
 export default function MemeForm({ action: serverAction, defaults, submitLabel }: Props) {
-  const [state, action, pending] = useActionState<FormState, FormData>(serverAction, {})
+  const [state, action, pending] = useActionState<EditState, FormData>(serverAction, {})
   const val = (k: string, d?: string | null) => { const v = state.values?.[k]; return typeof v === 'string' ? v : (d ?? '') }
   const err = (k: string) => state.fieldErrors?.[k]
 

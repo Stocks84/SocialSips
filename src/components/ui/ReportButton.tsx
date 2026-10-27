@@ -1,6 +1,6 @@
 'use client'
 import { useActionState } from 'react'
-import { reportContent, type FormState } from '@/app/(main)/games/actions'
+import { reportContent, type FormState } from '@/lib/actions/social'
 import { REPORT_REASONS } from '@/lib/validators/comment'
 
 export type ReportTarget = 'game' | 'comment' | 'variation' | 'cocktail' | 'cocktail_variation' | 'meme'

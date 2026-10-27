@@ -1,7 +1,7 @@
 'use client'
 import { useActionState, useEffect, useState } from 'react'
 import FieldError from '@/components/ui/FieldError'
-import type { FormState } from '@/app/(main)/games/actions'
+import type { FormState } from '@/lib/actions/social'
 
 type Field = { name: string; label: string; value: string; max: number; rows?: number }
 type Props = {

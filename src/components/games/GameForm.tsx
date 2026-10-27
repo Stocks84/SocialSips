@@ -1,6 +1,6 @@
 'use client'
 import { useActionState } from 'react'
-import type { FormState } from '@/app/(main)/games/actions'
+import type { FormState } from '@/lib/server/forms'
 import type { HangoverRating } from '@/types/database'
 import HangoverPicker from './HangoverPicker'
 import ImageInput from '@/components/ui/ImageInput'

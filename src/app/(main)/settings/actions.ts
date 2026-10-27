@@ -5,11 +5,9 @@ import { cookies } from 'next/headers'
 import { requireUser, UUID } from '@/lib/server/auth'
 import { friendlyError, NOT_SAVED } from '@/lib/server/errors'
 import { removeImage, uploadImage } from '@/lib/server/uploads'
-import { fieldErrors, formValues, type EditState } from '@/lib/validators/issues'
+import { fail, type EditState } from '@/lib/server/forms'
+import { fieldErrors } from '@/lib/validators/issues'
 import { profileSchema } from '@/lib/validators/profile'
-
-const fail = (formData: FormData, error: string, fields?: Record<string, string>): EditState =>
-  ({ error, fieldErrors: fields, values: formValues(formData) })
 
 /** Saves the signed-in user's display name, bio and avatar. RLS only lets a user update their own row. */
 export async function updateProfile(_prev: EditState, formData: FormData): Promise<EditState> {

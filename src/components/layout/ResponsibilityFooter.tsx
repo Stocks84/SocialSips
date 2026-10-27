@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
-export default function Footer() {
+/** Short 18+ / drink-responsibly blurb under the main app shell (age-gated routes). */
+export default function ResponsibilityFooter() {
   return (
     <footer className="page-container py-8 text-center text-text-muted text-xs">
       18+ only · Please drink responsibly ·{' '}

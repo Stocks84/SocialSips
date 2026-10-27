@@ -7,6 +7,7 @@ import { REMEMBER_COOKIE, rememberCookieOptions } from '@/lib/supabase/cookies'
 import { safePath } from '@/lib/safe-path'
 import { LEGAL } from '@/lib/legal'
 import { recordFailure, throttleOk } from '@/lib/server/throttle'
+import { clientIp } from '@/lib/server/request'
 
 /** Stores the "Keep me signed in" choice so token refreshes keep the same cookie lifetime. */
 async function setRemember(remember: boolean) {
@@ -60,12 +61,6 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
 
 const SIGN_IN_FAILED = 'Email or password is incorrect.'
 const THROTTLED = 'Too many sign-in attempts. Please wait 15 minutes and try again.'
-
-/** Client IP as seen by Vercel (first x-forwarded-for hop), for the sign-in throttle. */
-async function clientIp() {
-  const h = await headers()
-  return (h.get('x-real-ip') ?? h.get('x-forwarded-for')?.split(',')[0] ?? 'unknown').trim().slice(0, 64)
-}
 
 export async function signIn(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const parsed = signInSchema.safeParse({ email: formData.get('email'), password: formData.get('password') })

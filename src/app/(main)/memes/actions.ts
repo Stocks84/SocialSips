@@ -1,15 +1,13 @@
 'use server'
 import { friendlyError, HIDDEN_LOCKED, NOT_SAVED } from '@/lib/server/errors'
-import { fieldErrors, formValues, type EditState } from '@/lib/validators/issues'
+import { fail, type FormState } from '@/lib/server/forms'
+import { fieldErrors } from '@/lib/validators/issues'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireUser, UUID } from '@/lib/server/auth'
 import { removeImage, uploadImage } from '@/lib/server/uploads'
 import { memeSchema } from '@/lib/validators/cocktail'
-
-type FormState = EditState
-const fail = (formData: FormData, error: string, fields?: Record<string, string>): FormState =>
-  ({ error, fieldErrors: fields, values: formValues(formData) })
+import { isReaction } from '@/lib/memes'
 
 export async function createMeme(_prev: FormState, formData: FormData): Promise<FormState> {
   const auth = await requireUser()
@@ -90,4 +88,20 @@ export async function updateMeme(_prev: FormState, formData: FormData): Promise<
   revalidatePath('/memes')
   revalidatePath(`/memes/${id}`)
   redirect(`/memes/${id}?saved=1`)
+}
+
+
+export type ReactionResult = { error?: string; counts?: Record<string, number>; mine?: string | null }
+
+/** Set, change or (emoji = null) remove the viewer's reaction on a meme. One atomic DB call; returns the fresh counts. */
+export async function setReaction(memeId: string, emoji: string | null): Promise<ReactionResult> {
+  const auth = await requireUser()
+  if ('error' in auth) return { error: 'Sign in to react.' }
+  if (!UUID.test(memeId)) return { error: 'Unknown meme' }
+  if (emoji !== null && !isReaction(emoji)) return { error: 'Pick one of the reactions' }
+  const { data, error } = await auth.supabase.rpc('set_reaction', { p_meme: memeId, p_emoji: emoji })
+  if (error) return { error: friendlyError(error, 'reaction') }
+  const res = (data ?? {}) as { counts?: Record<string, number>; mine?: string | null }
+  revalidatePath(`/memes/${memeId}`)
+  return { counts: res.counts ?? {}, mine: res.mine ?? null }
 }

@@ -1,7 +1,7 @@
 'use client'
 import { useOptimistic, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
-import { setReaction } from '@/app/(main)/memes/reactions'
+import { setReaction } from '@/app/(main)/memes/actions'
 import { REACTIONS } from '@/lib/memes'
 
 type State = { counts: Record<string, number>; mine: string | null }

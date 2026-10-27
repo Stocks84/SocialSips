@@ -4,8 +4,6 @@ import ImageInput from '@/components/ui/ImageInput'
 import IngredientRows from './IngredientRows'
 import FieldError from '@/components/ui/FieldError'
 import type { EditState } from '@/lib/validators/issues'
-
-type FormState = EditState
 export type CocktailFormDefaults = {
   id?: string
   name?: string
@@ -17,13 +15,13 @@ export type CocktailFormDefaults = {
 }
 
 type Props = {
-  action: (prev: FormState, fd: FormData) => Promise<FormState>
+  action: (prev: EditState, fd: FormData) => Promise<EditState>
   defaults?: CocktailFormDefaults
   submitLabel: string
 }
 
 export default function CocktailForm({ action: serverAction, defaults = {}, submitLabel }: Props) {
-  const [state, action, pending] = useActionState<FormState, FormData>(serverAction, {})
+  const [state, action, pending] = useActionState<EditState, FormData>(serverAction, {})
   // After a failed submit React resets the form, so refill it from what the user typed.
   const val = (k: string, d?: string) => { const v = state.values?.[k]; return typeof v === 'string' ? v : d }
   const err = (k: string) => state.fieldErrors?.[k]

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
-/** Global footer on every page (legal links are reachable without the age gate). Extra bottom padding on mobile clears the tab bar. */
-export default function SiteFooter() {
+/** Global legal-links footer on every page (reachable without the age gate). Extra bottom padding on mobile clears the tab bar. */
+export default function LegalFooter() {
   return (
     <footer className="border-t border-border/60 py-4 pb-24 sm:pb-4 text-center text-xs text-text-muted space-y-2" data-testid="site-footer">
       <nav aria-label="Legal" className="flex flex-wrap justify-center gap-x-4 gap-y-1">

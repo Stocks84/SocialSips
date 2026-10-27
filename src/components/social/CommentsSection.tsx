@@ -1,4 +1,4 @@
-import { deleteComment, updateOwnComment } from '@/app/(main)/games/actions'
+import { deleteComment, updateOwnComment } from '@/lib/actions/social'
 import InlineEdit, { EditedMark } from './InlineEdit'
 import ReportButton from '@/components/ui/ReportButton'
 import PublicReportLink from '@/components/ui/PublicReportLink'

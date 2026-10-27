@@ -1,56 +1,24 @@
 import Link from 'next/link'
-import { NoticeBody, type Notice } from '@/components/moderation/StatementOfReasons'
+import { NoticeBody } from '@/components/moderation/StatementOfReasons'
 import { setBlock } from '../../settings/actions'
 import { getUserWins } from '@/lib/queries/challenges'
 import { getFollowCounts, isFollowing } from '@/lib/queries/follows'
+import {
+  getProfileByUsername,
+  getProfilePosts,
+  getProfileReactionTotals,
+  isBlocking,
+  listModerationNotices,
+} from '@/lib/queries/profile'
 import FollowButton from '@/components/social/FollowButton'
 import { notFound } from 'next/navigation'
-import { cache } from 'react'
 import { getViewer } from '@/lib/server/viewer'
 import ProfileHeader from '@/components/profile/ProfileHeader'
 import SavedBanner from '@/components/ui/SavedBanner'
 import ComingSoon from '@/components/ui/ComingSoon'
 import HiddenNotice from '@/components/ui/HiddenNotice'
 import { createClient } from '@/lib/supabase/server'
-import { visibleTo } from '@/lib/queries/visibility'
 import { REACTIONS } from '@/lib/memes'
-
-type Post = { id: string; title: string; is_hidden: boolean; created_at: string; href: string; emoji: string }
-
-/** Games + cocktails a user shared. The owner also sees their hidden ones (badged); RLS hides them from everyone else. */
-/** The profile row, fetched once per request. Null when the username doesn't exist. */
-const getProfile = cache(async (username: string) => {
-  const supabase = await createClient()
-  if (!supabase) return null
-  const { data } = await supabase.from('profiles').select('id, username, display_name, bio, avatar_url').eq('username', username).maybeSingle()
-  return data
-})
-
-async function getPosts(profile: { id: string }): Promise<{ posts: Post[]; isOwner: boolean } | null> {
-  const supabase = await createClient()
-  if (!supabase) return null
-  const { userId } = await getViewer()
-  const user = userId ? { id: userId } : null
-  const filter = visibleTo(user?.id)
-  const [{ data: games }, { data: cocktails }] = await Promise.all([
-    supabase.from('games').select('id, title, is_hidden, created_at').eq('author_id', profile.id).or(filter).order('created_at', { ascending: false }).limit(50),
-    supabase.from('cocktails').select('id, name, is_hidden, created_at').eq('author_id', profile.id).or(filter).order('created_at', { ascending: false }).limit(50),
-  ])
-  const posts: Post[] = [
-    ...(games ?? []).map((g) => ({ ...g, href: `/games/${g.id}`, emoji: '🎲' })),
-    ...(cocktails ?? []).map((c) => ({ id: c.id, title: c.name, is_hidden: c.is_hidden, created_at: c.created_at, href: `/cocktails/${c.id}`, emoji: '🍸' })),
-  ].sort((a, b) => b.created_at.localeCompare(a.created_at))
-  return { posts, isOwner: user?.id === profile.id }
-}
-
-/** Reactions received on the user's visible memes, by emoji. */
-async function getReactionTotals(profile: { id: string }): Promise<Record<string, number> | null> {
-  const supabase = await createClient()
-  if (!supabase) return null
-  const { data, error } = await supabase.rpc('profile_reaction_totals', { p_user: profile.id })
-  if (error) { console.error('profile_reaction_totals', error.message); return null }
-  return Object.fromEntries(((data ?? []) as { emoji: string; n: number }[]).map((r) => [r.emoji, Number(r.n)]))
-}
 
 export default async function ProfilePage({ params, searchParams }: { params: Promise<{ username: string }>; searchParams: Promise<{ saved?: string; followError?: string }> }) {
   const { username } = await params
@@ -58,15 +26,15 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
   let name = username
   try { name = decodeURIComponent(username) } catch { /* already decoded */ }
   const supabase = await createClient()
-  const profile = supabase ? await getProfile(name) : null
+  const profile = supabase ? await getProfileByUsername(name) : null
   if (supabase && !profile) notFound() // unknown usernames get a real 404, not a made-up profile
-  const [result, totals] = profile ? await Promise.all([getPosts(profile), getReactionTotals(profile)]) : [null, null]
+  const [result, totals] = profile ? await Promise.all([getProfilePosts(profile.id), getProfileReactionTotals(profile.id)]) : [null, null]
   const { userId: viewerId } = await getViewer()
   const canBlock = Boolean(supabase && profile && viewerId && viewerId !== profile.id)
   const [wins, counts, following] = profile ? await Promise.all([getUserWins(profile.id), getFollowCounts(profile.id), viewerId && viewerId !== profile.id ? isFollowing(viewerId, profile.id) : Promise.resolve(false)]) : [[], { followers: 0, following: 0 }, false]
   const [blocking, notices] = await Promise.all([
-    canBlock ? supabase!.from('blocks').select('blocked_id').eq('blocker_id', viewerId!).eq('blocked_id', profile!.id).maybeSingle().then((r) => Boolean(r.data)) : false,
-    result?.isOwner ? supabase!.from('moderation_notices').select('id, target_type, target_id, reason, explanation, preview, created_at, reversed_at').eq('author_id', profile!.id).order('created_at', { ascending: false }).limit(20).then((r) => (r.data ?? []) as Notice[]) : [],
+    canBlock ? isBlocking(viewerId!, profile!.id) : false,
+    result?.isOwner ? listModerationNotices(profile!.id) : [],
   ])
   const totalReactions = totals ? Object.values(totals).reduce((a, b) => a + b, 0) : 0
   return (

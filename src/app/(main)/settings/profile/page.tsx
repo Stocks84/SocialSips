@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import PageHeader from '@/components/ui/PageHeader'
 import ProfileForm from '@/components/profile/ProfileForm'
-import { createClient } from '@/lib/supabase/server'
+import { getOwnProfileEdit } from '@/lib/queries/settings'
 import { getViewer } from '@/lib/server/viewer'
 import { isOwnStorageUrl } from '@/lib/storage'
 import { updateProfile } from '../actions'
@@ -12,9 +12,7 @@ export const metadata = { title: 'Edit profile' }
 export default async function EditProfilePage() {
   const { userId } = await getViewer()
   if (!userId) redirect('/sign-in?redirectTo=/settings/profile')
-  const supabase = await createClient()
-  if (!supabase) notFound()
-  const { data: me } = await supabase.from('profiles').select('username, display_name, bio, avatar_url').eq('id', userId).maybeSingle()
+  const me = await getOwnProfileEdit(userId)
   if (!me) notFound()
   return (
     <>

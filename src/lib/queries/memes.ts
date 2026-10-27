@@ -82,3 +82,24 @@ export async function followingMemes(limit = 20): Promise<MemeWithStats[]> {
   const { data } = await supabase.from('memes').select(COLS).in('id', list).order('created_at', { ascending: false })
   return attachStats(supabase, (data ?? []) as unknown as MemeRow[])
 }
+
+export type MemeEditRow = {
+  id: string
+  caption: string | null
+  joke_text: string | null
+  image_url: string | null
+  author_id: string
+  is_hidden: boolean
+}
+
+/** Author edit page: one meme row by id (RLS still applies). Null if missing / bad id. */
+export async function getMemeForEdit(id: string): Promise<MemeEditRow | null> {
+  const supabase = await createClient()
+  if (!supabase || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null
+  const { data } = await supabase
+    .from('memes')
+    .select('id, caption, joke_text, image_url, author_id, is_hidden')
+    .eq('id', id)
+    .maybeSingle()
+  return data
+}

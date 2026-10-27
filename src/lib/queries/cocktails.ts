@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import type { MakeableCocktail } from '@/lib/pantry'
-import { mockCocktails } from '@/lib/mock-data'
 import type { Cocktail } from '@/types/database'
 import { parentVisibleTo } from './visibility'
 import { getViewer } from '@/lib/server/viewer'
@@ -15,14 +14,9 @@ export type CocktailListItem = Pick<Cocktail, 'id' | 'name' | 'description' | 'i
 /** Cocktail list via feed_cocktails() RPC: search name/description/ingredients, alcohol-free filter, sort. */
 export async function listCocktails({ q = '', alcoholFree = false, sort = 'newest', ing = '' }: { q?: string; alcoholFree?: boolean; sort?: string; ing?: string } = {}): Promise<CocktailListItem[]> {
   const supabase = await createClient()
+  if (!supabase) return []
   const term = q.trim().slice(0, 100)
   const ingTerm = ing.trim().slice(0, 40)
-  if (!supabase) {
-    const t = term.toLowerCase()
-    const it = ingTerm.toLowerCase() // mock rows have no ingredients; fall back to name/description
-    return mockCocktails.filter((c) => (!t || `${c.name} ${c.description}`.toLowerCase().includes(t)) && (!alcoholFree || c.is_alcohol_free)
-      && (!it || `${c.name} ${c.description}`.toLowerCase().includes(it)))
-  }
   const { data, error } = await supabase.rpc('feed_cocktails', {
     q: term.replace(/[%_\\]/g, '') || null,
     alcohol_free: alcoholFree,
@@ -50,10 +44,7 @@ export type CocktailDetail = {
 
 export async function getCocktailDetail(id: string): Promise<CocktailDetail | null> {
   const supabase = await createClient()
-  if (!supabase) {
-    const c = mockCocktails.find((x) => x.id === id)
-    return c ? { cocktail: c, comments: [], variations: [], rating: { avg: null, count: 0, mine: null }, userId: null } : null
-  }
+  if (!supabase) return null
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null
   const { userId, isAdmin } = await getViewer()
   const user = userId ? { id: userId } : null

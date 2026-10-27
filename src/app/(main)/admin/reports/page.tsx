@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation'
 import PageHeader from '@/components/ui/PageHeader'
 import { createClient } from '@/lib/supabase/server'
 import { getViewer } from '@/lib/server/viewer'
-import { resolveTargets, TARGETS, type TargetType } from '@/lib/server/moderation'
+import { TARGETS } from '@/lib/server/moderation'
+import { listOpenReports } from '@/lib/queries/admin'
 import { REPORT_REASONS } from '@/lib/validators/comment'
 import { formatDate } from '@/lib/format'
 import { deleteItem, dismissReport, hideItem } from '../actions'
@@ -12,28 +13,12 @@ import ModReasonFields from '@/components/admin/ModReasonFields'
 export const metadata = { title: 'Reports', robots: { index: false } }
 export const dynamic = 'force-dynamic'
 
-type ReportRow = {
-  id: string; target_type: TargetType | 'link'; target_id: string | null; target_url: string | null; reason: keyof typeof REPORT_REASONS
-  note: string | null; reporter_email: string | null; created_at: string; reporter: { username: string } | null
-}
-
 export default async function AdminReportsPage() {
   const supabase = await createClient()
   const { isAdmin } = await getViewer()
   if (!supabase || !isAdmin) notFound()
 
-  const { data } = await supabase
-    .from('reports')
-    .select('id, target_type, target_id, target_url, reason, note, reporter_email, created_at, reporter:profiles(username)')
-    .eq('status', 'open')
-    .order('created_at', { ascending: true })
-    .limit(100)
-  const reports = (data ?? []) as unknown as ReportRow[]
-  const typed = reports.filter((r): r is ReportRow & { target_type: TargetType; target_id: string } => r.target_type !== 'link' && Boolean(r.target_id))
-  const resolvedTyped = await resolveTargets(supabase, typed.map((r) => ({ type: r.target_type, id: r.target_id })))
-  const byId = new Map(typed.map((r, i) => [r.id, resolvedTyped[i]]))
-  const linkTarget = (r: ReportRow) => ({ exists: false, href: null, preview: r.target_url ?? '(no link)', hidden: false })
-  const resolved = reports.map((r) => byId.get(r.id) ?? linkTarget(r))
+  const reports = (await listOpenReports()) ?? []
 
   return (
     <>
@@ -41,8 +26,8 @@ export default async function AdminReportsPage() {
       <p className="text-sm mb-6"><Link href="/admin/hidden" className="text-accent-purple">Hidden items →</Link> · <Link href="/admin/challenges" className="text-accent-purple" data-testid="admin-challenges-link">Challenges →</Link></p>
       {reports.length === 0 && <p className="card-glass p-6 text-center text-text-secondary">All clear. No open reports 🎉</p>}
       <div className="space-y-4">
-        {reports.map((r, i) => {
-          const t = resolved[i]
+        {reports.map((r) => {
+          const t = r.resolved
           const hidden = (
             <>
               <input type="hidden" name="reportId" value={r.id} />

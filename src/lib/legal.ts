@@ -5,11 +5,14 @@
 export const LEGAL = {
   /** Media owner / service provider / controller. */
   ownerName: 'William Stocks',
-  /** [ADDRESS] Street + number, postcode, city, country (or a c/o / contact address if a lawyer okays it). */
-  address: null as string | null,
+  /**
+   * Hobby (non-commercial) mode: § 25(5) MedienG "small website" disclosure needs only name + place of residence,
+   * and § 5 ECG does not apply. Switch to a full postal/c/o address here (and restore the phone row) once Social Sips earns money.
+   */
+  address: 'Klagenfurt am Wörthersee, Austria' as string | null,
   /** [CONTACT EMAIL] Point of contact for users and authorities (DSA Art. 11–12). */
   contactEmail: null as string | null,
-  /** [PHONE OR FORM] Fast direct contact besides email (§ 5 ECG). The public /report form also exists. */
+  /** Only needed once commercial (§ 5 ECG). Not shown in hobby mode. */
   phone: null as string | null,
   /** [DATE] "Last updated" date shown on Privacy and Terms, e.g. '21 October 2026'. */
   lastUpdated: null as string | null,

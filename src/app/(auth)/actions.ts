@@ -8,6 +8,7 @@ import { safePath } from '@/lib/safe-path'
 import { LEGAL } from '@/lib/legal'
 import { recordFailure, throttleOk } from '@/lib/server/throttle'
 import { clientIp } from '@/lib/server/request'
+import { isPwnedPassword, PWNED_PASSWORD_MESSAGE } from '@/lib/server/pwned'
 
 /** Stores the "Keep me signed in" choice so token refreshes keep the same cookie lifetime. */
 async function setRemember(remember: boolean) {
@@ -34,6 +35,8 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   if (!supabase) return { error: NOT_CONFIGURED }
 
   const { email, password, username, dateOfBirth } = parsed.data
+  // Known-breached passwords are rejected (HIBP k-anonymity; fails open if the API is down).
+  if (await isPwnedPassword(password)) return { error: PWNED_PASSWORD_MESSAGE }
   const origin = (await headers()).get('origin') ?? ''
   const { data, error } = await supabase.auth.signUp({
     email,

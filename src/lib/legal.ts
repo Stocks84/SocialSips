@@ -11,7 +11,7 @@ export const LEGAL = {
    */
   address: 'Klagenfurt am Wörthersee, Austria' as string | null,
   /** [CONTACT EMAIL] Point of contact for users and authorities (DSA Art. 11–12). */
-  contactEmail: null as string | null,
+  contactEmail: 'willsto84@gmail.com' as string | null,
   /** Only needed once commercial (§ 5 ECG). Not shown in hobby mode. */
   phone: null as string | null,
   /** [DATE] "Last updated" date shown on Privacy and Terms, e.g. '21 October 2026'. */

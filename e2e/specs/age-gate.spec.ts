@@ -15,7 +15,7 @@ test.describe('age gate', () => {
 
   test('adult DOB unlocks destination and sets httpOnly cookie', async ({ page, context }) => {
     await page.goto('/cocktails')
-    await page.locator('#dob').fill('01011990')
+    await page.locator('#dob').fill('1990-01-01')
     await Promise.all([
       page.waitForURL(/\/cocktails/).catch(() => {}),
       page.locator('form button').click(),
@@ -41,7 +41,7 @@ test.describe('age gate', () => {
 
   test('under-18 lands on sorry and cannot retry', async ({ page }) => {
     await page.goto('/feed')
-    await page.locator('#dob').fill('05052015')
+    await page.locator('#dob').fill('2015-05-05')
     await Promise.all([
       page.waitForURL(/sorry|age-gate/).catch(() => {}),
       page.locator('form button').click(),

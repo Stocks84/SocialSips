@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test'
 async function passAgeGate(page: import('@playwright/test').Page) {
   await page.goto('/play')
   if (page.url().includes('/age-gate')) {
-    await page.locator('#dob').fill('01011990')
+    await page.locator('#dob').fill('1990-01-01')
     await Promise.all([
       page.waitForURL(/\/play/).catch(() => {}),
       page.locator('form button[type=submit], form button').first().click(),

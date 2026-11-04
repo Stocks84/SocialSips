@@ -1,3 +1,4 @@
+import { olderThan, type Cursor } from '@/lib/paging'
 import { createClient } from '@/lib/supabase/server'
 import { parentVisibleTo, visibleTo } from './visibility'
 import type { CommentRow } from './social'
@@ -50,10 +51,12 @@ export async function listMemes({ page, pageSize, sort, range, userId }: { page:
 }
 
 /** Newest visible memes for the main feed (hidden memes never appear there). */
-export async function latestMemes(limit = 20): Promise<MemeWithStats[]> {
+export async function latestMemes(limit = 20, before: Cursor | null = null): Promise<MemeWithStats[]> {
   const supabase = await createClient()
   if (!supabase) return []
-  const { data } = await supabase.from('memes').select(COLS).eq('is_hidden', false).order('created_at', { ascending: false }).limit(limit)
+  let query = supabase.from('memes').select(COLS).eq('is_hidden', false)
+  if (before) query = query.or(olderThan(before))
+  const { data } = await query.order('created_at', { ascending: false }).order('id', { ascending: false }).limit(limit)
   return attachStats(supabase, (data ?? []) as unknown as MemeRow[])
 }
 
@@ -72,14 +75,17 @@ export async function getMeme(id: string, userId: string | null, isAdmin = false
 }
 
 /** Newest visible memes by people the viewer follows (for the feed's Following tab). */
-export async function followingMemes(limit = 20): Promise<MemeWithStats[]> {
+export async function followingMemes(limit = 20, before: Cursor | null = null): Promise<MemeWithStats[]> {
   const supabase = await createClient()
   if (!supabase) return []
-  const { data: ids, error } = await supabase.rpc('following_meme_ids', { max_rows: limit })
+  // following_meme_ids caps at the newest 50, so older pages run dry there (needs a migration to lift).
+  const { data: ids, error } = await supabase.rpc('following_meme_ids', { max_rows: 50 })
   if (error) { console.error('following_meme_ids', error.message); return [] }
   const list = (ids ?? []) as string[]
   if (!list.length) return []
-  const { data } = await supabase.from('memes').select(COLS).in('id', list).order('created_at', { ascending: false })
+  let query = supabase.from('memes').select(COLS).in('id', list)
+  if (before) query = query.or(olderThan(before))
+  const { data } = await query.order('created_at', { ascending: false }).order('id', { ascending: false }).limit(limit)
   return attachStats(supabase, (data ?? []) as unknown as MemeRow[])
 }
 

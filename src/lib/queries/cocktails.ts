@@ -3,6 +3,7 @@ import type { MakeableCocktail } from '@/lib/pantry'
 import type { Cocktail } from '@/types/database'
 import { parentVisibleTo } from './visibility'
 import { getViewer } from '@/lib/server/viewer'
+import { PAGE_SIZE, RPC_MAX_ROWS } from '@/lib/paging'
 import { getSocial, type Author, type CommentRow, type RatingSummary, type VariationRow } from './social'
 
 export type CocktailListItem = Pick<Cocktail, 'id' | 'name' | 'description' | 'is_alcohol_free'> & {
@@ -12,17 +13,22 @@ export type CocktailListItem = Pick<Cocktail, 'id' | 'name' | 'description' | 'i
 }
 
 /** Cocktail list via feed_cocktails() RPC: search name/description/ingredients, alcohol-free filter, sort. */
-export async function listCocktails({ q = '', alcoholFree = false, sort = 'newest', ing = '' }: { q?: string; alcoholFree?: boolean; sort?: string; ing?: string } = {}): Promise<CocktailListItem[]> {
+export async function listCocktails({ q = '', alcoholFree = false, sort = 'newest', ing = '', offset = 0, limit = PAGE_SIZE }: { q?: string; alcoholFree?: boolean; sort?: string; ing?: string; offset?: number; limit?: number } = {}): Promise<CocktailListItem[]> {
   const supabase = await createClient()
   if (!supabase) return []
   const term = q.trim().slice(0, 100)
   const ingTerm = ing.trim().slice(0, 40)
-  const { data, error } = await supabase.rpc('feed_cocktails', {
+  const top = sort === 'top'
+  let query = supabase.rpc('feed_cocktails', {
     q: term.replace(/[%_\\]/g, '') || null,
     alcohol_free: alcoholFree,
-    sort: sort === 'top' ? 'top' : 'newest',
+    sort: top ? 'top' : 'newest',
+    max_rows: RPC_MAX_ROWS,
     ing: ingTerm.replace(/[%_\\]/g, '') || null,
   })
+  // Repeat the RPC's order outside it so .range() offsets are stable across pages.
+  if (top) query = query.order('avg_rating', { ascending: false, nullsFirst: false }).order('rating_count', { ascending: false })
+  const { data, error } = await query.order('created_at', { ascending: false }).order('id', { ascending: false }).range(offset, offset + limit - 1)
   if (error) {
     console.error('feed_cocktails', error.message)
     return []

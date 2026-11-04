@@ -366,7 +366,7 @@
     background-color: #0F172A;
     border: 1px solid #334155;
     color: #F1F5F9;
-    font-size: 0.875rem;
+    font-size: 1rem; /* 16px: below this iOS Safari zooms the page on focus */
     line-height: 1.5;
     transition: all 0.2s ease;
     outline: none;

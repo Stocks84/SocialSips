@@ -77,8 +77,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false, // app-like feel on mobile
+  // No maximumScale / userScalable: pinch-zoom must stay available (WCAG 1.4.4 Resize Text).
+  // iOS focus-zoom is avoided instead by keeping form controls at 16px (see .input in globals.css).
   themeColor: [
     { media: '(prefers-color-scheme: dark)', color: '#0F172A' },
     { media: '(prefers-color-scheme: light)', color: '#0F172A' }, // always dark

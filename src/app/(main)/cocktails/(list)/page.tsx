@@ -2,6 +2,7 @@ import Link from 'next/link'
 import CocktailCard from '@/components/cocktails/CocktailCard'
 import CocktailFilters from '@/components/cocktails/CocktailFilters'
 import PageHeader from '@/components/ui/PageHeader'
+import EmptyState from '@/components/ui/EmptyState'
 import Pager from '@/components/ui/Pager'
 import { listCocktails } from '@/lib/queries/cocktails'
 import { PAGE_SIZE, RPC_MAX_ROWS } from '@/lib/paging'
@@ -26,6 +27,7 @@ export default async function CocktailsPage({ searchParams }: { searchParams: Pr
     const qs = s.toString()
     return qs ? `/cocktails?${qs}` : '/cocktails'
   }
+  const filtered = Boolean(q || ing || alcoholFree)
   return (
     <>
       <div className="flex items-start justify-between gap-4">
@@ -39,9 +41,19 @@ export default async function CocktailsPage({ searchParams }: { searchParams: Pr
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cocktails.map((c) => <CocktailCard key={c.id} {...c} />)}
       </div>
-      {cocktails.length === 0 && (page > 1
-        ? <p className="text-text-secondary">That&apos;s every recipe. <Link href={href(1)} className="text-accent-purple">Back to the start →</Link></p>
-        : <p className="text-text-secondary">No cocktails match. Try another search.</p>)}
+      {cocktails.length === 0 && (
+        page > 1 ? (
+          <EmptyState emoji="🍸" title="Last call. That's every recipe." action={{ href: href(1), label: 'Back to the start' }} testId="cocktails-end" />
+        ) : filtered ? (
+          <EmptyState emoji="🔍" title="No cocktails match." action={{ href: '/cocktails', label: 'Clear filters' }} testId="cocktails-empty">
+            Try another search or ingredient.
+          </EmptyState>
+        ) : (
+          <EmptyState emoji="🍹" title="The bar is empty." action={{ href: '/cocktails/new', label: '+ Add a cocktail' }} testId="cocktails-empty">
+            No recipes yet. Shake things up and add the first one.
+          </EmptyState>
+        )
+      )}
       <Pager
         label="More cocktails"
         prevHref={page > 1 ? href(page - 1) : null}

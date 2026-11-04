@@ -20,6 +20,7 @@ import HiddenNotice from '@/components/ui/HiddenNotice'
 import { createClient } from '@/lib/supabase/server'
 import { REACTIONS } from '@/lib/memes'
 import SubmitButton from '@/components/ui/SubmitButton'
+import EmptyState from '@/components/ui/EmptyState'
 
 export default async function ProfilePage({ params, searchParams }: { params: Promise<{ username: string }>; searchParams: Promise<{ saved?: string; followError?: string }> }) {
   const { username } = await params
@@ -90,7 +91,15 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
       {!result ? (
         <ComingSoon />
       ) : result.posts.length === 0 ? (
-        <p className="text-text-secondary text-sm">Nothing shared yet.</p>
+        result.isOwner ? (
+          <EmptyState emoji="🎲" title="Your shelf is looking dry." action={{ href: '/games/new', label: '+ Share your first game' }} testId="profile-empty">
+            Post a drinking game (or a cocktail) and it lives here for everyone to rate.
+          </EmptyState>
+        ) : (
+          <EmptyState emoji="🍹" title={`@${profile?.username ?? name} hasn't shared anything yet.`} action={{ href: '/feed', label: 'Browse the feed' }} testId="profile-empty">
+            Probably still picking the playlist. Check back later.
+          </EmptyState>
+        )
       ) : (
         <ul className="space-y-3" data-testid="profile-posts">
           {result.posts.map((p) => (

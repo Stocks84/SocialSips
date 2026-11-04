@@ -27,16 +27,26 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
   let name = username
   try { name = decodeURIComponent(username) } catch { /* already decoded */ }
   const supabase = await createClient()
-  const profile = supabase ? await getProfileByUsername(name) : null
-  if (supabase && !profile) notFound() // unknown usernames get a real 404, not a made-up profile
-  const [result, totals] = profile ? await Promise.all([getProfilePosts(profile.id), getProfileReactionTotals(profile.id)]) : [null, null]
-  const { userId: viewerId } = await getViewer()
-  const canBlock = Boolean(supabase && profile && viewerId && viewerId !== profile.id)
-  const [wins, counts, following] = profile ? await Promise.all([getUserWins(profile.id), getFollowCounts(profile.id), viewerId && viewerId !== profile.id ? isFollowing(viewerId, profile.id) : Promise.resolve(false)]) : [[], { followers: 0, following: 0 }, false]
-  const [blocking, notices] = await Promise.all([
-    canBlock ? isBlocking(viewerId!, profile!.id) : false,
-    result?.isOwner ? listModerationNotices(profile!.id) : [],
+  // Round 1: the profile and the viewer don't depend on each other.
+  const [profile, { userId: viewerId }] = await Promise.all([
+    supabase ? getProfileByUsername(name) : Promise.resolve(null),
+    getViewer(),
   ])
+  if (supabase && !profile) notFound() // unknown usernames get a real 404, not a made-up profile
+  const canBlock = Boolean(supabase && profile && viewerId && viewerId !== profile.id)
+  const isOwner = Boolean(profile && viewerId === profile.id) // same rule getProfilePosts uses
+  // Round 2: everything else only needs profile.id and viewerId, so fetch it all at once.
+  const [result, totals, wins, counts, following, blocking, notices] = profile
+    ? await Promise.all([
+      getProfilePosts(profile.id),
+      getProfileReactionTotals(profile.id),
+      getUserWins(profile.id),
+      getFollowCounts(profile.id),
+      canBlock ? isFollowing(viewerId!, profile.id) : Promise.resolve(false),
+      canBlock ? isBlocking(viewerId!, profile.id) : Promise.resolve(false),
+      isOwner ? listModerationNotices(profile.id) : Promise.resolve([]),
+    ])
+    : [null, null, [], { followers: 0, following: 0 }, false, false, []] as const
   const totalReactions = totals ? Object.values(totals).reduce((a, b) => a + b, 0) : 0
   return (
     <>

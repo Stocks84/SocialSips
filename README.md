@@ -1,92 +1,108 @@
 # 🍻 Social Sips
 
-A modern, fun **PWA** for 18–30 year olds to share drinking games and cocktails, rated by hangover severity. Dark, cool design: deep navy, neon purple, electric cyan and pink.
+A **PWA** for adults (18+) to share drinking games, cocktails and memes, rated by hangover severity. Dark neon look: deep navy, purple, cyan and pink.
 
-**Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS v4 · Supabase (auth, Postgres, storage)
+**Stack:** Next.js 15 (App Router, Server Components + Server Actions) · React 19 · TypeScript · Tailwind CSS v4 · Supabase (Auth, Postgres with RLS, Storage) · Zod · Playwright · hosted on Vercel (`fra1`).
 
-> **Status:** project skeleton. Every route renders with the neon theme and placeholder data; Supabase wiring is the next step.
+## Features
+
+- Age gate (18+) and terms acceptance before using the app
+- Feed of drinking games + memes (Everyone / Following tabs, search, hangover filter, top rated), paginated
+- Games and cocktails with ratings, comments and user variations; "What can I make?" ingredient matcher
+- Jokes & memes with emoji reactions; weekly challenge with winners
+- Profiles, follows, blocks, notifications, data export and account deletion
+- Moderation: reports (incl. a public DSA report form), hidden content with statements of reasons, admin pages
+- Legal pages (Impressum, privacy, terms) and a Help & Responsibility page
 
 ## Folder structure
 
 ```
 SocialSips/
-├── public/                    # Static assets served as-is
-│   ├── icons/                 # PWA + favicon icons (placeholders, replace with real art)
-│   ├── manifest.json          # PWA manifest (name, colours, icons, shortcuts)
-│   └── sw.js                  # Minimal service worker (offline shell, no plugin needed)
+├── public/                 # PWA manifest, icons, minimal service worker (sw.js)
 ├── supabase/
-│   ├── migrations/            # SQL schema: tables, hangover_rating enum, RLS, storage buckets
-│   └── seed.sql               # Fictional demo games + cocktails for local dev
+│   ├── migrations/         # Numbered SQL migrations (0001 … 0031): schema, RLS, grants, RPCs
+│   └── seed.sql            # Fictional demo content for local dev
+├── scripts/                # gen-types.mjs (DB types), cleanup-orphan-media.mjs (storage clean-up)
+├── e2e/                    # Playwright specs + notes (see e2e/README.md)
 ├── src/
-│   ├── app/                   # Next.js App Router
-│   │   ├── page.tsx           # Public landing page
-│   │   ├── layout.tsx         # Root layout: fonts, metadata, PWA tags, SW registration
-│   │   ├── globals.css        # Design tokens (@theme) + component classes (btn, card, badge…)
-│   │   ├── (auth)/            # Centered auth screens: sign-in, sign-up, age-gate
-│   │   ├── (main)/            # App shell with nav: feed, games, profile, memes, cocktails, help
-│   │   └── auth/callback/     # Supabase email/OAuth redirect handler
-│   ├── components/
-│   │   ├── ui/                # Generic building blocks (badges, headers, ratings)
-│   │   ├── layout/            # Top nav, mobile tab bar, footer, SW register
-│   │   ├── games/             # Game cards, filters, hangover picker
-│   │   ├── cocktails/         # Cocktail cards
-│   │   └── profile/           # Profile header
-│   ├── hooks/                 # Client hooks (useSupabase, useUser)
+│   ├── app/                # Routes: (auth), (legal), (main) app shell, auth/callback
+│   ├── components/         # UI building blocks by area (ui, games, cocktails, memes, profile, …)
 │   ├── lib/
-│   │   ├── supabase/          # Browser, server and middleware clients (@supabase/ssr)
-│   │   ├── validators/        # Zod schemas for forms (auth, games, comments)
-│   │   ├── age.ts             # 18+ helpers
-│   │   └── mock-data.ts       # Placeholder content until Supabase is connected
-│   ├── types/                 # DB types incl. HangoverRating
-│   └── middleware.ts          # Session refresh + age gate + auth protection
-├── tailwind.config.ts         # Extra Tailwind config (loaded from globals.css via @config)
-└── .env.example               # Env vars template (no secrets)
+│   │   ├── queries/        # Server-side Supabase reads
+│   │   ├── server/         # Server-only helpers (auth, throttle, uploads, pwned check, errors)
+│   │   ├── supabase/       # @supabase/ssr clients (server + middleware)
+│   │   └── validators/     # Zod schemas for every form
+│   ├── types/              # DB + domain types
+│   └── middleware.ts       # Session refresh, age gate, auth-only routes
+├── next.config.ts          # Security headers (CSP etc.) and image hosts
+└── .env.example            # Env var template (no secrets)
 ```
-
-### Routes
-
-| Route | Purpose | Access |
-|---|---|---|
-| `/` | Landing page | Public |
-| `/age-gate` | Date-of-birth check | Public |
-| `/sign-in`, `/sign-up` | Auth | Public |
-| `/help` | Help & Responsibility | Public |
-| `/feed` | Games feed with search + hangover filter | 18+ gate |
-| `/games/[id]` | Game page: rules, variations, comments, ratings | 18+ gate |
-| `/games/new` | Upload a game | 18+ gate + signed in |
-| `/profile/[username]` | Fun user profile | 18+ gate |
-| `/memes` | Jokes & Memes | 18+ gate |
-| `/cocktails`, `/cocktails/[id]` | Cocktail recipes | 18+ gate |
 
 ## Setup
 
-1. **Install:** `npm install` (Node 20+, Node 22 recommended)
-2. **Supabase project:** create a free project at [supabase.com](https://supabase.com).
-3. **Env:** `cp .env.example .env.local` and fill in the Project URL and anon key (Settings → API).
-4. **Database:** with the [Supabase CLI](https://supabase.com/docs/guides/cli): `supabase link --project-ref <ref>` then `supabase db push`. Or paste `supabase/migrations/0001_init.sql` into the SQL editor. For local dev, `supabase start && supabase db reset` also loads `seed.sql`.
+1. **Install:** `npm install` (Node 20+, Node 22 recommended).
+2. **Supabase:** create a project at [supabase.com](https://supabase.com) (free tier is fine).
+3. **Env:** `cp .env.example .env.local` and fill in the values (see below).
+4. **Database:** apply `supabase/migrations/` in order (see [Migrations](#migrations)), then set the shared secret once in the SQL editor:
+   ```sql
+   insert into private.app_config (key, value) values ('auth_throttle_secret', '<same value as AUTH_THROTTLE_SECRET>');
+   ```
 5. **Run:** `npm run dev` → http://localhost:3000
 
-**Uploads:** images are checked and re-encoded on the server (metadata such as GPS is stripped) and need `AUTH_THROTTLE_SECRET` set (same value as `private.app_config.auth_throttle_secret`); the browser can't write to Storage directly. Each user can upload 20 images / 40 MB per 24 h. To delete orphaned images (no post points at them, older than 1 h), run `SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/cleanup-orphan-media.mjs --dry-run` and then without `--dry-run`.
+Without Supabase env vars the app still builds and renders, with empty lists and no auth.
 
-The app builds and renders without Supabase configured (it falls back to mock data and skips auth checks).
+### Environment variables
+
+| Variable | Where | Purpose |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | app | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | app | Supabase anon (public) key; all access is limited by RLS |
+| `AUTH_THROTTLE_SECRET` | app, server-only | Shared secret for throttle/rate-limit RPCs and for signing the age and terms cookies. Must match `private.app_config.auth_throttle_secret`. Generate with `openssl rand -hex 32`. |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | scripts only | For `scripts/cleanup-orphan-media.mjs`. Never put the service role key in the app or in Vercel. |
+
+### Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Dev server |
+| `npm run build` / `npm start` | Production build / serve it |
+| `npm run lint` | ESLint |
+| `npx tsc --noEmit` | Type check |
+| `npm run test:e2e` | Playwright e2e suite (needs a running app) |
+| `npm run test:e2e:ui` | Playwright UI mode |
+| `npm run gen:types` | Regenerate `src/types/supabase.ts` from the migrations (uses a throwaway embedded Postgres) |
+
+**Orphaned uploads:** `SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/cleanup-orphan-media.mjs --dry-run`, then again without `--dry-run`. It deletes images no post points at that are older than 1 h.
+
+## Migrations
+
+- Migrations live in `supabase/migrations/` as `NNNN_description.sql`, applied in number order. Newer ones are wrapped in `begin; … commit;` and written to be safe to re-run where possible.
+- **Never edit an applied migration.** Add a new numbered file instead.
+- Workflow: write the file → dry-run it inside `BEGIN … ROLLBACK` against the project → apply (Supabase CLI `supabase db push`, the SQL editor, or the Supabase MCP `apply_migration`) → check the Supabase security and performance advisors.
+- After schema changes run `npm run gen:types`.
+
+## Tests
+
+```bash
+npx playwright install chromium   # once per machine
+npm run dev                       # in another terminal
+npm run test:e2e                  # or: BASE_URL=https://<preview>.vercel.app npm run test:e2e
+```
+
+Specs live in `e2e/specs/` (age gate, play tab). Tests use throwaway data only: never real user accounts, never real passwords. Date inputs must be filled as `YYYY-MM-DD`. More in [`e2e/README.md`](e2e/README.md).
+
+## Security
+
+- **Row Level Security** on every table. Guests (`anon`) can only read public, non-hidden content; writes need a signed-in user and are checked against `auth.uid()`. Server-owned columns (counters, report status) are forced on insert, and API roles have no `TRUNCATE`/`TRIGGER`/`REFERENCES`/`MAINTAIN` rights.
+- **Security headers** (`next.config.ts`): Content-Security-Policy (same origin + this Supabase project only, `frame-ancestors 'none'`, `object-src 'none'`), HSTS, `X-Frame-Options: DENY`, `nosniff`, strict Referrer-Policy, Permissions-Policy, COOP.
+- **Leaked-password check** on sign-up via [Have I Been Pwned](https://haveibeenpwned.com/API/v3#PwnedPasswords) k-anonymity: only the first 5 characters of the SHA-1 hash are sent (with padding), 3 s timeout, fails open (`src/lib/server/pwned.ts`). Any future password-reset flow should call `isPwnedPassword` too.
+- **Rate limits** in Postgres behind `AUTH_THROTTLE_SECRET`: sign-in throttling, per-user upload limits and a per-IP limit on the public report form.
+- **Uploads** are validated and re-encoded on the server (metadata such as GPS is stripped); the browser can't write to Storage directly. Limit: 20 images / 40 MB per user per 24 h.
+- **Signed cookies** for the age gate and terms acceptance; redirects go through `safePath()` so they can't point off-site.
 
 ## Deployment
 
-Supabase auth needs a server (middleware + server components), so **GitHub Pages can't host this**. Use **[Vercel](https://vercel.com)** (free hobby tier): import the repo and add the two env vars.
-
-## V1 roadmap
-
-- [x] Project structure, theme, nav, PWA manifest + service worker
-- [x] Database schema with RLS and storage buckets
-- [ ] Sign-up with age verification (18+)
-- [ ] Fun user profiles (avatar, bio, party vibe, favourite drink)
-- [ ] Main feed with search and filters
-- [ ] Upload drinking games with hangover rating (No Hangover · Mild Hangover · Two-Day Hangover)
-- [ ] Game pages with original rules and user variations
-- [ ] Comments and ratings
-- [ ] Jokes & Memes page
-- [ ] Cocktail recipes section
-- [ ] Help & Responsibility page (content in place, links to review)
+Hosted on **Vercel** (region `fra1`, next to the Supabase project in Frankfurt). Set the three app env vars in the Vercel project. Supabase auth needs a server, so static hosts like GitHub Pages won't work.
 
 ## 🙏 Drink responsibly
 

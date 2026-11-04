@@ -7,13 +7,13 @@ import {
 import { safePath } from '@/lib/safe-path'
 import { signAgeToken } from '@/lib/age-token'
 
-export type AgeGateState = { error?: string }
+export type AgeGateState = { error?: string; dob?: string }
 
 /** Server-side age check: validates the DOB and sets an httpOnly cookie (JS can't set or read it). */
 export async function verifyAge(_prev: AgeGateState, formData: FormData): Promise<AgeGateState> {
   const dob = String(formData.get('dob') ?? '')
   const age = ageFromDob(dob)
-  if (!Number.isFinite(age) || age > 120 || age < 0) return { error: 'Enter a valid date' }
+  if (!Number.isFinite(age) || age > 120 || age < 0) return { error: 'Enter a valid date', dob: dob.slice(0, 10) }
 
   const jar = await cookies()
   // Under-18 answer in the last 24h: no retry with another date (the action can be POSTed from any page).

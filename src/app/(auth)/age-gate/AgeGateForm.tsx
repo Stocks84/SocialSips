@@ -11,8 +11,8 @@ export default function AgeGateForm() {
     <form action={action} className="space-y-4">
       <input type="hidden" name="redirectTo" value={params.get('redirectTo') ?? ''} />
       <label className="label" htmlFor="dob">Date of birth</label>
-      <input id="dob" name="dob" type="date" required className="input" />
-      {state.error && <p className="error-msg">{state.error}</p>}
+      <input id="dob" name="dob" type="date" required className="input" autoComplete="bday" defaultValue={state.dob} aria-invalid={state.error ? true : undefined} aria-describedby={state.error ? 'dob-error' : undefined} />
+      {state.error && <p id="dob-error" className="error-msg" role="alert">{state.error}</p>}
       <button className="btn-primary w-full" disabled={pending}>{pending ? 'Checking…' : 'Let me in 🚀'}</button>
     </form>
   )

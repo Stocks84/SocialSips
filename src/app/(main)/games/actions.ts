@@ -8,6 +8,7 @@ import { removeImage, uploadImage } from '@/lib/server/uploads'
 import { fail, type FormState } from '@/lib/server/forms'
 import { fieldErrors, firstIssue } from '@/lib/validators/issues'
 import { gameSchema, splitList } from '@/lib/validators/game'
+import { failBack } from '@/lib/server/action-error'
 
 export type { FormState }
 
@@ -121,15 +122,15 @@ export async function updateGame(_prev: FormState, formData: FormData): Promise<
 
 export async function deleteGame(formData: FormData) {
   const auth = await requireUser()
-  if ('error' in auth) return
+  if ('error' in auth) return failBack(auth.error)
   const { supabase, user } = auth
   const gameId = String(formData.get('gameId'))
-  if (!UUID.test(gameId)) return
+  if (!UUID.test(gameId)) return failBack('Unknown game.')
   const { data: existing } = await supabase
     .from('games').select('author_id, cover_image_url').eq('id', gameId).maybeSingle()
-  if (!existing || existing.author_id !== user.id) return
+  if (!existing || existing.author_id !== user.id) return failBack('We couldn’t delete that. It may already be gone, or it’s not yours.')
   const { error } = await supabase.from('games').delete().eq('id', gameId).eq('author_id', user.id)
-  if (error) return
+  if (error) return failBack(friendlyError(error, 'deleteGame'))
   await removeCover(supabase, existing.cover_image_url)
   revalidatePath('/feed')
   redirect('/feed')

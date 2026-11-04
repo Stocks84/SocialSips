@@ -6,6 +6,7 @@ import { fail, type FormState } from '@/lib/server/forms'
 import { fieldErrors } from '@/lib/validators/issues'
 import { variationSchema } from '@/lib/validators/game'
 import { commentSchema, ratingSchema, reportSchema } from '@/lib/validators/comment'
+import { failBack } from '@/lib/server/action-error'
 
 export type { FormState }
 
@@ -43,31 +44,33 @@ export async function addComment(_prev: FormState, formData: FormData): Promise<
 }
 
 export async function deleteComment(formData: FormData) {
-  const auth = await requireUser()
-  if ('error' in auth) return
   const t = commentTarget(formData)
+  const auth = await requireUser()
+  if ('error' in auth) return failBack(auth.error, t.path)
   const commentId = String(formData.get('commentId'))
-  if (!UUID.test(commentId) || !UUID.test(t.id)) return
+  if (!UUID.test(commentId) || !UUID.test(t.id)) return failBack('Unknown comment.', t.path)
   // RLS only allows deleting your own; the author filter is belt and braces.
-  await auth.supabase.from('comments').delete().eq('id', commentId).eq('author_id', auth.user.id)
+  const { data, error } = await auth.supabase.from('comments').delete().eq('id', commentId).eq('author_id', auth.user.id).select('id')
+  if (error) return failBack(friendlyError(error, 'deleteComment'), t.path)
+  if (!data?.length) return failBack('We couldn’t delete that. It may already be gone, or it’s not yours.', t.path)
   revalidatePath(t.path)
 }
 
 export async function rate(formData: FormData) {
-  const auth = await requireUser()
-  if ('error' in auth) return
   const t = target(formData)
+  const auth = await requireUser()
+  if ('error' in auth) return failBack(auth.error, t.path)
   const parsed = ratingSchema.safeParse({ score: formData.get('score') })
   if (!parsed.success || !UUID.test(t.id)) {
     console.error('rate: invalid input', t.id, formData.get('score'))
-    return
+    return failBack('Pick 1 to 5 stars.', t.path)
   }
   const score = parsed.data.score
   const { error } =
     t.column === 'game_id'
       ? await auth.supabase.from('ratings').upsert({ user_id: auth.user.id, game_id: t.id, score }, { onConflict: 'user_id,game_id' })
       : await auth.supabase.from('ratings').upsert({ user_id: auth.user.id, cocktail_id: t.id, score }, { onConflict: 'user_id,cocktail_id' })
-  if (error) console.error('rate', error.message)
+  if (error) return failBack(friendlyError(error, 'rate'), t.path)
   revalidatePath(t.path)
   revalidatePath('/feed')
 }
@@ -100,12 +103,14 @@ export async function addVariation(_prev: FormState, formData: FormData): Promis
 }
 
 export async function deleteVariation(formData: FormData) {
-  const auth = await requireUser()
-  if ('error' in auth) return
   const t = variationTarget(formData)
+  const auth = await requireUser()
+  if ('error' in auth) return failBack(auth.error, t.path)
   const variationId = String(formData.get('variationId'))
-  if (!UUID.test(variationId) || !UUID.test(t.id)) return
-  await auth.supabase.from(t.table).delete().eq('id', variationId).eq('author_id', auth.user.id)
+  if (!UUID.test(variationId) || !UUID.test(t.id)) return failBack('Unknown variation.', t.path)
+  const { data, error } = await auth.supabase.from(t.table).delete().eq('id', variationId).eq('author_id', auth.user.id).select('id')
+  if (error) return failBack(friendlyError(error, 'deleteVariation'), t.path)
+  if (!data?.length) return failBack('We couldn’t delete that. It may already be gone, or it’s not yours.', t.path)
   revalidatePath(t.path)
 }
 

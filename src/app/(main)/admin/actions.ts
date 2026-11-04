@@ -9,6 +9,7 @@ import { variationSchema } from '@/lib/validators/game'
 import { friendlyError, NOT_SAVED } from '@/lib/server/errors'
 import { REPORT_REASONS } from '@/lib/validators/comment'
 import { fieldErrors, formValues, type EditState } from '@/lib/validators/issues'
+import { failBack } from '@/lib/server/action-error'
 
 /** Shared parse + admin check. Returns null if not allowed / bad input. */
 async function prep(formData: FormData) {
@@ -60,19 +61,20 @@ function maybeRedirect(formData: FormData) {
 
 export async function dismissReport(formData: FormData) {
   const auth = await requireAdmin()
-  if ('error' in auth) return
+  if ('error' in auth) return failBack(auth.error, '/admin/reports')
   const reportId = String(formData.get('reportId') ?? '')
-  if (!UUID.test(reportId)) return
-  await auth.supabase.from('reports').update({ status: 'dismissed', outcome: 'no_action', decided_at: new Date().toISOString() }).eq('id', reportId)
+  if (!UUID.test(reportId)) return failBack('Unknown report.', '/admin/reports')
+  const { error } = await auth.supabase.from('reports').update({ status: 'dismissed', outcome: 'no_action', decided_at: new Date().toISOString() }).eq('id', reportId)
+  if (error) return failBack(friendlyError(error, 'dismissReport'), '/admin/reports')
   revalidatePath('/admin/reports')
 }
 
 async function setHidden(formData: FormData, hidden: boolean) {
   const p = await prep(formData)
-  if (!p) return
+  if (!p) return failBack('Admins only, or that item no longer exists.', '/admin/reports')
   const row = hidden ? await targetRow(p) : null
   const { error } = await p.supabase.from(p.cfg.table).update({ is_hidden: hidden }).eq('id', p.targetId)
-  if (error) return
+  if (error) return failBack(friendlyError(error, hidden ? 'hideItem' : 'unhideItem'), '/admin/reports')
   if (hidden) {
     await recordNotice(p, formData, row)
     await closeReports(p, 'reviewed')
@@ -94,7 +96,7 @@ export async function unhideItem(formData: FormData) {
 
 export async function deleteItem(formData: FormData) {
   const p = await prep(formData)
-  if (!p) return
+  if (!p) return failBack('Admins only, or that item no longer exists.', '/admin/reports')
   let imageUrl: string | null = null
   let ownerId: string | null = null
   if (p.cfg.imageCol) {
@@ -105,7 +107,7 @@ export async function deleteItem(formData: FormData) {
   }
   const row = await targetRow(p)
   const { error } = await p.supabase.from(p.cfg.table).delete().eq('id', p.targetId)
-  if (error) return
+  if (error) return failBack(friendlyError(error, 'deleteItem'), '/admin/reports')
   await recordNotice(p, formData, row)
   // Only touch the owner's folder; if the author account is gone (null), admins may still clean up.
   if (p.cfg.bucket) await removeImage(p.supabase, p.cfg.bucket, imageUrl, ownerId ?? undefined)

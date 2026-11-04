@@ -7,6 +7,7 @@ import { removeImage, uploadImage } from '@/lib/server/uploads'
 import { cocktailSchema } from '@/lib/validators/cocktail'
 import { fail, type FormState } from '@/lib/server/forms'
 import { fieldErrors, firstIssue } from '@/lib/validators/issues'
+import { failBack } from '@/lib/server/action-error'
 
 function parseCocktail(formData: FormData) {
   const amounts = formData.getAll('ingredientAmount').map(String)
@@ -84,14 +85,14 @@ export async function updateCocktail(_prev: FormState, formData: FormData): Prom
 
 export async function deleteCocktail(formData: FormData) {
   const auth = await requireUser()
-  if ('error' in auth) return
+  if ('error' in auth) return failBack(auth.error, '/cocktails')
   const { supabase, user } = auth
   const id = String(formData.get('cocktailId'))
-  if (!UUID.test(id)) return
+  if (!UUID.test(id)) return failBack('Unknown cocktail.', '/cocktails')
   const { data: existing } = await supabase.from('cocktails').select('author_id, image_url').eq('id', id).maybeSingle()
-  if (!existing || existing.author_id !== user.id) return
+  if (!existing || existing.author_id !== user.id) return failBack('We couldn’t delete that. It may already be gone, or it’s not yours.', '/cocktails')
   const { error } = await supabase.from('cocktails').delete().eq('id', id).eq('author_id', user.id)
-  if (error) return
+  if (error) return failBack(friendlyError(error, 'deleteCocktail'), '/cocktails')
   await removeImage(supabase, 'cocktails', existing.image_url)
   revalidatePath('/cocktails')
   redirect('/cocktails')

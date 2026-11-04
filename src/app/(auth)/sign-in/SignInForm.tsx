@@ -6,6 +6,7 @@ import { safePath } from '@/lib/safe-path'
 
 export default function SignInForm() {
   const [state, action, pending] = useActionState<AuthState, FormData>(signIn, {})
+  const v = state.values // keep what was typed after an error (never the password)
   const params = useSearchParams()
   const redirectTo = safePath(params.get('redirectTo'))
   const linkError = params.get('error') === 'link' ? 'That sign-in link is invalid or has expired. Please sign in.' : null
@@ -14,14 +15,14 @@ export default function SignInForm() {
       <input type="hidden" name="redirectTo" value={redirectTo} />
       <div>
         <label className="label" htmlFor="email">Email</label>
-        <input id="email" name="email" type="email" className="input" required />
+        <input id="email" name="email" type="email" className="input" required autoComplete="email" inputMode="email" autoCapitalize="none" spellCheck={false} defaultValue={v?.email} />
       </div>
       <div>
         <label className="label" htmlFor="password">Password</label>
-        <input id="password" name="password" type="password" className="input" required />
+        <input id="password" name="password" type="password" className="input" required autoComplete="current-password" />
       </div>
       <label className="flex items-center gap-2 text-sm text-text-secondary">
-        <input type="checkbox" name="remember" value="1" defaultChecked className="accent-accent-purple" /> Keep me signed in
+        <input type="checkbox" name="remember" value="1" defaultChecked={v?.remember ?? true} className="accent-accent-purple" /> Keep me signed in
       </label>
       {!state.error && linkError && <p className="error-msg" role="alert">{linkError}</p>}
       {state.error && <p className="error-msg" role="alert">{state.error}</p>}

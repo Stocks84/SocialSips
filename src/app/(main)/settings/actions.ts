@@ -4,10 +4,12 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { requireUser, UUID } from '@/lib/server/auth'
 import { friendlyError, NOT_SAVED } from '@/lib/server/errors'
+import { safePath } from '@/lib/safe-path'
 import { removeImage, uploadImage } from '@/lib/server/uploads'
 import { fail, type EditState } from '@/lib/server/forms'
 import { fieldErrors } from '@/lib/validators/issues'
 import { profileSchema } from '@/lib/validators/profile'
+import { failBack } from '@/lib/server/action-error'
 
 /** Saves the signed-in user's display name, bio and avatar. RLS only lets a user update their own row. */
 export async function updateProfile(_prev: EditState, formData: FormData): Promise<EditState> {
@@ -40,19 +42,20 @@ export async function updateProfile(_prev: EditState, formData: FormData): Promi
 
 /** Block / unblock another user by id. RLS: only your own block rows. */
 export async function setBlock(formData: FormData) {
+  const back = safePath(formData.get('back'), '/settings/account')
   const auth = await requireUser()
-  if ('error' in auth) return
+  if ('error' in auth) return failBack(auth.error, back)
   const target = String(formData.get('userId') ?? '')
-  const back = String(formData.get('back') ?? '')
-  if (!UUID.test(target) || target === auth.user.id) return
+  if (!UUID.test(target) || target === auth.user.id) return failBack('You can’t block this account.', back)
   if (formData.get('block') === '1') {
     const { error } = await auth.supabase.from('blocks').insert({ blocker_id: auth.user.id, blocked_id: target })
-    if (error && error.code !== '23505') console.error('block', error.message)
+    if (error && error.code !== '23505') return failBack(friendlyError(error, 'block'), back)
   } else {
-    await auth.supabase.from('blocks').delete().eq('blocker_id', auth.user.id).eq('blocked_id', target)
+    const { error } = await auth.supabase.from('blocks').delete().eq('blocker_id', auth.user.id).eq('blocked_id', target)
+    if (error) return failBack(friendlyError(error, 'unblock'), back)
   }
   revalidatePath('/', 'layout')
-  if (back.startsWith('/') && !back.startsWith('//')) redirect(back)
+  redirect(back)
 }
 
 // ─── Delete account ──────────────────────────────────────────────────────────
@@ -103,8 +106,7 @@ export async function setFollow(formData: FormData) {
   const auth = await requireUser()
   if ('error' in auth) redirect('/sign-in')
   const target = String(formData.get('userId') ?? '')
-  const back = String(formData.get('back') ?? '')
-  const safeBack = back.startsWith('/') && !back.startsWith('//') ? back : '/feed'
+  const safeBack = safePath(formData.get('back'))
   if (!UUID.test(target) || target === auth.user.id) redirect(safeBack)
   let err = ''
   if (formData.get('follow') === '1') {

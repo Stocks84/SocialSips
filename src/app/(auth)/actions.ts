@@ -15,11 +15,26 @@ async function setRemember(remember: boolean) {
   ;(await cookies()).set(REMEMBER_COOKIE, remember ? '1' : '0', rememberCookieOptions(remember))
 }
 
-export type AuthState = { error?: string; message?: string }
+/** Echoed back on errors so the form keeps what the user typed (never the password). */
+export type AuthValues = {
+  email?: string; username?: string; dateOfBirth?: string
+  remember?: boolean; ageConfirmed?: boolean; termsAccepted?: boolean
+}
+export type AuthState = { error?: string; message?: string; values?: AuthValues }
+
+const str = (v: FormDataEntryValue | null, max = 320) => (typeof v === 'string' ? v.slice(0, max) : '')
 
 const NOT_CONFIGURED = 'Supabase is not configured. Add .env.local (see README).'
 
 export async function signUp(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const values: AuthValues = {
+    email: str(formData.get('email')),
+    username: str(formData.get('username'), 40).trim().toLowerCase(),
+    dateOfBirth: str(formData.get('dateOfBirth'), 10),
+    ageConfirmed: formData.get('ageConfirmed') === 'true',
+    termsAccepted: formData.get('termsAccepted') === 'true',
+  }
+  const fail = (error: string): AuthState => ({ error, values })
   const parsed = signUpSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
@@ -28,15 +43,15 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     ageConfirmed: formData.get('ageConfirmed') === 'true',
     termsAccepted: formData.get('termsAccepted') === 'true',
   })
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Check your details' }
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? 'Check your details')
 
   // Sign-up defaults to "keep me signed in"
   const supabase = await createClient({ remember: true })
-  if (!supabase) return { error: NOT_CONFIGURED }
+  if (!supabase) return fail(NOT_CONFIGURED)
 
   const { email, password, username, dateOfBirth } = parsed.data
   // Known-breached passwords are rejected (HIBP k-anonymity; fails open if the API is down).
-  if (await isPwnedPassword(password)) return { error: PWNED_PASSWORD_MESSAGE }
+  if (await isPwnedPassword(password)) return fail(PWNED_PASSWORD_MESSAGE)
   const origin = (await headers()).get('origin') ?? ''
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -48,14 +63,14 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   })
   if (error) {
     const msg = error.message
-    if (msg.includes('date_of_birth')) return { error: 'You must be 18 or over to join Social Sips.' }
-    if (msg.includes('Age confirmation')) return { error: 'Please confirm you are 18 or over.' }
-    if (msg.includes('Terms required')) return { error: 'Please accept the Terms of Use and Privacy Policy.' }
-    if (msg.includes('username') || msg.includes('duplicate')) return { error: 'That username is taken.' }
-    if (msg.includes('Database error')) return { error: 'Could not create your account. Try another username.' }
-    if (/password/i.test(msg)) return { error: 'Password is too weak. Use at least 8 characters.' }
+    if (msg.includes('date_of_birth')) return fail('You must be 18 or over to join Social Sips.')
+    if (msg.includes('Age confirmation')) return fail('Please confirm you are 18 or over.')
+    if (msg.includes('Terms required')) return fail('Please accept the Terms of Use and Privacy Policy.')
+    if (msg.includes('username') || msg.includes('duplicate')) return fail('That username is taken.')
+    if (msg.includes('Database error')) return fail('Could not create your account. Try another username.')
+    if (/password/i.test(msg)) return fail('Password is too weak. Use at least 8 characters.')
     console.error('signUp', msg)
-    return { error: 'Could not create your account. Please try again.' }
+    return fail('Could not create your account. Please try again.')
   }
   await setRemember(true)
   if (!data.session) return { message: 'Check your email to confirm your account 📬' }
@@ -66,22 +81,24 @@ const SIGN_IN_FAILED = 'Email or password is incorrect.'
 const THROTTLED = 'Too many sign-in attempts. Please wait 15 minutes and try again.'
 
 export async function signIn(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const values: AuthValues = { email: str(formData.get('email')), remember: formData.get('remember') === '1' }
+  const fail = (error: string): AuthState => ({ error, values })
   const parsed = signInSchema.safeParse({ email: formData.get('email'), password: formData.get('password') })
-  if (!parsed.success) return { error: 'Enter your email and password' }
+  if (!parsed.success) return fail('Enter your email and password')
   const remember = formData.get('remember') === '1'
   const supabase = await createClient({ remember })
-  if (!supabase) return { error: NOT_CONFIGURED }
+  if (!supabase) return fail(NOT_CONFIGURED)
   // DB-backed throttle (works across serverless instances): failures per IP and per (email, IP) pair,
   // so nobody can lock a victim's email out from their own IP.
   const ip = await clientIp()
   const keys = [`ip:${ip}`, `email-ip:${parsed.data.email.trim().toLowerCase()}|${ip}`]
-  if (!(await throttleOk(supabase, keys))) return { error: THROTTLED }
+  if (!(await throttleOk(supabase, keys))) return fail(THROTTLED)
   const { error } = await supabase.auth.signInWithPassword(parsed.data)
   if (error) {
-    if (error.code === 'email_not_confirmed') return { error: 'Please confirm your email first. Check your inbox 📬' }
-    if (error.status === 429) return { error: THROTTLED }
+    if (error.code === 'email_not_confirmed') return fail('Please confirm your email first. Check your inbox 📬')
+    if (error.status === 429) return fail(THROTTLED)
     await recordFailure(supabase, keys)
-    return { error: SIGN_IN_FAILED }
+    return fail(SIGN_IN_FAILED)
   }
   await setRemember(remember)
   const dest = safePath(formData.get('redirectTo'))

@@ -7,6 +7,7 @@ import { getBoard, getWinner } from '@/lib/queries/challenges'
 import { challengeEnd, challengeStatus, KIND_LABEL, weekLabel, type Challenge } from '@/lib/challenge'
 import { isOwnStorageUrl } from '@/lib/storage'
 import { enterChallenge, voteChallenge, withdrawEntry } from '@/app/(main)/challenge/actions'
+import SubmitButton from '@/components/ui/SubmitButton'
 
 /** Own memes / cocktail variations that can still be entered (visible, not already in this challenge). */
 async function eligible(c: Challenge, userId: string) {
@@ -69,14 +70,14 @@ export default async function ChallengeView({ c, current, error }: { c: Challeng
           ) : hasEntry ? (
             <form action={withdrawEntry} className="flex flex-wrap items-center gap-3 text-sm">{hidden}
               <span>✅ You&apos;re in! {mine ? `${mine.votes} vote${mine.votes === 1 ? '' : 's'} so far.` : '(Your entry is hidden by a moderator.)'}</span>
-              <button className="btn-ghost text-sm" data-testid="withdraw-entry">Withdraw entry</button>
+              <SubmitButton className="btn-ghost text-sm" data-testid="withdraw-entry" pendingLabel="Withdrawing…">Withdraw entry</SubmitButton>
             </form>
           ) : options.length ? (
             <form action={enterChallenge} className="flex flex-wrap items-end gap-3">{hidden}
               <label className="text-sm flex-1 min-w-[220px]">Enter one of your {c.kind === 'meme' ? 'memes' : 'cocktail variations'}
                 <select name="submissionId" className="input mt-1" required data-testid="entry-select">{options.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}</select>
               </label>
-              <button className="btn-primary" data-testid="enter-challenge">Enter challenge</button>
+              <SubmitButton className="btn-primary" data-testid="enter-challenge" pendingLabel="Entering…">Enter challenge</SubmitButton>
               <p className="w-full text-xs text-text-muted">One entry per person. Or <Link href={createHref} className="text-accent-purple">make a new one</Link>.</p>
             </form>
           ) : (
@@ -109,9 +110,9 @@ export default async function ChallengeView({ c, current, error }: { c: Challeng
                   {status === 'open' && userId && e.can_vote && (
                     <form action={voteChallenge}>{hidden}
                       <input type="hidden" name="entryId" value={e.my_vote ? '' : e.entry_id} />
-                      <button className={e.my_vote ? 'btn-primary text-sm py-1.5 px-3' : 'btn-secondary text-sm py-1.5 px-3'} data-testid={e.my_vote ? 'unvote' : 'vote'} aria-pressed={e.my_vote}>
+                      <SubmitButton className={e.my_vote ? 'btn-primary text-sm py-1.5 px-3' : 'btn-secondary text-sm py-1.5 px-3'} data-testid={e.my_vote ? 'unvote' : 'vote'} aria-pressed={e.my_vote} pendingLabel="Saving…">
                         {e.my_vote ? '✅ Your vote' : myVote ? 'Switch vote' : '👍 Vote'}
-                      </button>
+                      </SubmitButton>
                     </form>
                   )}
                   {status === 'open' && userId === e.user_id && <span className="text-xs text-text-muted">Your entry</span>}

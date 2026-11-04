@@ -7,6 +7,7 @@ import { getViewer } from '@/lib/server/viewer'
 import { REPORT_REASONS } from '@/lib/validators/comment'
 import { formatDate } from '@/lib/format'
 import { deleteAccount, setBlock } from '../actions'
+import SubmitButton from '@/components/ui/SubmitButton'
 
 export const metadata = { title: 'Account' }
 export const dynamic = 'force-dynamic'
@@ -43,7 +44,7 @@ export default async function AccountPage() {
             <li key={b.blocked_id} className="flex items-center justify-between gap-2 text-sm">
               <span>@{b.blocked?.username ?? 'deleted user'}</span>
               <form action={setBlock}><input type="hidden" name="userId" value={b.blocked_id} /><input type="hidden" name="block" value="0" /><input type="hidden" name="back" value="/settings/account" />
-                <button className="btn-secondary text-xs py-1 px-3" data-testid="unblock-btn">Unblock</button></form>
+                <SubmitButton className="btn-secondary text-xs py-1 px-3" data-testid="unblock-btn" pendingLabel="Unblocking…">Unblock</SubmitButton></form>
             </li>
           ))}</ul>
         )}

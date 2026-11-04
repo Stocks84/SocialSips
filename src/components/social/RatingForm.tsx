@@ -1,4 +1,5 @@
 import { rate } from '@/lib/actions/social'
+import SubmitButton, { PendingNote } from '@/components/ui/SubmitButton'
 
 /** 1–5 star buttons; each is its own submit (works without JS). */
 export default function RatingForm({ kind, targetId, myScore }: { kind: 'game' | 'cocktail'; targetId: string; myScore: number | null }) {
@@ -7,7 +8,7 @@ export default function RatingForm({ kind, targetId, myScore }: { kind: 'game' |
       <input type="hidden" name="kind" value={kind} />
       <input type="hidden" name="targetId" value={targetId} />
       {[1, 2, 3, 4, 5].map((n) => (
-        <button
+        <SubmitButton
           key={n}
           name="score"
           value={n}
@@ -15,9 +16,10 @@ export default function RatingForm({ kind, targetId, myScore }: { kind: 'game' |
           aria-label={`${n} star${n > 1 ? 's' : ''}`}
         >
           ★
-        </button>
+        </SubmitButton>
       ))}
       {myScore && <span className="text-text-secondary text-sm ml-2">You rated {myScore}/5</span>}
+      <PendingNote className="text-text-secondary text-sm ml-2" />
     </form>
   )
 }

@@ -3,6 +3,7 @@ import CocktailForm from '@/components/cocktails/CocktailForm'
 import PageHeader from '@/components/ui/PageHeader'
 import { getCocktailDetail } from '@/lib/queries/cocktails'
 import { deleteCocktail, updateCocktail } from '../../actions'
+import SubmitButton from '@/components/ui/SubmitButton'
 
 export const metadata = { title: 'Edit cocktail' }
 
@@ -23,7 +24,7 @@ export default async function EditCocktailPage({ params }: { params: Promise<{ i
         <label className="flex items-center gap-2 text-sm mb-4">
           <input type="checkbox" required className="accent-accent-pink" /> Yes, delete this cocktail
         </label>
-        <button className="btn-danger">Delete cocktail</button>
+        <SubmitButton className="btn-danger" pendingLabel="Deleting…">Delete cocktail</SubmitButton>
       </form>
     </>
   )

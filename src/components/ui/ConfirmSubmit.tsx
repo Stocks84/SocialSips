@@ -1,9 +1,11 @@
 'use client'
-/** Submit button that asks "Are you sure?" first (for irreversible actions like deleting). */
-export default function ConfirmSubmit({ message, className, children, label }: { message: string; className?: string; children: React.ReactNode; label?: string }) {
+import SubmitButton from './SubmitButton'
+
+/** Submit button that asks "Are you sure?" first (irreversible actions like deleting) and shows a pending state. */
+export default function ConfirmSubmit({ message, className, children, label, pendingLabel = 'Deleting…' }: { message: string; className?: string; children: React.ReactNode; label?: string; pendingLabel?: React.ReactNode }) {
   return (
-    <button className={className} aria-label={label} onClick={(e) => { if (!window.confirm(message)) e.preventDefault() }}>
+    <SubmitButton confirm={message} className={className} aria-label={label} pendingLabel={pendingLabel}>
       {children}
-    </button>
+    </SubmitButton>
   )
 }

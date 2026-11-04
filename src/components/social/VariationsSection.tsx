@@ -9,6 +9,7 @@ import SignInPrompt from './SignInPrompt'
 import HiddenNotice from '@/components/ui/HiddenNotice'
 import type { VariationRow } from '@/lib/queries/social'
 import { formatDate } from '@/lib/format'
+import ConfirmSubmit from '@/components/ui/ConfirmSubmit'
 
 type Props = { kind: 'game' | 'cocktail'; targetId: string; variations: VariationRow[]; userId: string | null; path: string; isAdmin?: boolean; locked?: boolean }
 
@@ -26,7 +27,7 @@ export default function VariationsSection({ kind, targetId, variations, userId, 
                 <input type="hidden" name="kind" value={kind} />
                 <input type="hidden" name="targetId" value={targetId} />
                 <input type="hidden" name="variationId" value={v.id} />
-                <button className="text-xs text-text-muted hover:text-accent-pink">Delete</button>
+                <ConfirmSubmit message="Delete this variation? There's no undo." className="text-xs text-text-muted hover:text-accent-pink" label="Delete variation">Delete</ConfirmSubmit>
               </form>
             ) : userId ? (
               <ReportButton targetType={kind === 'game' ? 'variation' : 'cocktail_variation'} targetId={v.id} />

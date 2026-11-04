@@ -6,6 +6,7 @@ import { getViewer } from '@/lib/server/viewer'
 import { resolveTargets, TARGETS, type TargetType } from '@/lib/server/moderation'
 import { formatDate } from '@/lib/format'
 import { deleteItem, unhideItem } from '../actions'
+import SubmitButton from '@/components/ui/SubmitButton'
 
 export const metadata = { title: 'Hidden items', robots: { index: false } }
 export const dynamic = 'force-dynamic'
@@ -49,8 +50,8 @@ export default async function AdminHiddenPage() {
               </div>
               <p className="text-sm">{resolved[i].preview}</p>
               <div className="flex gap-2 mt-4">
-                <form action={unhideItem}>{fields}<button className="btn-secondary text-sm py-2 px-4">Unhide</button></form>
-                <form action={deleteItem}>{fields}<button className="btn-danger text-sm py-2 px-4">Delete</button></form>
+                <form action={unhideItem}>{fields}<SubmitButton className="btn-secondary text-sm py-2 px-4" pendingLabel="Unhiding…">Unhide</SubmitButton></form>
+                <form action={deleteItem}>{fields}<SubmitButton className="btn-danger text-sm py-2 px-4" confirm="Delete this item permanently?" pendingLabel="Deleting…">Delete</SubmitButton></form>
               </div>
             </div>
           )

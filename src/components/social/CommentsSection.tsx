@@ -8,6 +8,7 @@ import SignInPrompt from './SignInPrompt'
 import HiddenNotice from '@/components/ui/HiddenNotice'
 import type { CommentRow } from '@/lib/queries/social'
 import { formatDate } from '@/lib/format'
+import ConfirmSubmit from '@/components/ui/ConfirmSubmit'
 
 type Props = { kind: 'game' | 'cocktail' | 'meme'; targetId: string; comments: CommentRow[]; userId: string | null; path: string; isAdmin?: boolean; locked?: boolean }
 
@@ -24,7 +25,7 @@ export default function CommentsSection({ kind, targetId, comments, userId, path
                 <input type="hidden" name="kind" value={kind} />
                 <input type="hidden" name="targetId" value={targetId} />
                 <input type="hidden" name="commentId" value={c.id} />
-                <button className="hover:text-accent-pink" aria-label="Delete comment">Delete</button>
+                <ConfirmSubmit message="Delete this comment? There's no undo." className="hover:text-accent-pink" label="Delete comment">Delete</ConfirmSubmit>
               </form>
             ) : userId ? (
               <ReportButton targetType="comment" targetId={c.id} />

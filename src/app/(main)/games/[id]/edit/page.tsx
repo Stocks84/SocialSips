@@ -3,6 +3,7 @@ import GameForm from '@/components/games/GameForm'
 import PageHeader from '@/components/ui/PageHeader'
 import { getGameDetail } from '@/lib/queries/games'
 import { deleteGame, updateGame } from '../../actions'
+import SubmitButton from '@/components/ui/SubmitButton'
 
 export const metadata = { title: 'Edit game' }
 
@@ -29,7 +30,7 @@ export default async function EditGamePage({ params }: { params: Promise<{ id: s
         <label className="flex items-center gap-2 text-sm mb-4">
           <input type="checkbox" required className="accent-accent-pink" /> Yes, delete this game
         </label>
-        <button className="btn-danger">Delete game</button>
+        <SubmitButton className="btn-danger" pendingLabel="Deleting…">Delete game</SubmitButton>
       </form>
     </>
   )

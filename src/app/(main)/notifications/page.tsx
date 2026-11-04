@@ -4,6 +4,7 @@ import { getViewer } from '@/lib/server/viewer'
 import { listNotifications } from '@/lib/queries/follows'
 import { notificationText } from '@/lib/notifications'
 import { markAllRead, markRead } from './actions'
+import SubmitButton from '@/components/ui/SubmitButton'
 
 export const metadata = { title: 'Notifications' }
 export const dynamic = 'force-dynamic'
@@ -24,7 +25,7 @@ export default async function NotificationsPage() {
   return (
     <>
       <PageHeader emoji="🔔" title="Notifications" subtitle={unread ? `${unread} unread` : 'You’re all caught up.'} />
-      {unread > 0 && <form action={markAllRead} className="mb-4"><button className="btn-secondary text-sm" data-testid="mark-all-read">Mark all as read</button></form>}
+      {unread > 0 && <form action={markAllRead} className="mb-4"><SubmitButton className="btn-secondary text-sm" data-testid="mark-all-read" pendingLabel="Marking…">Mark all as read</SubmitButton></form>}
       {items.length === 0 ? <p className="card-glass p-6 text-center text-text-secondary" data-testid="no-notifications">Nothing yet. Follow people and post something!</p> : (
         <ul className="space-y-2" data-testid="notifications">
           {items.map((n) => {
@@ -37,7 +38,7 @@ export default async function NotificationsPage() {
                   <span className="block text-sm break-words">{t.text}</span>
                   <span className="block text-xs text-text-muted mt-1">{ago(n.updated_at)}</span>
                 </a>
-                {!n.read_at && <form action={markRead}><input type="hidden" name="id" value={n.id} /><button className="text-xs text-text-secondary hover:text-accent-cyan" aria-label="Mark as read" data-testid="mark-read">● Mark read</button></form>}
+                {!n.read_at && <form action={markRead}><input type="hidden" name="id" value={n.id} /><SubmitButton className="text-xs text-text-secondary hover:text-accent-cyan" aria-label="Mark as read" data-testid="mark-read" pendingLabel="Marking…">● Mark read</SubmitButton></form>}
               </li>
             )
           })}

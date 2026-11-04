@@ -5,6 +5,7 @@ import { getViewer } from '@/lib/server/viewer'
 import { getCurrentChallenge, listChallenges } from '@/lib/queries/challenges'
 import { KIND_LABEL, weekLabel } from '@/lib/challenge'
 import { deleteChallenge, scheduleChallenge } from './actions'
+import SubmitButton from '@/components/ui/SubmitButton'
 
 export const metadata = { title: 'Challenges · Admin' }
 export const dynamic = 'force-dynamic'
@@ -45,7 +46,7 @@ export default async function AdminChallengesPage({ searchParams }: { searchPara
           <label className="text-sm sm:col-span-2">Description (optional)
             <textarea name="description" rows={3} maxLength={500} className="input mt-1" placeholder="What should people make?" />
           </label>
-          <button className="btn-primary sm:col-span-2 justify-self-start" data-testid="schedule-btn">Schedule</button>
+          <SubmitButton className="btn-primary sm:col-span-2 justify-self-start" data-testid="schedule-btn" pendingLabel="Scheduling…">Schedule</SubmitButton>
         </form>
       </section>
       <h2 className="font-bold mb-3">Scheduled</h2>
@@ -53,7 +54,7 @@ export default async function AdminChallengesPage({ searchParams }: { searchPara
         <ul className="space-y-2" data-testid="scheduled-list">{upcoming.map((u) => (
           <li key={u.id} className="card p-4 flex flex-wrap items-center justify-between gap-3 text-sm">
             <span><strong>{u.theme}</strong> · {KIND_LABEL[u.kind]} · {weekLabel(u.starts_on)}</span>
-            <form action={deleteChallenge}><input type="hidden" name="id" value={u.id} /><button className="btn-ghost text-sm" data-testid="delete-challenge">Remove</button></form>
+            <form action={deleteChallenge}><input type="hidden" name="id" value={u.id} /><SubmitButton className="btn-ghost text-sm" data-testid="delete-challenge" confirm="Remove this scheduled challenge?" pendingLabel="Removing…">Remove</SubmitButton></form>
           </li>))}</ul>
       )}
     </>

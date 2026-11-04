@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { LEGAL } from '@/lib/legal'
 import { signOut } from '@/app/(auth)/actions'
 import AcceptForm from './AcceptForm'
+import SubmitButton from '@/components/ui/SubmitButton'
 
 export const metadata = { title: 'Accept the Terms', robots: { index: false } }
 export const dynamic = 'force-dynamic'
@@ -26,7 +27,7 @@ export default async function AcceptTermsPage({ searchParams }: { searchParams: 
         </p>
         <AcceptForm next={safe} />
         <div className="border-t border-border pt-4 flex flex-wrap items-center gap-4 text-sm text-text-secondary">
-          <form action={signOut}><button className="btn-ghost text-sm" data-testid="accept-signout">Sign out</button></form>
+          <form action={signOut}><SubmitButton className="btn-ghost text-sm" data-testid="accept-signout" pendingLabel="Signing out…">Sign out</SubmitButton></form>
           <Link href="/settings/account" className="hover:text-accent-cyan" data-testid="accept-account">Don’t agree? Download your data or delete your account</Link>
         </div>
       </div>

@@ -9,6 +9,7 @@ import { REPORT_REASONS } from '@/lib/validators/comment'
 import { formatDate } from '@/lib/format'
 import { deleteItem, dismissReport, hideItem } from '../actions'
 import ModReasonFields from '@/components/admin/ModReasonFields'
+import SubmitButton from '@/components/ui/SubmitButton'
 
 export const metadata = { title: 'Reports', robots: { index: false } }
 export const dynamic = 'force-dynamic'
@@ -51,9 +52,9 @@ export default async function AdminReportsPage() {
                 {hidden}
                 {t.exists && <ModReasonFields defaultReason={r.reason} />}
                 <div className="flex flex-wrap gap-2">
-                  <button formAction={dismissReport} formNoValidate className="btn-ghost text-sm" data-testid="report-dismiss">{t.exists ? 'Dismiss' : 'Close report'}</button>
-                  {t.exists && !t.hidden && <button formAction={hideItem} className="btn-secondary text-sm py-2 px-4" data-testid="report-hide">Hide item</button>}
-                  {t.exists && <button formAction={deleteItem} className="btn-danger text-sm py-2 px-4">Delete item</button>}
+                  <SubmitButton formAction={dismissReport} formNoValidate className="btn-ghost text-sm" data-testid="report-dismiss" pendingLabel="Closing…">{t.exists ? 'Dismiss' : 'Close report'}</SubmitButton>
+                  {t.exists && !t.hidden && <SubmitButton formAction={hideItem} className="btn-secondary text-sm py-2 px-4" data-testid="report-hide" pendingLabel="Hiding…">Hide item</SubmitButton>}
+                  {t.exists && <SubmitButton formAction={deleteItem} className="btn-danger text-sm py-2 px-4" confirm="Delete this item permanently?" pendingLabel="Deleting…">Delete item</SubmitButton>}
                 </div>
               </form>
             </div>

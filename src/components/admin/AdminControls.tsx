@@ -1,6 +1,7 @@
 import { deleteItem, hideItem } from '@/app/(main)/admin/actions'
 import type { TargetType } from '@/lib/server/moderation'
 import ModReasonFields from './ModReasonFields'
+import SubmitButton from '@/components/ui/SubmitButton'
 
 type Props = { type: TargetType; id: string; redirectTo?: string; compact?: boolean }
 
@@ -15,8 +16,8 @@ export default function AdminControls({ type, id, redirectTo }: Props) {
         {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
         <ModReasonFields />
         <div className="flex gap-2">
-          <button formAction={hideItem} className="btn-secondary text-xs py-1 px-3" data-testid="mod-hide">Hide</button>
-          <button formAction={deleteItem} className="btn-danger text-xs py-1 px-3" data-testid="mod-delete">Delete</button>
+          <SubmitButton formAction={hideItem} className="btn-secondary text-xs py-1 px-3" data-testid="mod-hide" pendingLabel="Hiding…">Hide</SubmitButton>
+          <SubmitButton formAction={deleteItem} className="btn-danger text-xs py-1 px-3" data-testid="mod-delete" confirm="Delete this item permanently?" pendingLabel="Deleting…">Delete</SubmitButton>
         </div>
       </form>
     </details>

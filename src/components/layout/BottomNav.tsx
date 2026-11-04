@@ -1,7 +1,13 @@
 'use client'
-import Link from 'next/link'
+import Link, { useLinkStatus } from 'next/link'
 import { usePathname } from 'next/navigation'
 import { navItems, adminNavItem } from './navItems'
+
+/** Small pulsing bar under the tapped tab while its route loads (instant feedback on slow networks). */
+function TabPending() {
+  const { pending } = useLinkStatus()
+  return <span aria-hidden="true" className={`mt-0.5 h-0.5 w-6 rounded-full ${pending ? 'bg-accent-purple animate-pulse' : 'bg-transparent'}`} />
+}
 
 /** Mobile app-style tab bar. */
 export default function BottomNav({ isAdmin = false }: { isAdmin?: boolean }) {
@@ -15,9 +21,10 @@ export default function BottomNav({ isAdmin = false }: { isAdmin?: boolean }) {
           const active = pathname.startsWith(i.href)
           return (
             <li key={i.href}>
-              <Link href={i.href} className={`flex flex-col items-center py-2 ${isAdmin ? 'text-[11px]' : 'text-xs'} ${active ? 'text-accent-purple' : 'text-text-secondary'}`}>
+              <Link href={i.href} aria-current={active ? 'page' : undefined} className={`flex flex-col items-center py-2 ${isAdmin ? 'text-[11px]' : 'text-xs'} ${active ? 'text-accent-purple' : 'text-text-secondary'}`}>
                 <span className="text-xl" aria-hidden="true">{i.emoji}</span>
                 <span className="max-w-full truncate px-0.5">{i.label}</span>
+                <TabPending />
               </Link>
             </li>
           )

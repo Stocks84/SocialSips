@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { signOut } from '@/app/(auth)/actions'
 import { getUnreadCount } from '@/lib/queries/follows'
+import SubmitButton from '@/components/ui/SubmitButton'
 
 /** Shows Sign in, or @username + Sign out, based on the server session. */
 export default async function AuthButton() {
@@ -18,7 +19,7 @@ export default async function AuthButton() {
       <Link href={`/profile/${username}`} className="btn-ghost text-sm" aria-label="Your profile"><span className="sm:hidden" aria-hidden="true">👤</span><span className="hidden sm:inline">@{username}</span></Link>
       <Link href="/settings/profile" className="btn-ghost text-sm" aria-label="Edit profile" title="Edit profile" data-testid="nav-edit-profile">⚙️</Link>
       <form action={signOut}>
-        <button className="btn-secondary text-sm py-2 px-3 sm:px-4 whitespace-nowrap">Sign out</button>
+        <SubmitButton className="btn-secondary text-sm py-2 px-3 sm:px-4 whitespace-nowrap" pendingLabel="Signing out…">Sign out</SubmitButton>
       </form>
     </div>
   )

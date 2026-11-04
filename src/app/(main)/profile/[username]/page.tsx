@@ -19,6 +19,7 @@ import ComingSoon from '@/components/ui/ComingSoon'
 import HiddenNotice from '@/components/ui/HiddenNotice'
 import { createClient } from '@/lib/supabase/server'
 import { REACTIONS } from '@/lib/memes'
+import SubmitButton from '@/components/ui/SubmitButton'
 
 export default async function ProfilePage({ params, searchParams }: { params: Promise<{ username: string }>; searchParams: Promise<{ saved?: string; followError?: string }> }) {
   const { username } = await params
@@ -55,7 +56,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
           <input type="hidden" name="back" value={`/profile/${profile!.username}`} />
           <input type="hidden" name="block" value={blocking ? '0' : '1'} />
           {blocking && <span className="text-sm text-text-secondary" data-testid="blocked-note">🚫 You&apos;ve blocked @{profile!.username}. You won&apos;t see their posts or comments, and they can&apos;t comment on yours.</span>}
-          <button className="btn-secondary text-sm py-1.5 px-3" data-testid={blocking ? 'unblock-btn' : 'block-btn'}>{blocking ? 'Unblock' : '🚫 Block'}</button>
+          <SubmitButton className="btn-secondary text-sm py-1.5 px-3" data-testid={blocking ? 'unblock-btn' : 'block-btn'} pendingLabel={blocking ? 'Unblocking…' : 'Blocking…'}>{blocking ? 'Unblock' : '🚫 Block'}</SubmitButton>
         </form>
       )}
       {wins.length > 0 && (

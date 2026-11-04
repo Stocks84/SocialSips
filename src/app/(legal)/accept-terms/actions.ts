@@ -3,12 +3,14 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { requireUser } from '@/lib/server/auth'
 import { LEGAL } from '@/lib/legal'
+import { safePath } from '@/lib/safe-path'
 import { signTermsToken, TERMS_COOKIE, termsCookieOptions } from '@/lib/terms-token'
 
 export type AcceptState = { error?: string }
+/** Same-site path only (safePath), and never back to /accept-terms itself (loop). */
 const safeNext = (v: FormDataEntryValue | null) => {
-  const s = String(v ?? '')
-  return s.startsWith('/') && !s.startsWith('//') && !s.startsWith('/accept-terms') ? s : '/feed'
+  const s = safePath(v)
+  return s.startsWith('/accept-terms') ? '/feed' : s
 }
 
 /** Records acceptance of the current version (server function; the columns aren't writable by users). */

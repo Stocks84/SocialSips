@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { notificationHref } from '@/lib/notifications'
 import type { NotificationRow } from '@/lib/queries/follows'
+import { safePath } from '@/lib/safe-path'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -19,5 +20,5 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   await supabase.rpc('mark_notifications_read', { p_ids: [id] })
   const n = { ...data, actor: Array.isArray(data.actor) ? data.actor[0] ?? null : data.actor } as unknown as NotificationRow
   const me = (user.user_metadata?.username as string | undefined) ?? ''
-  return NextResponse.redirect(new URL(notificationHref(n, me), req.url), 303)
+  return NextResponse.redirect(new URL(safePath(notificationHref(n, me), '/notifications'), req.url), 303)
 }

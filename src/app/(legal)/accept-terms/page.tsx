@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { LEGAL } from '@/lib/legal'
+import { safePath } from '@/lib/safe-path'
 import { signOut } from '@/app/(auth)/actions'
 import AcceptForm from './AcceptForm'
 import SubmitButton from '@/components/ui/SubmitButton'
@@ -15,7 +16,8 @@ export default async function AcceptTermsPage({ searchParams }: { searchParams: 
   const user = supabase ? (await supabase.auth.getUser()).data.user : null
   if (!user || !supabase) redirect('/sign-in')
   const { data: accepted } = await supabase.rpc('my_terms_version')
-  const safe = next.startsWith('/') && !next.startsWith('//') ? next : '/feed'
+  const safePathNext = safePath(next)
+  const safe = safePathNext.startsWith('/accept-terms') ? '/feed' : safePathNext
   if (accepted === LEGAL.termsVersion) redirect(safe)
   return (
     <div className="max-w-xl mx-auto">

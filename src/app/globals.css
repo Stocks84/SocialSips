@@ -41,14 +41,14 @@
   --color-border: #334155;
 
   /* Brand accents */
-  --color-accent-purple: #A855F7;
+  --color-accent-purple: #C084FC; /* purple-400: 6.8:1 on bg, 5.5:1 on surface (AA text) */
   --color-accent-cyan: #67E8F9;
   --color-accent-pink: #F472B6;
 
   /* Text hierarchy */
   --color-text-primary: #F1F5F9;
   --color-text-secondary: #94A3B8;
-  --color-text-muted: #475569;
+  --color-text-muted: #8794A8; /* 5.8:1 on bg, 4.8:1 on surface (AA); was #475569 = 1.9:1 */
 
   /* Named shadows */
   --shadow-neon-purple: 0 0 20px rgba(168, 85, 247, 0.35);
@@ -70,7 +70,7 @@
 :root {
   --background: #0F172A;
   --card: #1E293B;
-  --accent: #A855F7;
+  --accent: #C084FC;
   --accent-cyan: #67E8F9;
   --accent-pink: #F472B6;
   --border: #334155;
@@ -177,7 +177,7 @@
 
   /* Focus visible — keyboard users */
   :focus-visible {
-    outline: 2px solid #A855F7;
+    outline: 2px solid #C084FC;
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -205,7 +205,7 @@
     font-weight: 600;
     font-size: 0.875rem;
     line-height: 1;
-    background-color: #A855F7;
+    background-color: #9333EA; /* white text 5.4:1 (was #A855F7 = 4.0:1) */
     color: #ffffff;
     border: none;
     cursor: pointer;
@@ -215,7 +215,7 @@
     user-select: none;
   }
   .btn-primary:hover:not(:disabled) {
-    background-color: #9333ea;
+    background-color: #7E22CE;
     box-shadow: 0 0 24px rgba(168, 85, 247, 0.4);
     transform: scale(1.04);
   }
@@ -247,8 +247,8 @@
     user-select: none;
   }
   .btn-secondary:hover:not(:disabled) {
-    border-color: #A855F7;
-    color: #A855F7;
+    border-color: #C084FC;
+    color: #C084FC;
     transform: scale(1.04);
   }
   .btn-secondary:active:not(:disabled) { transform: scale(0.96); }
@@ -295,7 +295,7 @@
     transition: all 0.2s ease;
   }
   .btn-danger:hover:not(:disabled) {
-    background-color: #ef4444;
+    background-color: #b91c1c; /* darken on hover: white 6.5:1 (was #ef4444 = 3.8:1) */
     transform: scale(1.04);
   }
   .btn-danger:active:not(:disabled) { transform: scale(0.96); }
@@ -317,7 +317,7 @@
   }
   .btn-icon:hover {
     color: #F1F5F9;
-    border-color: #A855F7;
+    border-color: #C084FC;
   }
 
   /* ════════════════ CARDS ════════════════ */
@@ -364,7 +364,7 @@
     padding: 0.75rem 1rem;
     border-radius: 0.75rem;
     background-color: #0F172A;
-    border: 1px solid #334155;
+    border: 1px solid #64748B; /* 3.75:1 vs bg (WCAG 1.4.11 UI 3:1); was #334155 = 1.7:1 */
     color: #F1F5F9;
     font-size: 1rem; /* 16px: below this iOS Safari zooms the page on focus */
     line-height: 1.5;
@@ -372,9 +372,9 @@
     outline: none;
     appearance: none;
   }
-  .input::placeholder { color: #475569; }
+  .input::placeholder { color: #8794A8; }
   .input:focus {
-    border-color: #A855F7;
+    border-color: #C084FC;
     box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.12);
   }
   .input:disabled {
@@ -438,7 +438,7 @@
   /* Brand colour badges */
   .badge-purple {
     background-color: rgba(168, 85, 247, 0.15);
-    color: #A855F7;
+    color: #D8B4FE; /* 6.4:1 on the tinted badge */
     border: 1px solid rgba(168, 85, 247, 0.25);
   }
   .badge-cyan {
@@ -472,7 +472,7 @@
 
   /* Neon glow text */
   .text-neon-purple {
-    color: #A855F7;
+    color: #C084FC;
     text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
   }
   .text-neon-cyan {

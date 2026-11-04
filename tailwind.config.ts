@@ -12,7 +12,7 @@ import type { Config } from 'tailwindcss'
  * Colour palette:
  *   Background:     #0F172A  (deep navy)
  *   Surface/Cards:  #1E293B
- *   Accent Purple:  #A855F7  (neon purple — primary CTA)
+ *   Accent Purple:  #C084FC  (text/accents; CTA fill is #9333EA in .btn-primary for AA white text)
  *   Accent Cyan:    #67E8F9  (electric cyan — highlights)
  *   Accent Pink:    #F472B6  (warm pink — fun touches)
  */
@@ -29,14 +29,14 @@ const config: Config = {
         border: '#334155',
 
         // === Brand accents ===
-        'accent-purple': '#A855F7',
+        'accent-purple': '#C084FC',
         'accent-cyan': '#67E8F9',
         'accent-pink': '#F472B6',
 
         // === Text hierarchy ===
         'text-primary': '#F1F5F9',
         'text-secondary': '#94A3B8',
-        'text-muted': '#475569',
+        'text-muted': '#8794A8',
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],

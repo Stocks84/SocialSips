@@ -12,7 +12,7 @@ export default function RatingForm({ kind, targetId, myScore }: { kind: 'game' |
           key={n}
           name="score"
           value={n}
-          className={`text-2xl transition-colors ${myScore && n <= myScore ? 'text-accent-cyan' : 'text-text-muted hover:text-accent-cyan'}`}
+          className={`text-2xl transition-colors ${myScore && n <= myScore ? 'text-accent-cyan' : 'text-slate-500 hover:text-accent-cyan'}`}
           aria-label={`${n} star${n > 1 ? 's' : ''}`}
         >
           ★

@@ -19,7 +19,7 @@ export const LEGAL = {
   /** Version stored on profiles.accepted_terms_version at sign-up. Bump when the Terms/Privacy text changes. */
   termsVersion: '2026-10-19',
   /** Supabase project region, from the dashboard (Project Settings → General), e.g. 'EU (Frankfurt, eu-central-1)'. */
-  supabaseRegion: null as string | null,
+  supabaseRegion: 'EU (Frankfurt, eu-central-1)' as string | null,
   /** How long reports and moderation decisions are kept after a case closes, e.g. '12 months'. */
   reportRetention: null as string | null,
   /** Languages for contact (DSA Art. 12). */

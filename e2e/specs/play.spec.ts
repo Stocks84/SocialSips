@@ -36,6 +36,20 @@ test.describe('play', () => {
     await expect(nav).toContainText('Play')
   })
 
+  test('tab bar has a Games tab that does not highlight Feed', async ({ page }) => {
+    await passAgeGate(page)
+    await page.setViewportSize({ width: 360, height: 800 })
+    await page.goto('/games')
+    await expect(page).toHaveURL(/\/games$/)
+    const nav = page.locator('nav[aria-label="Tab bar"]')
+    const games = nav.locator('a[href="/games"]')
+    await expect(games).toBeVisible()
+    await expect(games).toContainText('Games')
+    await expect(games).toHaveAttribute('aria-current', 'page')
+    await expect(nav.locator('a[href="/feed"]')).not.toHaveAttribute('aria-current', 'page')
+    await expect(nav.locator('a[href="/games/new"]')).not.toHaveAttribute('aria-current', 'page')
+  })
+
   test('dice page rolls default two dice', async ({ page }) => {
     await passAgeGate(page)
     await page.goto('/play/dice')

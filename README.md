@@ -8,6 +8,7 @@ A **PWA** for adults (18+) to share drinking games, cocktails and memes, rated b
 
 - Age gate (18+) and terms acceptance before using the app
 - Feed of drinking games + memes (Everyone / Following tabs, search, hangover filter, top rated), paginated
+- Games browse page (search, hangover filter, top rated, paginated), plus a Games tab in the nav so they are not buried in the feed
 - Games and cocktails with ratings, comments and user variations; "What can I make?" ingredient matcher
 - Jokes & memes with emoji reactions; weekly challenge with winners
 - Profiles, follows, blocks, notifications, data export and account deletion

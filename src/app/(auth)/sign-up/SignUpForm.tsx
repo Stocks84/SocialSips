@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { useActionState } from 'react'
+import Turnstile from '@/components/ui/Turnstile'
 import { signUp, type AuthState } from '../actions'
 
 const USERNAME_HINT = '3–20 characters: lowercase letters, numbers or _'
@@ -55,6 +56,7 @@ export default function SignUpForm() {
         <input type="checkbox" name="termsAccepted" value="true" required defaultChecked={v?.termsAccepted} className="mt-1 accent-accent-purple" data-testid="terms-checkbox" />
         <span>I accept the <Link href="/terms" target="_blank" className="text-accent-purple underline">Terms of Use</Link> and have read the <Link href="/privacy" target="_blank" className="text-accent-purple underline">Privacy Policy</Link>.</span>
       </label>
+      <Turnstile resetKey={state} action="sign-up" />
       {state.error && <p className="error-msg" role="alert">{state.error}</p>}
       <button className="btn-primary w-full" disabled={pending}>{pending ? 'Creating…' : 'Create account'}</button>
     </form>

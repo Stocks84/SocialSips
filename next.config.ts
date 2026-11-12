@@ -10,7 +10,8 @@ const supabaseHost = (() => {
 })()
 
 // ── Security headers ──────────────────────────────────────────────────────────
-// Conservative CSP: everything same-origin except this project's Supabase (storage images, API).
+// Conservative CSP: everything same-origin except this project's Supabase (storage images, API)
+// and Cloudflare Turnstile (challenges.cloudflare.com).
 // script-src keeps 'unsafe-inline' because Next's App Router bootstraps with inline scripts and we
 // don't use per-request nonces (they'd force every page dynamic). It still blocks third-party
 // script hosts, plugins, framing, <base> hijacks and cross-site form posts.
@@ -18,14 +19,16 @@ const isDev = process.env.NODE_ENV !== 'production'
 const isVercelPreview = process.env.VERCEL_ENV === 'preview' // Vercel toolbar/comments on preview deploys only
 const supabaseOrigin = `https://${supabaseHost}`
 const vercelLive = isVercelPreview ? ['https://vercel.live'] : []
+// Cloudflare Turnstile (sign-up/sign-in CAPTCHA): script + challenge iframe.
+const turnstile = 'https://challenges.cloudflare.com'
 const csp = [
   `default-src 'self'`,
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} ${vercelLive.join(' ')}`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} ${turnstile} ${vercelLive.join(' ')}`,
   `style-src 'self' 'unsafe-inline' ${vercelLive.join(' ')}`,
   `img-src 'self' data: blob: ${supabaseOrigin} ${vercelLive.join(' ')}`,
   `font-src 'self' data: ${vercelLive.join(' ')}`,
-  `connect-src 'self' ${supabaseOrigin} wss://${supabaseHost}${isDev ? ' ws:' : ''}${isVercelPreview ? ' https://vercel.live wss://ws-us3.pusher.com' : ''}`,
-  `frame-src ${isVercelPreview ? 'https://vercel.live' : "'none'"}`,
+  `connect-src 'self' ${supabaseOrigin} ${turnstile} wss://${supabaseHost}${isDev ? ' ws:' : ''}${isVercelPreview ? ' https://vercel.live wss://ws-us3.pusher.com' : ''}`,
+  `frame-src ${turnstile} ${vercelLive.join(' ')}`,
   `worker-src 'self'`,
   `manifest-src 'self'`,
   `media-src 'self'`,

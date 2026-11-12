@@ -11,8 +11,9 @@ those in `ss-e2e` until a shared seed + fixtures layer exists. Do **not** copy
 
 ```bash
 npx playwright install chromium   # once per machine
-npm run dev                       # another terminal
-npm run test:e2e
+# another terminal; always-pass Turnstile test key so no real CAPTCHA challenge:
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA npm run build && npm start
+BASE_URL=http://localhost:3000 npm run test:e2e
 # or against a preview:
 BASE_URL=https://….vercel.app npm run test:e2e
 ```

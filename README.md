@@ -58,6 +58,7 @@ Without Supabase env vars the app still builds and renders, with empty lists and
 | `NEXT_PUBLIC_SUPABASE_URL` | app | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | app | Supabase anon (public) key; all access is limited by RLS |
 | `AUTH_THROTTLE_SECRET` | app, server-only | Shared secret for throttle/rate-limit RPCs and for signing the age and terms cookies. Must match `private.app_config.auth_throttle_secret`. Generate with `openssl rand -hex 32`. |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | app, public (optional) | Cloudflare Turnstile site key for the sign-up/sign-in CAPTCHA. Falls back to the production key in `src/lib/turnstile.ts`. Inlined at build time, so rebuild after changing it. The Turnstile **secret** lives only in Supabase Auth, never in the app. |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | scripts only | For `scripts/cleanup-orphan-media.mjs`. Never put the service role key in the app or in Vercel. |
 
 ### Scripts
@@ -85,24 +86,28 @@ Without Supabase env vars the app still builds and renders, with empty lists and
 
 ```bash
 npx playwright install chromium   # once per machine
-npm run dev                       # in another terminal
-npm run test:e2e                  # or: BASE_URL=https://<preview>.vercel.app npm run test:e2e
+# Build with Cloudflare's always-pass Turnstile test key so tests never hit a real challenge:
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA npm run build && npm start   # in another terminal
+BASE_URL=http://localhost:3000 npm run test:e2e   # or: BASE_URL=https://<preview>.vercel.app npm run test:e2e
 ```
 
-Specs live in `e2e/specs/` (age gate, play tab). Tests use throwaway data only: never real user accounts, never real passwords. Date inputs must be filled as `YYYY-MM-DD`. More in [`e2e/README.md`](e2e/README.md).
+Specs live in `e2e/specs/` (age gate, play tab, CAPTCHA). Tests use throwaway data only: never real user accounts, never real passwords. Date inputs must be filled as `YYYY-MM-DD`. More in [`e2e/README.md`](e2e/README.md).
 
 ## Security
 
 - **Row Level Security** on every table. Guests (`anon`) can only read public, non-hidden content; writes need a signed-in user and are checked against `auth.uid()`. Server-owned columns (counters, report status) are forced on insert, and API roles have no `TRUNCATE`/`TRIGGER`/`REFERENCES`/`MAINTAIN` rights.
 - **Security headers** (`next.config.ts`): Content-Security-Policy (same origin + this Supabase project only, `frame-ancestors 'none'`, `object-src 'none'`), HSTS, `X-Frame-Options: DENY`, `nosniff`, strict Referrer-Policy, Permissions-Policy, COOP.
 - **Leaked-password check** on sign-up via [Have I Been Pwned](https://haveibeenpwned.com/API/v3#PwnedPasswords) k-anonymity: only the first 5 characters of the SHA-1 hash are sent (with padding), 3 s timeout, fails open (`src/lib/server/pwned.ts`). Any future password-reset flow should call `isPwnedPassword` too.
+- **CAPTCHA** (Cloudflare Turnstile) on sign-up and sign-in. The widget (`src/components/ui/Turnstile.tsx`) puts a single-use token in the form, the server actions pass it to Supabase as `options.captchaToken`, and Supabase Auth verifies it with the secret. The widget resets after every submit. Any new Supabase auth call that Supabase protects (`signUp`, `signInWithPassword`, `signInWithOtp`, `resetPasswordForEmail`, anonymous sign-in) must pass a token too, or it breaks once CAPTCHA is on.
 - **Rate limits** in Postgres behind `AUTH_THROTTLE_SECRET`: sign-in throttling, per-user upload limits and a per-IP limit on the public report form.
 - **Uploads** are validated and re-encoded on the server (metadata such as GPS is stripped); the browser can't write to Storage directly. Limit: 20 images / 40 MB per user per 24 h.
 - **Signed cookies** for the age gate and terms acceptance; redirects go through `safePath()` so they can't point off-site.
 
 ## Deployment
 
-Hosted on **Vercel** (region `fra1`, next to the Supabase project in Frankfurt). Set the three app env vars in the Vercel project. Supabase auth needs a server, so static hosts like GitHub Pages won't work.
+Hosted on **Vercel** (region `fra1`, next to the Supabase project in Frankfurt). Set the three app env vars in the Vercel project (plus `NEXT_PUBLIC_TURNSTILE_SITE_KEY` if you don't want the built-in fallback key).
+
+**CAPTCHA deploy order:** deploy the Turnstile widget first and check sign-in/sign-up work, *then* turn on CAPTCHA protection in Supabase Auth (Turnstile + secret key). The other way round, Supabase rejects every sign-in from the old build that sends no token. The Turnstile widget's hostnames in Cloudflare must include the production domain (and preview domains / `localhost` if you want the real key there). Supabase auth needs a server, so static hosts like GitHub Pages won't work.
 
 ## 🙏 Drink responsibly
 

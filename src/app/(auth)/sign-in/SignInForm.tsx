@@ -1,5 +1,6 @@
 'use client'
 import { useActionState } from 'react'
+import Turnstile from '@/components/ui/Turnstile'
 import { useSearchParams } from 'next/navigation'
 import { signIn, type AuthState } from '../actions'
 import { safePath } from '@/lib/safe-path'
@@ -24,6 +25,7 @@ export default function SignInForm() {
       <label className="flex items-center gap-2 text-sm text-text-secondary">
         <input type="checkbox" name="remember" value="1" defaultChecked={v?.remember ?? true} className="accent-accent-purple" /> Keep me signed in
       </label>
+      <Turnstile resetKey={state} action="sign-in" />
       {!state.error && linkError && <p className="error-msg" role="alert">{linkError}</p>}
       {state.error && <p className="error-msg" role="alert">{state.error}</p>}
       <button className="btn-primary w-full" disabled={pending}>{pending ? 'Signing in…' : 'Sign in'}</button>

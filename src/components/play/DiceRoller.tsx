@@ -128,13 +128,13 @@ export default function DiceRoller() {
   return (
     <div className="space-y-6">
       {/* Dice + roll */}
-      <div className="card-glass p-6 flex flex-col items-center gap-6">
+      <div className="card p-6 flex flex-col items-center gap-6">
         <div className="flex flex-wrap justify-center gap-4 min-h-24" data-testid="dice" data-values={values.join(',')}>
           {(values.length ? values : Array.from({ length: diceCount }, () => 0)).map((v, i) =>
             v ? (
               <Die key={i} value={v} rolling={rolling} highlight={Boolean(showMexican && score.kind !== 'mixed')} />
             ) : (
-              <div key={i} aria-hidden="true" className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border-2 border-dashed border-border flex items-center justify-center text-3xl ${rolling ? 'animate-dice-shake' : ''}`}>🎲</div>
+              <div key={i} aria-hidden="true" className={`w-20 h-20 sm:w-24 sm:h-24 rounded-sm border-2 border-dashed border-rule flex items-center justify-center text-3xl ${rolling ? 'animate-dice-shake' : ''}`}>🎲</div>
             ),
           )}
         </div>
@@ -142,26 +142,26 @@ export default function DiceRoller() {
         <div aria-live="polite" aria-atomic="true" className="text-center min-h-16" data-testid="dice-result">
           {values.length > 0 && !rolling && (
             showMexican ? (
-              <div className="animate-slide-up">
+              <div>
                 {score.kind === 'mexican' ? (
-                  <p className="text-4xl sm:text-5xl font-black gradient-text-warm mexican-celebrate">🎉 Mexican! 🎉</p>
+                  <p className="text-4xl sm:text-5xl font-bold text-ink mexican-celebrate">Mexican!</p>
                 ) : (
-                  <p className="text-4xl sm:text-5xl font-black gradient-text">{score.value}</p>
+                  <p className="text-4xl sm:text-5xl font-bold text-ink">{score.value}</p>
                 )}
-                <p className="text-text-secondary text-sm mt-1">
+                <p className="text-ink-2 text-sm mt-1">
                   {score.kind === 'mexican' ? 'The best roll there is. Beats everything.' : score.kind === 'double' ? `${score.label}. Beats every mixed roll.` : 'Mixed roll, higher die first.'}
-                  {' '}<span className="badge badge-purple ml-1">Rank {score.rank} of 21</span>
+                  {' '}<span className="chip ml-1">Rank {score.rank} of 21</span>
                 </p>
                 {vsLast !== null && lastScore && (
-                  <p className="text-text-muted text-xs mt-2">
+                  <p className="text-ink-3 text-xs mt-2">
                     {vsLast > 0 ? 'Beats' : vsLast < 0 ? 'Loses to' : 'Ties with'} the last roll ({lastScore.kind === 'mexican' ? 'Mexican' : lastScore.value})
                   </p>
                 )}
               </div>
             ) : (
-              <div className="animate-slide-up">
-                <p className="text-4xl font-black gradient-text">{values.length === 1 ? values[0] : total}</p>
-                {values.length > 1 && <p className="text-text-secondary text-sm">Total of {values.join(' + ')}</p>}
+              <div>
+                <p className="text-4xl font-bold text-ink">{values.length === 1 ? values[0] : total}</p>
+                {values.length > 1 && <p className="text-ink-2 text-sm">Total of {values.join(' + ')}</p>}
               </div>
             )
           )}
@@ -169,13 +169,13 @@ export default function DiceRoller() {
         </div>
 
         <button type="button" onClick={roll} disabled={rolling} className="btn-primary w-full max-w-xs py-5 text-lg" data-testid="roll">
-          {rolling ? 'Rolling…' : values.length ? '🎲 Roll again' : '🎲 Roll'}
+          {rolling ? 'Rolling…' : values.length ? 'Roll again' : 'Roll'}
         </button>
 
         {shakeSupported && (
           <div className="text-center">
             <button type="button" onClick={toggleShake} aria-pressed={shakeOn} className="btn-ghost text-sm">
-              📳 {shakeOn ? 'Shake to roll: on' : 'Turn on shake to roll'}
+              {shakeOn ? 'Shake to roll: on' : 'Turn on shake to roll'}
             </button>
             {shakeError && <p className="error-msg mt-1">{shakeError}</p>}
           </div>
@@ -187,7 +187,7 @@ export default function DiceRoller() {
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="font-semibold">Mexican mode</p>
-            <p className="text-text-secondary text-xs">Two dice, read high-low. 21 is top.</p>
+            <p className="text-ink-2 text-xs">Two dice, read high-low. 21 is top.</p>
           </div>
           <button
             type="button"
@@ -195,9 +195,9 @@ export default function DiceRoller() {
             aria-checked={mexican}
             aria-label="Mexican mode"
             onClick={() => changeMode(!mexican)}
-            className={`relative w-14 h-8 rounded-full transition-smooth border ${mexican ? 'bg-accent-purple border-accent-purple' : 'bg-surface-hover border-border'}`}
+            className={`relative w-14 h-8 rounded-full transition-colors border ${mexican ? 'bg-accent border-accent' : 'bg-raised border-rule'}`}
           >
-            <span className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-smooth ${mexican ? 'translate-x-6' : ''}`} />
+            <span className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-ink transition-[background-color,transform] ${mexican ? 'translate-x-6' : ''}`} />
           </button>
         </div>
         <div>
@@ -210,13 +210,13 @@ export default function DiceRoller() {
                 aria-pressed={diceCount === n}
                 disabled={mexican}
                 onClick={() => changeCount(n)}
-                className={`py-2 rounded-xl font-bold border transition-smooth disabled:opacity-40 disabled:cursor-not-allowed ${diceCount === n ? 'bg-accent-purple/20 border-accent-purple text-text-primary' : 'border-border text-text-secondary hover:text-text-primary'}`}
+                className={`py-2 rounded-sm font-bold border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${diceCount === n ? 'bg-raised border-accent text-ink' : 'border-rule text-ink-2 hover:text-ink'}`}
               >
                 {n}
               </button>
             ))}
           </div>
-          {mexican && <p className="text-text-muted text-xs mt-2">Mexican always uses 2 dice.</p>}
+          {mexican && <p className="text-ink-3 text-xs mt-2">Mexican always uses 2 dice.</p>}
         </div>
       </div>
 
@@ -229,18 +229,18 @@ function MexicanRules() {
   return (
     <details className="card p-4 text-sm" open>
       <summary className="font-semibold cursor-pointer">How Mexican scoring works</summary>
-      <ul className="mt-3 space-y-2 text-text-secondary list-disc pl-5">
-        <li>Roll two dice and read the <strong className="text-text-primary">higher die first</strong>: 3 and 1 is 31, 6 and 4 is 64.</li>
-        <li>Mixed rolls rank by that number, so <strong className="text-text-primary">31 is the lowest</strong> and 65 the highest.</li>
-        <li><strong className="text-text-primary">Doubles beat every mixed roll</strong>: 11 &lt; 22 &lt; 33 &lt; 44 &lt; 55 &lt; 66.</li>
-        <li><strong className="text-text-primary">21 is Mexican</strong>, the best roll of all.</li>
+      <ul className="mt-3 space-y-2 text-ink-2 list-disc pl-5">
+        <li>Roll two dice and read the <strong className="text-ink">higher die first</strong>: 3 and 1 is 31, 6 and 4 is 64.</li>
+        <li>Mixed rolls rank by that number, so <strong className="text-ink">31 is the lowest</strong> and 65 the highest.</li>
+        <li><strong className="text-ink">Doubles beat every mixed roll</strong>: 11 &lt; 22 &lt; 33 &lt; 44 &lt; 55 &lt; 66.</li>
+        <li><strong className="text-ink">21 is Mexican</strong>, the best roll of all.</li>
       </ul>
-      <p className="mt-3 text-text-secondary">
-        <strong className="text-text-primary">Common ways to play:</strong> everyone rolls once and the lowest roll drinks (a Mexican often doubles it), or
+      <p className="mt-3 text-ink-2">
+        <strong className="text-ink">Common ways to play:</strong> everyone rolls once and the lowest roll drinks (a Mexican often doubles it), or
         play it as a bluffing game (Mäxchen): roll in secret, announce a score that beats the last one, true or not, and the next player either believes you or calls the bluff.
       </p>
-      <p className="mt-2 text-text-muted text-xs">Lots of house variants exist (how many rolls you get, what a Mexican costs, special rolls), so agree the rules before you start.</p>
-      <p className="mt-1 text-text-muted text-xs">Ranking, best first: 21 · 66 · 55 · 44 · 33 · 22 · 11 · 65 · 64 · 63 · 62 · 61 · 54 · 53 · 52 · 51 · 43 · 42 · 41 · 32 · 31</p>
+      <p className="mt-2 text-ink-3 text-xs">Lots of house variants exist (how many rolls you get, what a Mexican costs, special rolls), so agree the rules before you start.</p>
+      <p className="mt-1 text-ink-3 text-xs">Ranking, best first: 21 · 66 · 55 · 44 · 33 · 22 · 11 · 65 · 64 · 63 · 62 · 61 · 54 · 53 · 52 · 51 · 43 · 42 · 41 · 32 · 31</p>
     </details>
   )
 }

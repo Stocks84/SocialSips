@@ -14,18 +14,19 @@ import {
 export const navItems = [
   { href: '/feed', label: 'Feed', icon: faNewspaper },
   { href: '/games', label: 'Games', icon: faBeerMugEmpty }, // Font Awesome Free has no spade
-  { href: '/cocktails', label: 'Cocktails', icon: faMartiniGlassCitrus },
+  { href: '/cocktails', label: 'Cocktails', tabLabel: 'Drinks', icon: faMartiniGlassCitrus },
   { href: '/games/new', label: 'Add', icon: faPlus },
   { href: '/memes', label: 'Memes', icon: faFaceGrinSquintTears },
   { href: '/play', label: 'Play', icon: faDice },
-  { href: '/challenge', label: 'Challenge', icon: faTrophy },
+  { href: '/challenge', label: 'Challenge', tabLabel: 'Dares', icon: faTrophy },
   { href: '/help', label: 'Help', icon: faCircleQuestion }, // desktop top nav only; filtered out of the tab bar
 ] as const
 
 /** Only rendered when the server says the viewer is an admin (getViewer().isAdmin). */
 export const adminNavItem = { href: '/admin', label: 'Admin', icon: faShieldHalved } as const
 
-export type NavItem = { href: string; label: string; icon: IconDefinition }
+/** `tabLabel` is a shorter label for the mobile tab bar (fits at 360px); the desktop nav uses `label`. */
+export type NavItem = { href: string; label: string; tabLabel?: string; icon: IconDefinition }
 
 /**
  * A tab is active if the path is that tab's href or a child of it, unless a

@@ -54,10 +54,10 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
     return qs ? `/feed?${qs}` : '/feed'
   }
   const filtered = Boolean(q || hangover)
-  const tabCls = (on: boolean) => `px-4 py-1.5 rounded-full text-sm border ${on ? 'border-accent-purple text-accent-purple font-semibold' : 'border-border text-text-secondary hover:text-accent-cyan'}`
+  const tabCls = (on: boolean) => `px-4 py-1.5 rounded-sm text-sm border ${on ? 'border-accent text-ink font-semibold bg-raised' : 'border-line text-ink-2 hover:text-ink'}`
   return (
     <>
-      <PageHeader emoji="🎮" title="Drinking Games" subtitle="Fresh from the community, rated by hangover." />
+      <PageHeader title="Drinking Games" subtitle="Fresh from the community, rated by hangover." />
       <ChallengeBanner />
       <nav className="flex gap-2 mb-4" aria-label="Feed" data-testid="feed-tabs">
         <Link href="/feed" className={tabCls(!following)} aria-current={!following ? 'page' : undefined} data-testid="tab-everyone">Everyone</Link>
@@ -69,25 +69,25 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
       </div>
       {items.length === 0 && (
         paged ? (
-          <EmptyState emoji="🍺" title="That's the bottom of the barrel." action={{ href: href(), label: 'Back to the newest' }} testId="feed-end">
+          <EmptyState title="That's the bottom of the barrel." action={{ href: href(), label: 'Back to the newest' }} testId="feed-end">
             You&apos;ve scrolled past everything. Impressive stamina.
           </EmptyState>
         ) : following ? (
           userId ? (
-            <EmptyState emoji="👀" title="Quieter than a pub at 9am." action={{ href: '/feed', label: 'Browse everyone' }} testId="following-empty">
+            <EmptyState title="Quieter than a pub at 9am." action={{ href: '/feed', label: 'Browse everyone' }} testId="following-empty">
               Follow people from their profile and their games and memes show up here.
             </EmptyState>
           ) : (
-            <EmptyState emoji="🔒" title="Who are you following? Nobody, yet." action={{ href: '/sign-in?redirectTo=/feed?tab=following', label: 'Sign in' }} testId="following-empty">
+            <EmptyState title="Who are you following? Nobody, yet." action={{ href: '/sign-in?redirectTo=/feed?tab=following', label: 'Sign in' }} testId="following-empty">
               Sign in to see posts from people you follow.
             </EmptyState>
           )
         ) : filtered ? (
-          <EmptyState emoji="🔍" title="No games match that." action={{ href: '/feed', label: 'Clear filters' }} testId="feed-empty">
+          <EmptyState title="No games match that." action={{ href: '/feed', label: 'Clear filters' }} testId="feed-empty">
             Try another search or hangover level. Or invent the game yourself.
           </EmptyState>
         ) : (
-          <EmptyState emoji="🎲" title="The party hasn't started yet." action={{ href: '/games/new', label: '+ Share a game' }} testId="feed-empty">
+          <EmptyState title="The party hasn't started yet." action={{ href: '/games/new', label: '+ Share a game' }} testId="feed-empty">
             Nothing to play here so far. Be the legend who posts the first game.
           </EmptyState>
         )

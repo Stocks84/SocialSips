@@ -19,7 +19,7 @@ export default async function ChallengePage({ searchParams }: { searchParams: Pr
         <section className="mt-10" data-testid="past-challenges">
           <h2 className="text-xl font-bold mb-3">Past challenges</h2>
           <ul className="space-y-2">{past.map((p) => (
-            <li key={p.id}><Link href={`/challenge/${p.id}`} className="card card-hover p-4 flex justify-between gap-3"><span className="font-semibold">🏆 {p.theme}</span><span className="text-text-muted text-sm">{weekLabel(p.starts_on)}</span></Link></li>
+            <li key={p.id}><Link href={`/challenge/${p.id}`} className="card hover:bg-raised p-4 flex justify-between gap-3"><span className="font-semibold">{p.theme}</span><span className="text-ink-3 text-sm">{weekLabel(p.starts_on)}</span></Link></li>
           ))}</ul>
         </section>
       )}

@@ -55,10 +55,10 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
       <ProfileHeader username={profile?.username ?? name} displayName={profile?.display_name} bio={profile?.bio} avatarUrl={profile?.avatar_url} isOwner={Boolean(result?.isOwner)} />
       {profile && (
         <section className="mb-6 flex flex-wrap items-center gap-4 text-sm" data-testid="follow-bar">
-          <Link href={`/profile/${profile.username}/followers`} className="hover:text-accent-cyan" data-testid="followers-link"><strong data-testid="followers-count">{counts.followers}</strong> follower{counts.followers === 1 ? '' : 's'}</Link>
-          <Link href={`/profile/${profile.username}/following`} className="hover:text-accent-cyan" data-testid="following-link"><strong data-testid="following-count">{counts.following}</strong> following</Link>
+          <Link href={`/profile/${profile.username}/followers`} className="hover:text-ink" data-testid="followers-link"><strong data-testid="followers-count">{counts.followers}</strong> follower{counts.followers === 1 ? '' : 's'}</Link>
+          <Link href={`/profile/${profile.username}/following`} className="hover:text-ink" data-testid="following-link"><strong data-testid="following-count">{counts.following}</strong> following</Link>
           {canBlock && !blocking && <FollowButton userId={profile.id} username={profile.username} following={following} />}
-          {followError && <span role="alert" className="text-red-400" data-testid="follow-error">{followError.slice(0, 120)}</span>}
+          {followError && <span role="alert" className="text-danger" data-testid="follow-error">{followError.slice(0, 120)}</span>}
         </section>
       )}
       {canBlock && (
@@ -66,22 +66,22 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
           <input type="hidden" name="userId" value={profile!.id} />
           <input type="hidden" name="back" value={`/profile/${profile!.username}`} />
           <input type="hidden" name="block" value={blocking ? '0' : '1'} />
-          {blocking && <span className="text-sm text-text-secondary" data-testid="blocked-note">🚫 You&apos;ve blocked @{profile!.username}. You won&apos;t see their posts or comments, and they can&apos;t comment on yours.</span>}
-          <SubmitButton className="btn-secondary text-sm py-1.5 px-3" data-testid={blocking ? 'unblock-btn' : 'block-btn'} pendingLabel={blocking ? 'Unblocking…' : 'Blocking…'}>{blocking ? 'Unblock' : '🚫 Block'}</SubmitButton>
+          {blocking && <span className="text-sm text-ink-2" data-testid="blocked-note">You&apos;ve blocked @{profile!.username}. You won&apos;t see their posts or comments, and they can&apos;t comment on yours.</span>}
+          <SubmitButton className="btn-secondary text-sm py-1.5 px-3" data-testid={blocking ? 'unblock-btn' : 'block-btn'} pendingLabel={blocking ? 'Unblocking…' : 'Blocking…'}>{blocking ? 'Unblock' : 'Block'}</SubmitButton>
         </form>
       )}
       {wins.length > 0 && (
         <section className="mb-6 flex flex-wrap gap-2" data-testid="challenge-wins">
-          {wins.map((w) => <Link key={w.challenge_id} href={`/challenge/${w.challenge_id}`} className="badge badge-purple" data-testid="win-badge">🏆 Winner · {w.theme}</Link>)}
+          {wins.map((w) => <Link key={w.challenge_id} href={`/challenge/${w.challenge_id}`} className="chip" data-testid="win-badge">Winner · {w.theme}</Link>)}
         </section>
       )}
       {totals && (
         <section className="card p-5 mb-8" data-testid="reaction-totals">
-          <h2 className="font-bold mb-3">😂 Meme reactions received <span className="text-text-muted text-sm font-normal">({totalReactions})</span></h2>
+          <h2 className="font-bold mb-3">Meme reactions received <span className="text-ink-3 text-sm font-normal">({totalReactions})</span></h2>
           <ul className="flex flex-wrap gap-2">
             {REACTIONS.map((e) => (
-              <li key={e} className="px-3 py-1 rounded-full border border-border text-sm" aria-label={`${e} ${totals[e] ?? 0}`} data-testid="reaction-total">
-                {e} <span className="text-text-secondary">{totals[e] ?? 0}</span>
+              <li key={e} className="px-3 py-1 rounded-sm border border-line text-sm" aria-label={`${e} ${totals[e] ?? 0}`} data-testid="reaction-total">
+                {e} <span className="text-ink-2">{totals[e] ?? 0}</span>
               </li>
             ))}
           </ul>
@@ -92,11 +92,11 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
         <ComingSoon />
       ) : result.posts.length === 0 ? (
         result.isOwner ? (
-          <EmptyState emoji="🎲" title="Your shelf is looking dry." action={{ href: '/games/new', label: '+ Share your first game' }} testId="profile-empty">
+          <EmptyState title="Your shelf is looking dry." action={{ href: '/games/new', label: '+ Share your first game' }} testId="profile-empty">
             Post a drinking game (or a cocktail) and it lives here for everyone to rate.
           </EmptyState>
         ) : (
-          <EmptyState emoji="🍹" title={`@${profile?.username ?? name} hasn't shared anything yet.`} action={{ href: '/feed', label: 'Browse the feed' }} testId="profile-empty">
+          <EmptyState title={`@${profile?.username ?? name} hasn't shared anything yet.`} action={{ href: '/feed', label: 'Browse the feed' }} testId="profile-empty">
             Probably still picking the playlist. Check back later.
           </EmptyState>
         )
@@ -104,8 +104,8 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
         <ul className="space-y-3" data-testid="profile-posts">
           {result.posts.map((p) => (
             <li key={p.href}>
-              <Link href={p.href} className="card card-hover p-4 flex items-center justify-between gap-3">
-                <span className="font-semibold">{p.emoji} {p.title}</span>
+              <Link href={p.href} className="card hover:bg-raised p-4 flex items-center justify-between gap-3">
+                <span className="font-semibold">{p.title}</span>
                 {p.is_hidden && <HiddenNotice compact />}
               </Link>
             </li>
@@ -113,12 +113,12 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
         </ul>
       )}
       {result?.isOwner && result.posts.some((p) => p.is_hidden) && (
-        <p className="text-text-muted text-xs mt-3">🙈 Hidden posts were taken down by a moderator. Only you can see them.</p>
+        <p className="text-ink-3 text-xs mt-3">Hidden posts were taken down by a moderator. Only you can see them.</p>
       )}
       {notices.length > 0 && (
         <section className="mt-8" data-testid="moderation-notices">
-          <h2 className="text-xl font-bold mb-3">🛡️ Moderation notices</h2>
-          <p className="text-text-muted text-xs mb-3">Only you can see these.</p>
+          <h2 className="text-xl font-bold mb-3">Moderation notices</h2>
+          <p className="text-ink-3 text-xs mb-3">Only you can see these.</p>
           <ul className="space-y-3">{notices.map((n) => <li key={n.id} className="card p-4"><NoticeBody n={n} /></li>)}</ul>
         </section>
       )}

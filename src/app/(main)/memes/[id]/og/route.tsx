@@ -13,13 +13,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   return new ImageResponse(
     (
       <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 64,
-        background: 'radial-gradient(ellipse at top, rgba(168,85,247,0.35) 0%, #0F172A 65%)', color: '#F8FAFC', fontFamily: 'sans-serif' }}>
-        <div style={{ display: 'flex', fontSize: 40, fontWeight: 800, color: '#C4B5FD' }}>🍻 Social Sips</div>
+        background: '#0F2A22', color: '#F3EAD3', fontFamily: 'sans-serif' }}>
+        <div style={{ display: 'flex', fontSize: 40, fontWeight: 400, color: '#F3EAD3', fontFamily: 'serif' }}>Social Sips</div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {caption && <div style={{ display: 'flex', fontSize: 36, color: '#67E8F9', marginBottom: 16 }}>{caption}</div>}
-          <div style={{ display: 'flex', fontSize: text.length > 120 ? 44 : 60, fontWeight: 700, lineHeight: 1.2, color: '#F9A8D4' }}>{text}</div>
+          {caption && <div style={{ display: 'flex', fontSize: 36, color: '#D2C8AE', marginBottom: 16 }}>{caption}</div>}
+          <div style={{ display: 'flex', fontSize: text.length > 120 ? 44 : 60, fontWeight: 700, lineHeight: 1.2, color: '#F3EAD3' }}>{text}</div>
         </div>
-        <div style={{ display: 'flex', fontSize: 28, color: '#94A3B8' }}>😂 Jokes &amp; Memes · 18+</div>
+        <div style={{ display: 'flex', fontSize: 28, color: '#ADA48A' }}>Jokes &amp; Memes · 18+</div>
       </div>
     ),
     { width: 1200, height: 630, headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300' } },

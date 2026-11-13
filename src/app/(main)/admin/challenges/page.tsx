@@ -23,13 +23,13 @@ export default async function AdminChallengesPage({ searchParams }: { searchPara
   const weeks = Array.from({ length: 12 }, (_, i) => addDays(cur.starts_on, 7 * (i + 1)))
   return (
     <>
-      <PageHeader emoji="🏆" title="Weekly challenges" subtitle="Schedule themes for coming weeks. Weeks run Monday 00:00 to Sunday 23:59, Vienna time. Unscheduled weeks get a default (meme / cocktail of the week, alternating)." />
-      <p className="text-sm mb-6 flex gap-4"><Link href="/admin/reports" className="text-accent-purple">← Reports</Link><Link href="/challenge" className="text-accent-purple">View current challenge →</Link></p>
-      {error && <p role="alert" className="card p-4 mb-4 text-sm text-red-400" data-testid="admin-challenge-error">{error.slice(0, 200)}</p>}
-      {saved && <p role="status" className="card p-4 mb-4 text-sm text-accent-cyan">Saved ✅</p>}
+      <PageHeader title="Weekly challenges" subtitle="Schedule themes for coming weeks. Weeks run Monday 00:00 to Sunday 23:59, Vienna time. Unscheduled weeks get a default (meme / cocktail of the week, alternating)." />
+      <p className="text-sm mb-6 flex gap-4"><Link href="/admin/reports" className="text-accent">← Reports</Link><Link href="/challenge" className="text-accent">View current challenge →</Link></p>
+      {error && <p role="alert" className="card p-4 mb-4 text-sm text-danger" data-testid="admin-challenge-error">{error.slice(0, 200)}</p>}
+      {saved && <p role="status" className="card p-4 mb-4 text-sm text-accent">Saved</p>}
       <section className="card p-5 mb-6">
         <h2 className="font-bold mb-1">This week</h2>
-        <p className="text-sm"><strong>{cur.theme}</strong> · {KIND_LABEL[cur.kind]} · {weekLabel(cur.starts_on)}{cur.is_default ? ' · default' : ''} <span className="text-text-muted">(running challenges can&apos;t be changed)</span></p>
+        <p className="text-sm"><strong>{cur.theme}</strong> · {KIND_LABEL[cur.kind]} · {weekLabel(cur.starts_on)}{cur.is_default ? ' · default' : ''} <span className="text-ink-3">(running challenges can&apos;t be changed)</span></p>
       </section>
       <section className="card p-5 mb-6">
         <h2 className="font-bold mb-3">Schedule a week</h2>
@@ -50,7 +50,7 @@ export default async function AdminChallengesPage({ searchParams }: { searchPara
         </form>
       </section>
       <h2 className="font-bold mb-3">Scheduled</h2>
-      {upcoming.length === 0 ? <p className="text-sm text-text-secondary">Nothing scheduled. Coming weeks will use the default.</p> : (
+      {upcoming.length === 0 ? <p className="text-sm text-ink-2">Nothing scheduled. Coming weeks will use the default.</p> : (
         <ul className="space-y-2" data-testid="scheduled-list">{upcoming.map((u) => (
           <li key={u.id} className="card p-4 flex flex-wrap items-center justify-between gap-3 text-sm">
             <span><strong>{u.theme}</strong> · {KIND_LABEL[u.kind]} · {weekLabel(u.starts_on)}</span>

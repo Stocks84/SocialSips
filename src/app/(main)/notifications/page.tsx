@@ -24,21 +24,20 @@ export default async function NotificationsPage() {
   const unread = items.filter((n) => !n.read_at).length
   return (
     <>
-      <PageHeader emoji="🔔" title="Notifications" subtitle={unread ? `${unread} unread` : 'You’re all caught up.'} />
+      <PageHeader title="Notifications" subtitle={unread ? `${unread} unread` : 'You’re all caught up.'} />
       {unread > 0 && <form action={markAllRead} className="mb-4"><SubmitButton className="btn-secondary text-sm" data-testid="mark-all-read" pendingLabel="Marking…">Mark all as read</SubmitButton></form>}
-      {items.length === 0 ? <p className="card-glass p-6 text-center text-text-secondary" data-testid="no-notifications">Nothing yet. Follow people and post something!</p> : (
+      {items.length === 0 ? <p className="card p-6 text-center text-ink-2" data-testid="no-notifications">Nothing yet. Follow people and post something!</p> : (
         <ul className="space-y-2" data-testid="notifications">
           {items.map((n) => {
             const t = notificationText(n)
             return (
-              <li key={n.id} className={`card p-4 flex items-start gap-3 ${n.read_at ? 'opacity-70' : 'border-accent-purple/60'}`} data-testid="notification" data-kind={n.kind} data-unread={!n.read_at}>
-                <span className="text-xl" aria-hidden="true">{t.icon}</span>
+              <li key={n.id} className={`card p-4 flex items-start gap-3 ${n.read_at ? 'opacity-70' : 'border-accent'}`} data-testid="notification" data-kind={n.kind} data-unread={!n.read_at}>
                 {/* plain <a>: full navigation so the bell count in the layout refreshes */}
-                <a href={`/notifications/${n.id}`} className="flex-1 min-w-0 hover:text-accent-cyan">
+                <a href={`/notifications/${n.id}`} className="flex-1 min-w-0 hover:text-ink">
                   <span className="block text-sm break-words">{t.text}</span>
-                  <span className="block text-xs text-text-muted mt-1">{ago(n.updated_at)}</span>
+                  <span className="block text-xs text-ink-3 mt-1">{ago(n.updated_at)}</span>
                 </a>
-                {!n.read_at && <form action={markRead}><input type="hidden" name="id" value={n.id} /><SubmitButton className="text-xs text-text-secondary hover:text-accent-cyan" aria-label="Mark as read" data-testid="mark-read" pendingLabel="Marking…">● Mark read</SubmitButton></form>}
+                {!n.read_at && <form action={markRead}><input type="hidden" name="id" value={n.id} /><SubmitButton className="text-xs text-ink-2 hover:text-ink" aria-label="Mark as read" data-testid="mark-read" pendingLabel="Marking…">● Mark read</SubmitButton></form>}
               </li>
             )
           })}

@@ -11,6 +11,8 @@ import AdminControls from '@/components/admin/AdminControls'
 import Reactions from './Reactions'
 import { deleteMeme } from '@/app/(main)/memes/actions'
 import type { MemeWithStats } from '@/lib/queries/memes'
+import { faComment } from '@fortawesome/free-regular-svg-icons'
+import { Icon } from '@/components/ui/Icon'
 
 type Props = { meme: MemeWithStats; userId: string | null; isAdmin: boolean; detail?: boolean }
 
@@ -25,24 +27,24 @@ export default function MemeCard({ meme: m, userId, isAdmin, detail = false }: P
       {img && (detail ? img : <Link href={path} aria-label="Open meme">{img}</Link>)}
       <figcaption className="p-4 space-y-3">
         {m.is_hidden && <><HiddenNotice />{m.author_id === userId && <StatementOfReasons type="meme" id={m.id} />}</>}
-        {m.caption && (detail ? <p className="font-semibold text-lg">{m.caption}</p> : <Link href={path} className="font-semibold block hover:text-accent-cyan">{m.caption}</Link>)}
-        {m.joke_text && <p className="whitespace-pre-line text-accent-pink">{m.joke_text}</p>}
+        {m.caption && (detail ? <p className="font-semibold text-lg">{m.caption}</p> : <Link href={path} className="font-semibold block hover:text-ink">{m.caption}</Link>)}
+        {m.joke_text && <p className="whitespace-pre-line text-accent">{m.joke_text}</p>}
         {m.is_hidden ? (
           <HiddenNotice locked />
         ) : (
           <Reactions memeId={m.id} counts={m.stats.reactions} mine={m.stats.mine} signedIn={Boolean(userId)} path={path} />
         )}
-        <div className="flex items-center justify-between gap-3 text-xs text-text-muted">
+        <div className="flex items-center justify-between gap-3 text-xs text-ink-3">
           <span>
             @{m.author?.username ?? 'someone'} · {formatDate(m.created_at)}
-            {!detail && <> · <Link href={`${path}#comments`} className="hover:text-accent-cyan" data-testid="comment-count">💬 {m.stats.comment_count}</Link></>}
+            {!detail && <> · <Link href={`${path}#comments`} className="hover:text-ink" data-testid="comment-count"><Icon icon={faComment} className="text-icon-sm mr-1" />{m.stats.comment_count}</Link></>}
           </span>
           {m.author_id === userId ? (
             <span className="flex gap-3">
-              {!m.is_hidden && <Link href={`${path}/edit`} className="hover:text-accent-cyan">Edit</Link>}
+              {!m.is_hidden && <Link href={`${path}/edit`} className="hover:text-ink">Edit</Link>}
               <form action={deleteMeme}>
                 <input type="hidden" name="memeId" value={m.id} />
-                <ConfirmSubmit message="Delete this meme? There's no undo." className="hover:text-accent-pink" label="Delete meme">Delete</ConfirmSubmit>
+                <ConfirmSubmit message="Delete this meme? There's no undo." className="hover:text-ink" label="Delete meme">Delete</ConfirmSubmit>
               </form>
             </span>
           ) : userId ? (

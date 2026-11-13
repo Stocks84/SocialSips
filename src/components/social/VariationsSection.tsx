@@ -16,8 +16,8 @@ type Props = { kind: 'game' | 'cocktail'; targetId: string; variations: Variatio
 export default function VariationsSection({ kind, targetId, variations, userId, path, isAdmin = false, locked = false }: Props) {
   return (
     <section className="space-y-3">
-      <h2 className="text-xl font-bold text-accent-cyan">🔀 {kind === 'game' ? 'House variations' : 'Twists & variations'}</h2>
-      {variations.length === 0 && <p className="text-text-secondary text-sm">No variations yet. Got your own spin?</p>}
+      <h2 className="text-xl font-bold text-accent">{kind === 'game' ? 'House variations' : 'Twists & variations'}</h2>
+      {variations.length === 0 && <p className="text-ink-2 text-sm">No variations yet. Got your own spin?</p>}
       {variations.map((v) => (
         <div key={v.id} className="card p-4" data-testid="variation">
           <div className="flex justify-between gap-3">
@@ -27,7 +27,7 @@ export default function VariationsSection({ kind, targetId, variations, userId, 
                 <input type="hidden" name="kind" value={kind} />
                 <input type="hidden" name="targetId" value={targetId} />
                 <input type="hidden" name="variationId" value={v.id} />
-                <ConfirmSubmit message="Delete this variation? There's no undo." className="text-xs text-text-muted hover:text-accent-pink" label="Delete variation">Delete</ConfirmSubmit>
+                <ConfirmSubmit message="Delete this variation? There's no undo." className="text-xs text-ink-3 hover:text-ink" label="Delete variation">Delete</ConfirmSubmit>
               </form>
             ) : userId ? (
               <ReportButton targetType={kind === 'game' ? 'variation' : 'cocktail_variation'} targetId={v.id} />
@@ -41,7 +41,7 @@ export default function VariationsSection({ kind, targetId, variations, userId, 
           ) : (
             <p className="text-sm whitespace-pre-line mt-1" data-testid="variation-rules">{v.rules}</p>
           )}
-          <p className="text-text-muted text-xs mt-2">@{v.author?.username ?? 'someone'} · {formatDate(v.created_at)}<EditedMark at={v.edited_at} /></p>
+          <p className="text-ink-3 text-xs mt-2">@{v.author?.username ?? 'someone'} · {formatDate(v.created_at)}<EditedMark at={v.edited_at} /></p>
           {isAdmin && (
             <div className="mt-2">
               <AdminControls type={kind === 'game' ? 'variation' : 'cocktail_variation'} id={v.id} compact />

@@ -77,8 +77,8 @@ export default function GameForm({ action: serverAction, defaults = {}, submitLa
       <ImageInput label={defaults.cover_image_url ? 'Replace cover image (optional)' : undefined} />
       <FieldError id="cover" message={err('cover')} />
       {defaults.cover_image_url && (
-        <label className="flex items-center gap-2 text-sm text-text-secondary">
-          <input type="checkbox" name="removeCover" value="true" className="accent-accent-pink" /> Remove current cover
+        <label className="flex items-center gap-2 text-sm text-ink-2">
+          <input type="checkbox" name="removeCover" value="true" className="accent-accent" /> Remove current cover
         </label>
       )}
       {state.error && <p className="error-msg" role="alert">{state.error}</p>}

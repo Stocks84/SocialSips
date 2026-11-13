@@ -13,7 +13,7 @@ export default function VariationEditForm({ type, id, title, rules, redirectTo }
   const fid = (k: string) => `${k}-${id}`
   return (
     <details className="mt-2" data-testid="variation-edit" open={Boolean(state.error) || undefined}>
-      <summary className="cursor-pointer text-xs text-accent-cyan">🛡️ Edit</summary>
+      <summary className="cursor-pointer text-xs text-accent">Edit</summary>
       <form action={action} className="space-y-2 mt-2">
         <input type="hidden" name="targetType" value={type} />
         <input type="hidden" name="targetId" value={id} />
@@ -23,7 +23,7 @@ export default function VariationEditForm({ type, id, title, rules, redirectTo }
         <textarea name="rules" defaultValue={val('rules', rules)} rows={6} className="input" required minLength={10} maxLength={3000} aria-label="Variation details" />
         <FieldError id={fid('rules')} message={state.fieldErrors?.rules} />
         {state.error && <p className="error-msg text-xs" role="alert">{state.error}</p>}
-        {state.ok && <p className="text-accent-cyan text-xs" role="status">Changes saved ✅</p>}
+        {state.ok && <p className="text-accent text-xs" role="status">Changes saved</p>}
         <button className="btn-secondary text-xs py-1 px-3" disabled={pending}>{pending ? 'Saving…' : 'Save changes'}</button>
       </form>
     </details>

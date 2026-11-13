@@ -51,14 +51,14 @@ export default function Reactions({ memeId, counts, mine, signedIn, disabled = f
               aria-pressed={active}
               aria-label={`${e} ${n}`}
               data-testid="reaction"
-              className={`px-2.5 py-1 rounded-full text-sm border transition-colors ${active ? 'border-accent-purple bg-accent-purple/20' : 'border-border hover:border-accent-cyan'} disabled:cursor-default`}
+              className={`px-2.5 py-1 rounded-sm text-sm border transition-colors ${active ? 'border-accent bg-raised' : 'border-line hover:border-accent'} disabled:cursor-default`}
             >
-              {e} <span className="text-text-secondary text-xs">{n}</span>
+              {e} <span className="text-ink-2 text-xs">{n}</span>
             </button>
           )
         })}
       </div>
-      {!signedIn && <p className="text-text-muted text-xs mt-2"><Link href={`/sign-in?redirectTo=${path}`} className="text-accent-purple">Sign in</Link> to react.</p>}
+      {!signedIn && <p className="text-ink-3 text-xs mt-2"><Link href={`/sign-in?redirectTo=${path}`} className="text-accent">Sign in</Link> to react.</p>}
       {error && <p className="error-msg text-xs mt-2" role="alert">{error}</p>}
     </div>
   )

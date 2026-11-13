@@ -40,7 +40,7 @@ export default function SubmitButton({ children, pendingLabel, confirm, disabled
 }
 
 /** Inline status text that only renders while the surrounding form is submitting. */
-export function PendingNote({ children = 'Saving…', className = 'text-text-secondary text-sm' }: { children?: React.ReactNode; className?: string }) {
+export function PendingNote({ children = 'Saving…', className = 'text-ink-2 text-sm' }: { children?: React.ReactNode; className?: string }) {
   const { pending } = useFormStatus()
   return <span role="status" aria-live="polite" className={className}>{pending ? children : null}</span>
 }

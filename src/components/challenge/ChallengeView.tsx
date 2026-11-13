@@ -43,33 +43,33 @@ export default async function ChallengeView({ c, current, error }: { c: Challeng
 
   return (
     <>
-      <section className="card-glass p-6 mb-6" data-testid="challenge-hero">
+      <section className="card p-6 mb-6" data-testid="challenge-hero">
         <div className="flex flex-wrap items-center gap-2 text-xs mb-3">
-          <span className="badge badge-purple">🏆 Weekly challenge</span>
-          <span className="badge badge-cyan">{KIND_LABEL[c.kind]}s</span>
-          <span className="text-text-muted">{weekLabel(c.starts_on)} (Vienna time)</span>
+          <span className="chip">Weekly challenge</span>
+          <span className="chip">{KIND_LABEL[c.kind]}s</span>
+          <span className="text-ink-3">{weekLabel(c.starts_on)} (Vienna time)</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-black tracking-tight gradient-text" data-testid="challenge-theme">{c.theme}</h1>
-        {c.description && <p className="text-text-secondary mt-2">{c.description}</p>}
+        <h1 className="text-3xl sm:text-4xl font-display font-normal text-ink" data-testid="challenge-theme">{c.theme}</h1>
+        {c.description && <p className="text-ink-2 mt-2">{c.description}</p>}
         <p className="mt-4 text-sm">
           {status === 'open' && <Countdown endsAt={challengeEnd(c.starts_on).toISOString()} initialNow={Date.now()} />}
           {status === 'upcoming' && <span>Starts {challengeEndLabel(c.starts_on, true)}</span>}
           {status === 'ended' && <span data-testid="challenge-ended">Voting closed · {board.length} entr{board.length === 1 ? 'y' : 'ies'}</span>}
         </p>
         {status === 'ended' && (winner
-          ? <p className="mt-3 font-bold" data-testid="challenge-winner">🏆 Winner: <Link href={`/profile/${winner.username}`} className="text-accent-cyan">@{winner.username}</Link> with {winner.votes} vote{winner.votes === 1 ? '' : 's'}</p>
-          : <p className="mt-3 text-text-secondary text-sm">No winner (no votes).</p>)}
+          ? <p className="mt-3 font-bold" data-testid="challenge-winner">Winner: <Link href={`/profile/${winner.username}`} className="text-accent">@{winner.username}</Link> with {winner.votes} vote{winner.votes === 1 ? '' : 's'}</p>
+          : <p className="mt-3 text-ink-2 text-sm">No winner (no votes).</p>)}
       </section>
 
-      {error && <p role="alert" className="card p-4 mb-6 text-sm text-red-400" data-testid="challenge-error">{error}</p>}
+      {error && <p role="alert" className="card p-4 mb-6 text-sm text-danger" data-testid="challenge-error">{error}</p>}
 
       {status === 'open' && (
         <section className="card p-5 mb-6" data-testid="challenge-enter">
           {!userId ? (
-            <p className="text-sm"><Link href="/sign-in?redirectTo=/challenge" className="text-accent-purple">Sign in</Link> to enter and vote.</p>
+            <p className="text-sm"><Link href="/sign-in?redirectTo=/challenge" className="text-accent">Sign in</Link> to enter and vote.</p>
           ) : hasEntry ? (
             <form action={withdrawEntry} className="flex flex-wrap items-center gap-3 text-sm">{hidden}
-              <span>✅ You&apos;re in! {mine ? `${mine.votes} vote${mine.votes === 1 ? '' : 's'} so far.` : '(Your entry is hidden by a moderator.)'}</span>
+              <span>You&apos;re in! {mine ? `${mine.votes} vote${mine.votes === 1 ? '' : 's'} so far.` : '(Your entry is hidden by a moderator.)'}</span>
               <SubmitButton className="btn-ghost text-sm" data-testid="withdraw-entry" pendingLabel="Withdrawing…">Withdraw entry</SubmitButton>
             </form>
           ) : options.length ? (
@@ -78,32 +78,32 @@ export default async function ChallengeView({ c, current, error }: { c: Challeng
                 <select name="submissionId" className="input mt-1" required data-testid="entry-select">{options.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}</select>
               </label>
               <SubmitButton className="btn-primary" data-testid="enter-challenge" pendingLabel="Entering…">Enter challenge</SubmitButton>
-              <p className="w-full text-xs text-text-muted">One entry per person. Or <Link href={createHref} className="text-accent-purple">make a new one</Link>.</p>
+              <p className="w-full text-xs text-ink-3">One entry per person. Or <Link href={createHref} className="text-accent">make a new one</Link>.</p>
             </form>
           ) : (
-            <p className="text-sm">{c.kind === 'meme' ? <>Post a <Link href="/memes/new" className="text-accent-purple">new meme</Link></> : <>Add a variation to any <Link href="/cocktails" className="text-accent-purple">cocktail</Link></>}, then come back to enter it.</p>
+            <p className="text-sm">{c.kind === 'meme' ? <>Post a <Link href="/memes/new" className="text-accent">new meme</Link></> : <>Add a variation to any <Link href="/cocktails" className="text-accent">cocktail</Link></>}, then come back to enter it.</p>
           )}
         </section>
       )}
 
-      <h2 id="entries" className="text-xl font-bold mb-3">Entries {board.length > 0 && <span className="text-text-muted text-sm font-normal">({board.length})</span>}</h2>
-      {board.length === 0 ? <p className="text-text-secondary text-sm" data-testid="no-entries">No entries yet. Be the first!</p> : (
+      <h2 id="entries" className="text-xl font-bold mb-3">Entries {board.length > 0 && <span className="text-ink-3 text-sm font-normal">({board.length})</span>}</h2>
+      {board.length === 0 ? <p className="text-ink-2 text-sm" data-testid="no-entries">No entries yet. Be the first!</p> : (
         <ul className="grid gap-4 sm:grid-cols-2" data-testid="challenge-entries">
           {board.map((e, i) => {
             const isWinner = winner?.entry_id === e.entry_id
             const href = e.meme_id ? `/memes/${e.meme_id}` : `/cocktails/${e.cocktail_id}`
             return (
-              <li key={e.entry_id} className={`card p-4 flex flex-col gap-3 ${isWinner ? 'ring-2 ring-accent-purple' : ''}`} data-testid="challenge-entry">
+              <li key={e.entry_id} className={`card p-4 flex flex-col gap-3 ${isWinner ? 'ring-2 ring-accent' : ''}`} data-testid="challenge-entry">
                 <div className="flex items-center justify-between gap-2 text-xs">
-                  <span className="text-text-muted">#{i + 1} · <Link href={`/profile/${e.username}`} className="hover:text-accent-cyan">@{e.username}</Link></span>
-                  {isWinner && <span className="badge badge-purple" data-testid="winner-badge">🏆 Winner</span>}
+                  <span className="text-ink-3">#{i + 1} · <Link href={`/profile/${e.username}`} className="hover:text-ink">@{e.username}</Link></span>
+                  {isWinner && <span className="chip" data-testid="winner-badge">Winner</span>}
                 </div>
                 <Link href={href} className="block">
-                  {e.meme_id && isOwnStorageUrl(e.meme_image_url) && <Image src={e.meme_image_url!} alt={e.meme_caption ?? 'Meme'} width={600} height={400} className="w-full h-44 object-cover rounded-lg mb-2" sizes="(min-width: 640px) 50vw, 100vw" />}
+                  {e.meme_id && isOwnStorageUrl(e.meme_image_url) && <Image src={e.meme_image_url!} alt={e.meme_caption ?? 'Meme'} width={600} height={400} className="w-full h-44 object-cover rounded-sm mb-2" sizes="(min-width: 640px) 50vw, 100vw" />}
                   <p className="font-semibold">{e.meme_id ? (e.meme_caption ?? 'Meme') : e.variation_title}</p>
-                  {e.meme_joke && <p className="text-sm text-text-secondary line-clamp-3">{e.meme_joke}</p>}
-                  {e.variation_rules && <p className="text-sm text-text-secondary line-clamp-3">{e.variation_rules}</p>}
-                  {e.cocktail_name && <p className="text-xs text-text-muted mt-1">🍸 Twist on {e.cocktail_name}</p>}
+                  {e.meme_joke && <p className="text-sm text-ink-2 line-clamp-3">{e.meme_joke}</p>}
+                  {e.variation_rules && <p className="text-sm text-ink-2 line-clamp-3">{e.variation_rules}</p>}
+                  {e.cocktail_name && <p className="text-xs text-ink-3 mt-1">Twist on {e.cocktail_name}</p>}
                 </Link>
                 <div className="mt-auto flex items-center justify-between gap-2">
                   <span className="font-bold" data-testid="entry-votes">{e.votes} vote{e.votes === 1 ? '' : 's'}</span>
@@ -111,11 +111,11 @@ export default async function ChallengeView({ c, current, error }: { c: Challeng
                     <form action={voteChallenge}>{hidden}
                       <input type="hidden" name="entryId" value={e.my_vote ? '' : e.entry_id} />
                       <SubmitButton className={e.my_vote ? 'btn-primary text-sm py-1.5 px-3' : 'btn-secondary text-sm py-1.5 px-3'} data-testid={e.my_vote ? 'unvote' : 'vote'} aria-pressed={e.my_vote} pendingLabel="Saving…">
-                        {e.my_vote ? '✅ Your vote' : myVote ? 'Switch vote' : '👍 Vote'}
+                        {e.my_vote ? 'Your vote' : myVote ? 'Switch vote' : 'Vote'}
                       </SubmitButton>
                     </form>
                   )}
-                  {status === 'open' && userId === e.user_id && <span className="text-xs text-text-muted">Your entry</span>}
+                  {status === 'open' && userId === e.user_id && <span className="text-xs text-ink-3">Your entry</span>}
                 </div>
               </li>
             )

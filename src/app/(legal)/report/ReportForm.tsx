@@ -14,8 +14,8 @@ export default function ReportForm({ targetType, targetId, targetLabel, signedIn
   if (state.ok) {
     return (
       <div className="card p-6 space-y-2" role="status" data-testid="report-sent">
-        <h2 className="font-bold text-lg">Thanks, your report was sent 🙏</h2>
-        <p className="text-text-secondary text-sm">A person reviews every report. {signedIn ? 'You can follow its status in Settings → Account.' : 'If you left an email, we may contact you about it.'}</p>
+        <h2 className="font-bold text-lg">Thanks, your report was sent</h2>
+        <p className="text-ink-2 text-sm">A person reviews every report. {signedIn ? 'You can follow its status in Settings → Account.' : 'If you left an email, we may contact you about it.'}</p>
       </div>
     )
   }
@@ -25,7 +25,7 @@ export default function ReportForm({ targetType, targetId, targetLabel, signedIn
         <>
           <input type="hidden" name="targetType" value={targetType} />
           <input type="hidden" name="targetId" value={targetId} />
-          <p className="text-sm">Reporting: <span className="badge badge-purple">{targetLabel ?? targetType}</span></p>
+          <p className="text-sm">Reporting: <span className="chip">{targetLabel ?? targetType}</span></p>
         </>
       ) : (
         <div>
@@ -53,7 +53,7 @@ export default function ReportForm({ targetType, targetId, targetLabel, signedIn
         <FieldError id="email" message={err('email')} />
       </div>
       <label className="flex items-start gap-3 text-sm">
-        <input type="checkbox" name="goodFaith" value="true" required className="mt-1 accent-accent-purple" />
+        <input type="checkbox" name="goodFaith" value="true" required className="mt-1 accent-accent" />
         <span>I believe in good faith that the information in this report is accurate and complete.</span>
       </label>
       <FieldError id="goodFaith" message={err('goodFaith')} />

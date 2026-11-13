@@ -16,6 +16,8 @@ import HiddenNotice from '@/components/ui/HiddenNotice'
 import StatementOfReasons from '@/components/moderation/StatementOfReasons'
 import SavedBanner from '@/components/ui/SavedBanner'
 import AdminControls from '@/components/admin/AdminControls'
+import { faUsers } from '@fortawesome/free-solid-svg-icons'
+import { Icon } from '@/components/ui/Icon'
 
 export default async function GamePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {
   const { id } = await params
@@ -33,40 +35,40 @@ export default async function GamePage({ params, searchParams }: { params: Promi
       <header>
         <SavedBanner show={saved === '1'} />
         {isOwnStorageUrl(game.cover_image_url) && (
-          <Image src={game.cover_image_url} alt="" width={1200} height={630} className="rounded-2xl mb-6 w-full h-64 object-cover border border-border" />
+          <Image src={game.cover_image_url} alt="" width={1200} height={630} className="rounded-sm mb-6 w-full h-64 object-cover border border-rule" />
         )}
         <div className="flex items-start justify-between gap-4">
-          <h1 className="text-4xl font-black mb-3">{game.title}</h1>
+          <h1 className="text-4xl font-display font-normal mb-3">{game.title}</h1>
           {isOwner && !game.is_hidden ? (
-            <Link href={`${path}/edit`} className="btn-secondary text-sm py-2 px-4 shrink-0">✏️ Edit</Link>
+            <Link href={`${path}/edit`} className="btn-secondary text-sm py-2 px-4 shrink-0">Edit</Link>
           ) : userId && !isOwner ? (
             <ReportButton targetType="game" targetId={game.id} />
           ) : !userId ? <PublicReportLink targetType="game" targetId={game.id} /> : null}
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <HangoverBadge rating={game.hangover_rating} />
-          <span className="text-text-secondary text-sm">👥 {players} players</span>
+          <span className="inline-flex items-center gap-1.5 text-ink-2 text-sm"><Icon icon={faUsers} className="text-icon-sm text-ink-3" />{players} players</span>
           {rating.avg !== null && (
-            <span className="text-sm"><StarRating score={Math.round(rating.avg)} /> <span className="text-text-muted">({rating.count})</span></span>
+            <span className="text-sm"><StarRating score={Math.round(rating.avg)} /> <span className="text-ink-3">({rating.count})</span></span>
           )}
         </div>
         {game.is_hidden && <><HiddenNotice />{isOwner && <StatementOfReasons type="game" id={game.id} />}</>}
         {isAdmin && <div className="mt-3"><AdminControls type="game" id={game.id} redirectTo="/feed" /></div>}
-        <p className="text-text-secondary mt-4">{game.summary}</p>
-        <p className="text-text-muted text-xs mt-2">
-          {game.author && <>by <Link href={`/profile/${game.author.username}`} className="text-accent-purple">@{game.author.username}</Link> · </>}
+        <p className="text-ink-2 mt-4">{game.summary}</p>
+        <p className="text-ink-3 text-xs mt-2">
+          {game.author && <>by <Link href={`/profile/${game.author.username}`} className="text-accent">@{game.author.username}</Link> · </>}
           {game.tags.map((t) => `#${t}`).join(' ')}
         </p>
       </header>
 
       <section>
-        <h2 className="text-xl font-bold mb-3 text-accent-purple">📜 Original rules</h2>
-        {game.equipment.length > 0 && <p className="text-sm text-text-secondary mb-3">🧰 You need: {game.equipment.join(', ')}</p>}
+        <h2 className="text-xl font-bold mb-3 text-accent">Original rules</h2>
+        {game.equipment.length > 0 && <p className="text-sm text-ink-2 mb-3">You need: {game.equipment.join(', ')}</p>}
         <p className="card p-5 whitespace-pre-line">{game.rules ?? 'Rules load from Supabase.'}</p>
       </section>
 
       <section>
-        <h2 className="text-xl font-bold mb-3 text-accent-cyan">⭐ Rate it</h2>
+        <h2 className="text-xl font-bold mb-3 text-accent">Rate it</h2>
         {game.is_hidden ? <HiddenNotice locked /> : userId ? <RatingForm kind="game" targetId={game.id} myScore={rating.mine} /> : <SignInPrompt path={path} what="rate this game" />}
       </section>
 

@@ -13,7 +13,7 @@ export default function AgeGateForm() {
       <label className="label" htmlFor="dob">Date of birth</label>
       <input id="dob" name="dob" type="date" required className="input" autoComplete="bday" defaultValue={state.dob} aria-invalid={state.error ? true : undefined} aria-describedby={state.error ? 'dob-error' : undefined} />
       {state.error && <p id="dob-error" className="error-msg" role="alert">{state.error}</p>}
-      <button className="btn-primary w-full" disabled={pending}>{pending ? 'Checking…' : 'Let me in 🚀'}</button>
+      <button className="btn-primary w-full" disabled={pending}>{pending ? 'Checking…' : 'Enter Social Sips'}</button>
     </form>
   )
 }

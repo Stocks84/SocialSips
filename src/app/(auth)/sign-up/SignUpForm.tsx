@@ -9,7 +9,7 @@ const USERNAME_HINT = '3–20 characters: lowercase letters, numbers or _'
 export default function SignUpForm() {
   const [state, action, pending] = useActionState<AuthState, FormData>(signUp, {})
   const v = state.values // keep what was typed after an error (never the password)
-  if (state.message) return <p className="card-glass p-4 text-center">{state.message}</p>
+  if (state.message) return <p className="card p-4 text-center">{state.message}</p>
   return (
     <form action={action} className="space-y-4">
       <div>
@@ -33,7 +33,7 @@ export default function SignUpForm() {
             if (clean !== el.value) el.value = clean
           }}
         />
-        <p id="username-hint" className="text-text-muted text-xs mt-1">{USERNAME_HINT}</p>
+        <p id="username-hint" className="text-ink-3 text-xs mt-1">{USERNAME_HINT}</p>
       </div>
       <div>
         <label className="label" htmlFor="email">Email</label>
@@ -42,19 +42,19 @@ export default function SignUpForm() {
       <div>
         <label className="label" htmlFor="password">Password</label>
         <input id="password" name="password" type="password" className="input" required minLength={8} autoComplete="new-password" aria-describedby="password-hint" />
-        <p id="password-hint" className="text-text-muted text-xs mt-1">At least 8 characters.</p>
+        <p id="password-hint" className="text-ink-3 text-xs mt-1">At least 8 characters.</p>
       </div>
       <div>
         <label className="label" htmlFor="dateOfBirth">Date of birth</label>
         <input id="dateOfBirth" name="dateOfBirth" type="date" className="input" required autoComplete="bday" defaultValue={v?.dateOfBirth} />
       </div>
       <label className="flex items-start gap-3 text-sm">
-        <input type="checkbox" name="ageConfirmed" value="true" required defaultChecked={v?.ageConfirmed} className="mt-1 accent-accent-purple" />
+        <input type="checkbox" name="ageConfirmed" value="true" required defaultChecked={v?.ageConfirmed} className="mt-1 accent-accent" />
         <span>I confirm I am 18 or over, and I&apos;ll drink responsibly.</span>
       </label>
       <label className="flex items-start gap-3 text-sm">
-        <input type="checkbox" name="termsAccepted" value="true" required defaultChecked={v?.termsAccepted} className="mt-1 accent-accent-purple" data-testid="terms-checkbox" />
-        <span>I accept the <Link href="/terms" target="_blank" className="text-accent-purple underline">Terms of Use</Link> and have read the <Link href="/privacy" target="_blank" className="text-accent-purple underline">Privacy Policy</Link>.</span>
+        <input type="checkbox" name="termsAccepted" value="true" required defaultChecked={v?.termsAccepted} className="mt-1 accent-accent" data-testid="terms-checkbox" />
+        <span>I accept the <Link href="/terms" target="_blank" className="link">Terms of Use</Link> and have read the <Link href="/privacy" target="_blank" className="link">Privacy Policy</Link>.</span>
       </label>
       <Turnstile resetKey={state} action="sign-up" />
       {state.error && <p className="error-msg" role="alert">{state.error}</p>}

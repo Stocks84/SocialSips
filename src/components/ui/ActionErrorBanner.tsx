@@ -27,9 +27,9 @@ export default function ActionErrorBanner() {
 
   if (!message) return null
   return (
-    <div role="alert" className="card mb-6 flex items-start justify-between gap-3 border-red-500/50 p-4 text-sm text-red-300" data-testid="action-error">
-      <span>⚠️ {message}</span>
-      <button type="button" onClick={() => setMessage(null)} className="shrink-0 text-text-secondary hover:text-text-primary" aria-label="Dismiss error">✕</button>
+    <div role="alert" className="card mb-6 flex items-start justify-between gap-3 border-danger p-4 text-sm text-danger" data-testid="action-error">
+      <span>{message}</span>
+      <button type="button" onClick={() => setMessage(null)} className="shrink-0 text-ink-2 hover:text-ink" aria-label="Dismiss error">✕</button>
     </div>
   )
 }

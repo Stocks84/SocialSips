@@ -4,6 +4,8 @@ import Turnstile from '@/components/ui/Turnstile'
 import { useSearchParams } from 'next/navigation'
 import { signIn, type AuthState } from '../actions'
 import { safePath } from '@/lib/safe-path'
+import { faCheck, faCircleExclamation } from '@fortawesome/free-solid-svg-icons'
+import { Icon } from '@/components/ui/Icon'
 
 export default function SignInForm() {
   const [state, action, pending] = useActionState<AuthState, FormData>(signIn, {})
@@ -22,12 +24,16 @@ export default function SignInForm() {
         <label className="label" htmlFor="password">Password</label>
         <input id="password" name="password" type="password" className="input" required autoComplete="current-password" />
       </div>
-      <label className="flex items-center gap-2 text-sm text-text-secondary">
-        <input type="checkbox" name="remember" value="1" defaultChecked={v?.remember ?? true} className="accent-accent-purple" /> Keep me signed in
+      <label className="flex min-h-6 cursor-pointer items-center gap-3 text-base text-ink-2">
+        <span className="relative inline-flex shrink-0">
+          <input type="checkbox" name="remember" value="1" defaultChecked={v?.remember ?? true} className="checkbox-box peer" />
+          <Icon icon={faCheck} className="checkbox-tick pointer-events-none absolute inset-0 m-auto text-[12px] text-on-accent opacity-0 peer-checked:opacity-100" />
+        </span>
+        Keep me signed in
       </label>
       <Turnstile resetKey={state} action="sign-in" />
-      {!state.error && linkError && <p className="error-msg" role="alert">{linkError}</p>}
-      {state.error && <p className="error-msg" role="alert">{state.error}</p>}
+      {!state.error && linkError && <p className="error-msg flex items-start gap-2" role="alert"><Icon icon={faCircleExclamation} className="mt-[3px] shrink-0 text-icon-sm" />{linkError}</p>}
+      {state.error && <p className="error-msg flex items-start gap-2" role="alert"><Icon icon={faCircleExclamation} className="mt-[3px] shrink-0 text-icon-sm" />{state.error}</p>}
       <button className="btn-primary w-full" disabled={pending}>{pending ? 'Signing in…' : 'Sign in'}</button>
     </form>
   )

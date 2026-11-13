@@ -50,13 +50,13 @@ export default function CocktailForm({ action: serverAction, defaults = {}, subm
         <FieldError id="method" message={err('method')} />
       </div>
       <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" name="isAlcoholFree" value="true" defaultChecked={state.values ? state.values.isAlcoholFree === 'true' : defaults.is_alcohol_free} className="accent-accent-cyan" /> Alcohol-free 🌱
+        <input type="checkbox" name="isAlcoholFree" value="true" defaultChecked={state.values ? state.values.isAlcoholFree === 'true' : defaults.is_alcohol_free} className="accent-accent" /> Alcohol-free 🌱
       </label>
       <ImageInput label={defaults.image_url ? 'Replace photo (optional)' : 'Photo (optional)'} />
       <FieldError id="cover" message={err('cover')} />
       {defaults.image_url && (
-        <label className="flex items-center gap-2 text-sm text-text-secondary">
-          <input type="checkbox" name="removeCover" value="true" className="accent-accent-pink" /> Remove current photo
+        <label className="flex items-center gap-2 text-sm text-ink-2">
+          <input type="checkbox" name="removeCover" value="true" className="accent-accent" /> Remove current photo
         </label>
       )}
       {state.error && <p className="error-msg" role="alert">{state.error}</p>}

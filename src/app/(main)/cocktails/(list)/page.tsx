@@ -31,9 +31,9 @@ export default async function CocktailsPage({ searchParams }: { searchParams: Pr
   return (
     <>
       <div className="flex items-start justify-between gap-4">
-        <PageHeader emoji="🍹" title="Cocktail Recipes" subtitle="Shake, stir, share. Alcohol-free options included." />
+        <PageHeader title="Cocktail Recipes" subtitle="Shake, stir, share. Alcohol-free options included." />
         <div className="flex flex-col sm:flex-row gap-2 shrink-0">
-          <Link href="/cocktails/make" className="btn-secondary text-sm text-center" data-testid="make-link">🧊 What can I make?</Link>
+          <Link href="/cocktails/make" className="btn-secondary text-sm text-center" data-testid="make-link">What can I make?</Link>
           <Link href="/cocktails/new" className="btn-primary text-sm text-center">+ Add cocktail</Link>
         </div>
       </div>
@@ -43,13 +43,13 @@ export default async function CocktailsPage({ searchParams }: { searchParams: Pr
       </div>
       {cocktails.length === 0 && (
         page > 1 ? (
-          <EmptyState emoji="🍸" title="Last call. That's every recipe." action={{ href: href(1), label: 'Back to the start' }} testId="cocktails-end" />
+          <EmptyState title="Last call. That's every recipe." action={{ href: href(1), label: 'Back to the start' }} testId="cocktails-end" />
         ) : filtered ? (
-          <EmptyState emoji="🔍" title="No cocktails match." action={{ href: '/cocktails', label: 'Clear filters' }} testId="cocktails-empty">
+          <EmptyState title="No cocktails match." action={{ href: '/cocktails', label: 'Clear filters' }} testId="cocktails-empty">
             Try another search or ingredient.
           </EmptyState>
         ) : (
-          <EmptyState emoji="🍹" title="The bar is empty." action={{ href: '/cocktails/new', label: '+ Add a cocktail' }} testId="cocktails-empty">
+          <EmptyState title="The bar is empty." action={{ href: '/cocktails/new', label: '+ Add a cocktail' }} testId="cocktails-empty">
             No recipes yet. Shake things up and add the first one.
           </EmptyState>
         )

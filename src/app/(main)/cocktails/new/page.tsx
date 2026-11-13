@@ -7,8 +7,8 @@ export const metadata = { title: 'Add a cocktail' }
 export default function NewCocktailPage() {
   return (
     <>
-      <PageHeader emoji="🍸" title="Add a cocktail" subtitle="Share your signature serve." />
-      <CocktailForm action={createCocktail} submitLabel="Publish cocktail 🍹" />
+      <PageHeader title="Add a cocktail" subtitle="Share your signature serve." />
+      <CocktailForm action={createCocktail} submitLabel="Publish cocktail" />
     </>
   )
 }

@@ -12,5 +12,5 @@ export default function Countdown({ endsAt, initialNow }: { endsAt: string; init
   const end = new Date(endsAt).getTime()
   const [now, setNow] = useState(initialNow)
   useEffect(() => { setNow(Date.now()); const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t) }, [])
-  return <span className="font-mono" data-testid="countdown" suppressHydrationWarning>⏳ {fmt(end - now)}</span>
+  return <span className="font-mono" data-testid="countdown" suppressHydrationWarning>{fmt(end - now)}</span>
 }

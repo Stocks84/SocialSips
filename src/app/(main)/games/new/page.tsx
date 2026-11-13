@@ -7,8 +7,8 @@ export const metadata = { title: 'Add a game' }
 export default function NewGamePage() {
   return (
     <>
-      <PageHeader emoji="➕" title="Add a game" subtitle="Share the rules. Be honest about the hangover." />
-      <GameForm action={createGame} submitLabel="Publish game 🚀" />
+      <PageHeader title="Add a game" subtitle="Share the rules. Be honest about the hangover." />
+      <GameForm action={createGame} submitLabel="Publish game" />
     </>
   )
 }

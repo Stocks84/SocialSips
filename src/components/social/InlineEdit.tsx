@@ -23,7 +23,7 @@ export default function InlineEdit({ action: serverAction, hidden, fields, child
     return (
       <>
         {children}
-        <button type="button" onClick={() => setEditing(true)} className="text-xs text-text-muted hover:text-accent-cyan mt-2" data-testid={`${testId}-edit`}>✏️ Edit</button>
+        <button type="button" onClick={() => setEditing(true)} className="text-xs text-ink-3 hover:text-ink mt-2" data-testid={`${testId}-edit`}>Edit</button>
       </>
     )
   }
@@ -52,5 +52,5 @@ export default function InlineEdit({ action: serverAction, hidden, fields, child
 /** "· edited" marker with the edit time on hover. */
 export function EditedMark({ at }: { at?: string | null }) {
   if (!at) return null
-  return <span className="text-text-muted" title={`Edited ${new Date(at).toLocaleString('en-GB')}`} data-testid="edited"> · edited</span>
+  return <span className="text-ink-3" title={`Edited ${new Date(at).toLocaleString('en-GB')}`} data-testid="edited"> · edited</span>
 }

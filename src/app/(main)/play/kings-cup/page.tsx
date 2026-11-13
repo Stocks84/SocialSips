@@ -8,7 +8,7 @@ export default function KingsCupPage() {
   return (
     <div className="max-w-xl mx-auto">
       <PlayToolbar />
-      <PageHeader emoji="👑" title="Kings Cup" subtitle="Tap the deck to draw. Each card has a rule; the 4th King ends in the cup." />
+      <PageHeader title="Kings Cup" subtitle="Tap the deck to draw. Each card has a rule; the 4th King ends in the cup." />
       <KingsCup />
     </div>
   )

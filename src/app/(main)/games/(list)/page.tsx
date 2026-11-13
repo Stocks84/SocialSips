@@ -31,7 +31,7 @@ export default async function GamesPage({ searchParams }: { searchParams: Promis
   return (
     <>
       <div className="flex items-start justify-between gap-4">
-        <PageHeader emoji="🎮" title="Drinking Games" subtitle="Browse every game. Search, filter by hangover, or sort by rating." />
+        <PageHeader title="Drinking Games" subtitle="Browse every game. Search, filter by hangover, or sort by rating." />
         <Link href="/games/new" className="btn-primary text-sm shrink-0 text-center">+ Share a game</Link>
       </div>
       <GameFilters q={q} hangover={hangover} sort={sort} action="/games" />
@@ -40,15 +40,15 @@ export default async function GamesPage({ searchParams }: { searchParams: Promis
       </div>
       {games.length === 0 && (
         page > 1 ? (
-          <EmptyState emoji="🍺" title="That's every game." action={{ href: href(1), label: 'Back to the start' }} testId="games-end">
+          <EmptyState title="That's every game." action={{ href: href(1), label: 'Back to the start' }} testId="games-end">
             You&apos;ve paged past the lot. Impressive stamina.
           </EmptyState>
         ) : filtered ? (
-          <EmptyState emoji="🔍" title="No games match that." action={{ href: '/games', label: 'Clear filters' }} testId="games-empty">
+          <EmptyState title="No games match that." action={{ href: '/games', label: 'Clear filters' }} testId="games-empty">
             Try another search or hangover level. Or invent the game yourself.
           </EmptyState>
         ) : (
-          <EmptyState emoji="🎲" title="The party hasn't started yet." action={{ href: '/games/new', label: '+ Share a game' }} testId="games-empty">
+          <EmptyState title="The party hasn't started yet." action={{ href: '/games/new', label: '+ Share a game' }} testId="games-empty">
             Nothing to play here so far. Be the legend who posts the first game.
           </EmptyState>
         )

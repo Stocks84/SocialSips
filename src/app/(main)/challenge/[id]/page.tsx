@@ -20,7 +20,7 @@ export default async function ChallengeDetailPage({ params, searchParams }: { pa
   if (cur?.id === c.id && !error) redirect('/challenge')
   return (
     <>
-      <Link href="/challenge" className="text-sm text-text-secondary hover:text-accent-cyan">← This week&apos;s challenge</Link>
+      <Link href="/challenge" className="text-sm text-ink-2 hover:text-ink">← This week&apos;s challenge</Link>
       <div className="mt-3"><ChallengeView c={c} current={false} error={error?.slice(0, 200)} /></div>
     </>
   )

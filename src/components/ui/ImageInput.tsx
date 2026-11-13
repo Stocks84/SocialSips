@@ -32,7 +32,7 @@ export default function ImageInput({ label = 'Cover image (optional)', required 
     <div>
       <label className="label" htmlFor="cover">{label}</label>
       <input id="cover" name="cover" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="input" onChange={onChange} required={required} />
-      <p className="text-text-muted text-xs mt-1" data-testid="cover-info">
+      <p className="text-ink-3 text-xs mt-1" data-testid="cover-info">
         {busy ? 'Shrinking…' : info ?? 'Resized to max 1600px before upload (max 4 MB).'}
       </p>
     </div>

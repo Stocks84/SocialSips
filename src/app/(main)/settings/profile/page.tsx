@@ -16,8 +16,8 @@ export default async function EditProfilePage() {
   if (!me) notFound()
   return (
     <>
-      <Link href={`/profile/${me.username}`} className="text-sm text-text-secondary hover:text-accent-cyan">← Back to your profile</Link>
-      <div className="mt-3"><PageHeader emoji="⚙️" title="Edit profile" subtitle="This is what others see on your profile." /></div>
+      <Link href={`/profile/${me.username}`} className="text-sm text-ink-2 hover:text-ink">← Back to your profile</Link>
+      <div className="mt-3"><PageHeader title="Edit profile" subtitle="This is what others see on your profile." /></div>
       <ProfileForm action={updateProfile} defaults={me} avatarIsOwn={isOwnStorageUrl(me.avatar_url)} />
     </>
   )

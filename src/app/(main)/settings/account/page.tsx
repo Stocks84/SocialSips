@@ -23,23 +23,23 @@ export default async function AccountPage() {
   const { username, reports, blocks } = data
   return (
     <>
-      <Link href={`/profile/${username}`} className="text-sm text-text-secondary hover:text-accent-cyan">← Back to your profile</Link>
-      <div className="mt-3"><PageHeader emoji="🔐" title="Account" subtitle="Your reports, blocks and data." /></div>
+      <Link href={`/profile/${username}`} className="text-sm text-ink-2 hover:text-ink">← Back to your profile</Link>
+      <div className="mt-3"><PageHeader title="Account" subtitle="Your reports, blocks and data." /></div>
 
       <section className="card p-5 mb-6" data-testid="my-reports">
-        <h2 className="font-bold mb-3">🚩 Your reports</h2>
-        {!reports.length ? <p className="text-sm text-text-secondary">You haven&apos;t reported anything.</p> : (
+        <h2 className="font-bold mb-3">Your reports</h2>
+        {!reports.length ? <p className="text-sm text-ink-2">You haven&apos;t reported anything.</p> : (
           <ul className="space-y-2 text-sm">{reports.map((r) => (
             <li key={r.id} className="flex flex-wrap justify-between gap-2" data-testid="my-report">
               <span>{r.target_type} · {REPORT_REASONS[r.reason as keyof typeof REPORT_REASONS] ?? r.reason} · {formatDate(r.created_at)}</span>
-              <span className="text-text-secondary" data-testid="my-report-status">{STATUS[r.status] ?? r.status}{r.outcome ? ` — ${OUTCOME[r.outcome] ?? r.outcome}` : ''}</span>
+              <span className="text-ink-2" data-testid="my-report-status">{STATUS[r.status] ?? r.status}{r.outcome ? ` — ${OUTCOME[r.outcome] ?? r.outcome}` : ''}</span>
             </li>))}</ul>
         )}
       </section>
 
       <section className="card p-5 mb-6" data-testid="my-blocks">
-        <h2 className="font-bold mb-3">🚫 Blocked users</h2>
-        {!blocks.length ? <p className="text-sm text-text-secondary">You haven&apos;t blocked anyone.</p> : (
+        <h2 className="font-bold mb-3">Blocked users</h2>
+        {!blocks.length ? <p className="text-sm text-ink-2">You haven&apos;t blocked anyone.</p> : (
           <ul className="space-y-2">{blocks.map((b) => (
             <li key={b.blocked_id} className="flex items-center justify-between gap-2 text-sm">
               <span>@{b.blocked?.username ?? 'deleted user'}</span>
@@ -51,13 +51,13 @@ export default async function AccountPage() {
       </section>
 
       <section className="card p-5 mb-6">
-        <h2 className="font-bold mb-2">📦 Download my data</h2>
-        <p className="text-sm text-text-secondary mb-3">A JSON file with everything we store about you.</p>
+        <h2 className="font-bold mb-2">Download my data</h2>
+        <p className="text-sm text-ink-2 mb-3">A JSON file with everything we store about you.</p>
         <a href="/settings/account/export" className="btn-secondary text-sm" data-testid="export-link" download>Download my data</a>
       </section>
 
-      <section className="card p-5 border-red-500/40">
-        <h2 className="font-bold mb-2 text-red-400">⚠️ Delete account</h2>
+      <section className="card p-5 border-danger">
+        <h2 className="font-bold mb-2 text-danger">Delete account</h2>
         <DeleteAccountForm action={deleteAccount} username={username} />
       </section>
     </>

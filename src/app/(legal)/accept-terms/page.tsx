@@ -21,16 +21,16 @@ export default async function AcceptTermsPage({ searchParams }: { searchParams: 
   if (accepted === LEGAL.termsVersion) redirect(safe)
   return (
     <div className="max-w-xl mx-auto">
-      <div className="card-glass p-6 sm:p-8 space-y-5" data-testid="accept-terms">
-        <h1 className="text-2xl sm:text-3xl font-black gradient-text">📜 {accepted ? 'We’ve updated our Terms' : 'Please accept our Terms'}</h1>
-        <p className="text-text-secondary text-sm">
+      <div className="card p-6 sm:p-8 space-y-5" data-testid="accept-terms">
+        <h1 className="text-2xl sm:text-3xl font-display font-normal text-ink">{accepted ? 'We’ve updated our Terms' : 'Please accept our Terms'}</h1>
+        <p className="text-ink-2 text-sm">
           {accepted ? 'Our Terms of Use and Privacy Policy have changed since you last accepted them.' : 'Before you continue, please read and accept our Terms of Use and Privacy Policy.'}{' '}
-          You can read them first: <Link href="/terms" className="text-accent-purple">Terms of Use</Link> · <Link href="/privacy" className="text-accent-purple">Privacy Policy</Link>.
+          You can read them first: <Link href="/terms" className="text-accent">Terms of Use</Link> · <Link href="/privacy" className="text-accent">Privacy Policy</Link>.
         </p>
         <AcceptForm next={safe} />
-        <div className="border-t border-border pt-4 flex flex-wrap items-center gap-4 text-sm text-text-secondary">
+        <div className="border-t border-rule pt-4 flex flex-wrap items-center gap-4 text-sm text-ink-2">
           <form action={signOut}><SubmitButton className="btn-ghost text-sm" data-testid="accept-signout" pendingLabel="Signing out…">Sign out</SubmitButton></form>
-          <Link href="/settings/account" className="hover:text-accent-cyan" data-testid="accept-account">Don’t agree? Download your data or delete your account</Link>
+          <Link href="/settings/account" className="hover:text-ink" data-testid="accept-account">Don’t agree? Download your data or delete your account</Link>
         </div>
       </div>
     </div>

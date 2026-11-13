@@ -31,9 +31,9 @@ export default async function AdminHiddenPage() {
 
   return (
     <>
-      <PageHeader emoji="🙈" title="Hidden items" subtitle={`${items.length} hidden`} />
-      <p className="text-sm mb-6"><Link href="/admin/reports" className="text-accent-purple">← Open reports</Link></p>
-      {items.length === 0 && <p className="card-glass p-6 text-center text-text-secondary">Nothing hidden.</p>}
+      <PageHeader title="Hidden items" subtitle={`${items.length} hidden`} />
+      <p className="text-sm mb-6"><Link href="/admin/reports" className="text-accent">← Open reports</Link></p>
+      {items.length === 0 && <p className="card p-6 text-center text-ink-2">Nothing hidden.</p>}
       <div className="space-y-4">
         {items.map((it, i) => {
           const fields = (
@@ -45,8 +45,8 @@ export default async function AdminHiddenPage() {
           return (
             <div key={`${it.type}-${it.id}`} className="card p-5" data-testid="hidden-item">
               <div className="flex items-center gap-2 text-xs mb-2">
-                <span className="badge badge-purple">{TARGETS[it.type].label}</span>
-                <span className="text-text-muted">{formatDate(it.created_at)}</span>
+                <span className="chip">{TARGETS[it.type].label}</span>
+                <span className="text-ink-3">{formatDate(it.created_at)}</span>
               </div>
               <p className="text-sm">{resolved[i].preview}</p>
               <div className="flex gap-2 mt-4">

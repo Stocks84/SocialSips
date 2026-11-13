@@ -1,18 +1,24 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { DM_Serif_Display, Playfair_Display_SC, Libre_Franklin } from 'next/font/google'
+import { config as faConfig } from '@fortawesome/fontawesome-svg-core'
+import '@fortawesome/fontawesome-svg-core/styles.css' // local file from node_modules; no runtime <style> injection
 import './globals.css'
 import ServiceWorkerRegister from '@/components/layout/ServiceWorkerRegister'
 import LegalFooter from '@/components/layout/LegalFooter'
 
-/**
- * Inter loaded via next/font — zero layout shift, self-hosted automatically.
- * We use the variable weight range (100–900) for full flexibility.
- */
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800', '900'],
-  variable: '--font-inter',
-  display: 'swap',
+faConfig.autoAddCss = false
+
+/** Fonts are self-hosted by next/font (no remote font requests, CSP unchanged). */
+const display = DM_Serif_Display({
+  weight: '400', style: ['normal', 'italic'],
+  subsets: ['latin', 'latin-ext'], variable: '--font-dm-serif', display: 'swap',
+})
+const caps = Playfair_Display_SC({
+  weight: '700',
+  subsets: ['latin', 'latin-ext'], variable: '--font-playfair-sc', display: 'swap',
+})
+const sans = Libre_Franklin({ // variable font, wght 100–900; we use 400/500/600
+  subsets: ['latin', 'latin-ext'], variable: '--font-libre-franklin', display: 'swap',
 })
 
 /* ─── SEO + Social Metadata ─────────────────────────────────────────────── */
@@ -22,7 +28,7 @@ export const metadata: Metadata = {
     template: '%s | Social Sips',
   },
   description:
-    'Discover and share the best drinking games and cocktail recipes with friends. ' +
+    'Share drinking games and cocktail recipes with friends. ' +
     'Rated by hangover severity. Play responsibly. 18+.',
   keywords: [
     'drinking games',
@@ -60,7 +66,7 @@ export const metadata: Metadata = {
   // Twitter card
   twitter: {
     card: 'summary_large_image',
-    title: 'Social Sips 🍻',
+    title: 'Social Sips',
     description:
       'The community for drinking games, cocktail recipes, and good times.',
     // images: ['/images/og-image.png'],
@@ -80,8 +86,8 @@ export const viewport: Viewport = {
   // No maximumScale / userScalable: pinch-zoom must stay available (WCAG 1.4.4 Resize Text).
   // iOS focus-zoom is avoided instead by keeping form controls at 16px (see .input in globals.css).
   themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#0F172A' },
-    { media: '(prefers-color-scheme: light)', color: '#0F172A' }, // always dark
+    { media: '(prefers-color-scheme: dark)', color: '#0F2A22' },
+    { media: '(prefers-color-scheme: light)', color: '#0F2A22' }, // always dark
   ],
 }
 
@@ -92,13 +98,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`dark ${inter.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`dark ${display.variable} ${caps.variable} ${sans.variable}`} suppressHydrationWarning>
       <head>
         {/* ── PWA / iOS meta tags not yet in Next.js metadata API ── */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="msapplication-TileColor" content="#0F172A" />
+        <meta name="msapplication-TileColor" content="#0F2A22" />
         <meta name="msapplication-tap-highlight" content="no" />
 
         {/* Apple touch icons — replace with real assets later */}
@@ -106,7 +112,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
       </head>
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased min-h-dvh flex flex-col">
         {/*
          * TODO: Wrap children in a <Providers> component once auth is set up.
          * Providers will include:

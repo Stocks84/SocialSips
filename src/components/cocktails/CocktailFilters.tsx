@@ -22,11 +22,11 @@ export default function CocktailFilters({ q = '', alcoholFree = false, sort = 'n
         <input name="q" defaultValue={q} placeholder="Search names, ingredients…" className="input flex-1" aria-label="Search cocktails" />
         <input name="ing" defaultValue={ing} placeholder="Ingredient, e.g. lime" className="input sm:w-48" aria-label="Filter by ingredient" maxLength={40} />
         <label className="flex items-center gap-2 text-sm whitespace-nowrap">
-          <input type="checkbox" name="af" value="1" defaultChecked={alcoholFree} className="accent-accent-cyan" /> 🌱 Alcohol-free only
+          <input type="checkbox" name="af" value="1" defaultChecked={alcoholFree} className="accent-accent" /> Alcohol-free only
         </label>
         <select name="sort" defaultValue={sort} className="input sm:w-40" aria-label="Sort">
-          <option value="newest">🆕 Newest</option>
-          <option value="top">⭐ Top rated</option>
+          <option value="newest">Newest</option>
+          <option value="top">Top rated</option>
         </select>
         <button className="btn-primary">Go</button>
       </form>
@@ -34,12 +34,12 @@ export default function CocktailFilters({ q = '', alcoholFree = false, sort = 'n
         {CHIPS.map((c) => {
           const on = active === c.toLowerCase()
           return (
-            <Link key={c} href={chipHref(on ? '' : c.toLowerCase())} className={`badge ${on ? 'badge-cyan' : ''} hover:text-accent-cyan`} aria-pressed={on}>
+            <Link key={c} href={chipHref(on ? '' : c.toLowerCase())} className={`chip ${on ? 'border-accent bg-raised text-ink' : ''} hover:text-ink`} aria-pressed={on}>
               {on ? '✓ ' : ''}{c}
             </Link>
           )
         })}
-        {active && <Link href={chipHref('')} className="text-xs text-text-muted self-center hover:text-accent-pink">Clear ingredient</Link>}
+        {active && <Link href={chipHref('')} className="text-xs text-ink-3 self-center hover:text-ink">Clear ingredient</Link>}
       </div>
     </div>
   )

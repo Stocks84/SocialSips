@@ -12,14 +12,14 @@ export default function RatingForm({ kind, targetId, myScore }: { kind: 'game' |
           key={n}
           name="score"
           value={n}
-          className={`text-2xl transition-colors ${myScore && n <= myScore ? 'text-accent-cyan' : 'text-slate-500 hover:text-accent-cyan'}`}
+          className={`text-2xl transition-colors ${myScore && n <= myScore ? 'text-accent' : 'text-ink-3 hover:text-ink'}`}
           aria-label={`${n} star${n > 1 ? 's' : ''}`}
         >
           ★
         </SubmitButton>
       ))}
-      {myScore && <span className="text-text-secondary text-sm ml-2">You rated {myScore}/5</span>}
-      <PendingNote className="text-text-secondary text-sm ml-2" />
+      {myScore && <span className="text-ink-2 text-sm ml-2">You rated {myScore}/5</span>}
+      <PendingNote className="text-ink-2 text-sm ml-2" />
     </form>
   )
 }

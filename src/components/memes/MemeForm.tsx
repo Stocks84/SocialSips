@@ -35,11 +35,11 @@ export default function MemeForm({ action: serverAction, defaults, submitLabel }
       <div>
         <label className="label" htmlFor="image">{defaults?.image_url ? 'Replace image (optional)' : 'Meme image'}</label>
         <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="input" onChange={onImage} />
-        <p className="text-text-muted text-xs mt-1">Resized to max 1200px before upload (GIFs stay animated, max 4 MB).</p>
+        <p className="text-ink-3 text-xs mt-1">Resized to max 1200px before upload (GIFs stay animated, max 4 MB).</p>
         <FieldError id="image" message={err('image')} />
         {defaults?.image_url && (
-          <label className="flex items-center gap-2 text-sm text-text-secondary mt-2">
-            <input type="checkbox" name="removeImage" value="true" className="accent-accent-pink" /> Remove current image (keep the joke)
+          <label className="flex items-center gap-2 text-sm text-ink-2 mt-2">
+            <input type="checkbox" name="removeImage" value="true" className="accent-accent" /> Remove current image (keep the joke)
           </label>
         )}
       </div>

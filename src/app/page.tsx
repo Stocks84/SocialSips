@@ -96,12 +96,12 @@ export default function LandingPage() {
           </ul>
         </section>
 
-        {/* 4. Responsibility close: the single help link on this page */}
+        {/* 4. Responsibility close. Desktop keeps this contextual /help link; on mobile the footer Help link is the only one. */}
         <section aria-label="Drink responsibly" className="pt-10 pb-12 lg:flex lg:items-center lg:gap-6 lg:py-16">
           <p className="max-w-xl text-base text-ink-2 lg:max-w-none">
             Social Sips promotes responsible drinking. Know your limits, and never drink and drive.
           </p>
-          <Link href="/help" className={`inline-flex min-h-11 items-center text-ink ${underline}`}>Help &amp; responsibility</Link>
+          <Link href="/help" className={`hidden min-h-11 items-center text-ink lg:inline-flex ${underline}`}>Help &amp; responsibility</Link>
         </section>
       </main>
     </div>

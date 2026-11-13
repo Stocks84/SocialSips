@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { isOwnStorageUrl } from '@/lib/storage'
-import { formatDate } from '@/lib/format'
+import { commentCountLabel, formatDate } from '@/lib/format'
 import ReportButton from '@/components/ui/ReportButton'
 import PublicReportLink from '@/components/ui/PublicReportLink'
 import HiddenNotice from '@/components/ui/HiddenNotice'
@@ -37,7 +37,7 @@ export default function MemeCard({ meme: m, userId, isAdmin, detail = false }: P
         <div className="flex items-center justify-between gap-3 text-xs text-ink-3">
           <span>
             @{m.author?.username ?? 'someone'} · {formatDate(m.created_at)}
-            {!detail && <> · <Link href={`${path}#comments`} className="hover:text-ink" data-testid="comment-count"><Icon icon={faComment} className="text-icon-sm mr-1" />{m.stats.comment_count}</Link></>}
+            {!detail && <> · <Link href={`${path}#comments`} className="hover:text-ink" data-testid="comment-count" aria-label={commentCountLabel(m.stats.comment_count)}><Icon icon={faComment} className="text-icon-sm mr-1" />{m.stats.comment_count}</Link></>}
           </span>
           {m.author_id === userId ? (
             <span className="flex gap-3">

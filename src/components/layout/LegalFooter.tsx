@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-const footerLink = 'inline-flex min-h-11 items-center text-sm text-ink-2 underline decoration-accent decoration-1 underline-offset-4 hover:decoration-ink'
+const footerLink = 'inline-flex min-h-11 items-center whitespace-nowrap text-sm text-ink-2 underline decoration-accent decoration-1 underline-offset-4 hover:decoration-ink'
 
 /**
  * Global legal footer on every page (reachable without the age gate).
@@ -12,7 +12,7 @@ export default function LegalFooter() {
     <footer className="site-footer page-container w-full pt-12" data-testid="site-footer">
       <div className="rule-double" aria-hidden="true" />
       <div className="mt-2 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
-        <nav aria-label="Legal" className="flex flex-wrap gap-x-5 lg:gap-x-6">
+        <nav aria-label="Legal" className="flex flex-wrap gap-x-2 sm:gap-x-5 lg:gap-x-6">
           <Link href="/impressum" className={footerLink}>Impressum</Link>
           <Link href="/privacy" className={footerLink}>Privacy</Link>
           <Link href="/terms" className={footerLink}>Terms</Link>

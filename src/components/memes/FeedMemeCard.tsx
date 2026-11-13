@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { isOwnStorageUrl } from '@/lib/storage'
+import { commentCountLabel } from '@/lib/format'
 import type { MemeWithStats } from '@/lib/queries/memes'
 import { faComment } from '@fortawesome/free-regular-svg-icons'
 import { Icon } from '@/components/ui/Icon'
@@ -21,7 +22,7 @@ export default function FeedMemeCard({ meme: m }: { meme: MemeWithStats }) {
         </div>
         {m.joke_text && <p className="text-ink-2 text-sm mb-3 line-clamp-3">{m.joke_text}</p>}
         <p className="text-xs text-ink-3">
-          @{m.author?.username ?? 'someone'} · {total ? `${top ?? ''} ${total} reaction${total === 1 ? '' : 's'}` : 'No reactions yet'} · <Icon icon={faComment} className="text-icon-sm mr-1" />{m.stats.comment_count}
+          @{m.author?.username ?? 'someone'} · {total ? `${top ?? ''} ${total} reaction${total === 1 ? '' : 's'}` : 'No reactions yet'} · <Icon icon={faComment} className="text-icon-sm mr-1" /><span aria-hidden="true">{m.stats.comment_count}</span><span className="sr-only">{commentCountLabel(m.stats.comment_count)}</span>
         </p>
       </div>
     </Link>

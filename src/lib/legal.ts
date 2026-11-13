@@ -15,13 +15,13 @@ export const LEGAL = {
   /** Only needed once commercial (§ 5 ECG). Not shown in hobby mode. */
   phone: null as string | null,
   /** [DATE] "Last updated" date shown on Privacy and Terms, e.g. '21 October 2026'. */
-  lastUpdated: null as string | null,
+  lastUpdated: '13 November 2026' as string | null,
   /** Version stored on profiles.accepted_terms_version at sign-up. Bump when the Terms/Privacy text changes. */
   termsVersion: '2026-10-19',
   /** Supabase project region, from the dashboard (Project Settings → General), e.g. 'EU (Frankfurt, eu-central-1)'. */
   supabaseRegion: 'EU (Frankfurt, eu-central-1)' as string | null,
   /** How long reports and moderation decisions are kept after a case closes, e.g. '12 months'. */
-  reportRetention: null as string | null,
+  reportRetention: '12 months' as string | null,
   /** Languages for contact (DSA Art. 12). */
   contactLanguages: 'English and German',
 } as const

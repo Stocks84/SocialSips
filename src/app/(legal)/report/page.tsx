@@ -17,11 +17,11 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
   return (
     <div className="max-w-3xl space-y-6">
       <header>
-        <h1 className="text-3xl sm:text-4xl font-black tracking-tight"><span aria-hidden="true">⚑</span> <span className="gradient-text">Report content or contact us</span></h1>
-        <p className="text-text-secondary text-sm mt-2">Anyone can report illegal content or a breach of our <Link href="/terms" className="text-accent-purple">Terms</Link>, signed in or not. You can also email <L k="contactEmail" mailto />.</p>
+        <h1 className="text-3xl sm:text-4xl font-display font-normal"><span className="text-ink">Report content or contact us</span></h1>
+        <p className="text-ink-2 text-sm mt-2">Anyone can report illegal content or a breach of our <Link href="/terms" className="text-accent">Terms</Link>, signed in or not. You can also email <L k="contactEmail" mailto />.</p>
       </header>
       <ReportForm targetType={exact ? type : undefined} targetId={exact ? id : undefined} targetLabel={exact ? LABELS[type!] : undefined} signedIn={signedIn} />
-      <p className="text-text-muted text-xs">If someone is in immediate danger, call 112 (EU) or 999 (UK). For child sexual abuse material you don&apos;t have to give your name or email.</p>
+      <p className="text-ink-3 text-xs">If someone is in immediate danger, call 112 (EU) or 999 (UK). For child sexual abuse material you don&apos;t have to give your name or email.</p>
     </div>
   )
 }

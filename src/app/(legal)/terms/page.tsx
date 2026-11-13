@@ -6,18 +6,18 @@ export const metadata = { title: 'Terms of Use' }
 
 export default function TermsPage() {
   return (
-    <LegalPage title="Terms of Use" emoji="📜">
+    <LegalPage title="Terms of Use">
       <Section title="1. Who we are">
-        <p>Social Sips is run by {LEGAL.ownerName}, <L k="address" /> (<L k="contactEmail" mailto />). See the <Link href="/impressum" className="text-accent-purple">Impressum</Link>. It is a free, non-commercial service.</p>
+        <p>Social Sips is run by {LEGAL.ownerName}, <L k="address" /> (<L k="contactEmail" mailto />). See the <Link href="/impressum" className="text-accent">Impressum</Link>. It is a free, non-commercial service.</p>
       </Section>
       <Section title="2. 18+ only">
         <p>You must be at least 18 to use Social Sips. By signing up you confirm your date of birth is true. False ages lead to removal.</p>
       </Section>
       <Section title="3. Drink responsibly">
-        <p>Content is for entertainment and information. Know your limits, never drink and drive, don&apos;t pressure anyone to drink, and drinking games are optional: alcohol-free versions are always fine. Follow local laws. Help: Austria <a className="text-accent-purple" href="https://www.suchtvorbeugung.net">suchtvorbeugung.net</a> · UK <a className="text-accent-purple" href="https://www.drinkaware.co.uk">drinkaware.co.uk</a>.</p>
+        <p>Content is for entertainment and information. Know your limits, never drink and drive, don&apos;t pressure anyone to drink, and drinking games are optional: alcohol-free versions are always fine. Follow local laws. Help: Austria <a className="text-accent" href="https://www.suchtvorbeugung.net">suchtvorbeugung.net</a> · UK <a className="text-accent" href="https://www.drinkaware.co.uk">drinkaware.co.uk</a>.</p>
       </Section>
       <Section title="4. Your account">
-        <p>Keep your login safe. One person per account. You can delete your account at any time in <Link href="/settings/account" className="text-accent-purple">Settings → Account</Link> or by emailing us.</p>
+        <p>Keep your login safe. One person per account. You can delete your account at any time in <Link href="/settings/account" className="text-accent">Settings → Account</Link> or by emailing us.</p>
       </Section>
       <Section title="5. Content rules: you must not post">
         <ul className="list-disc pl-5 space-y-1">
@@ -35,7 +35,7 @@ export default function TermsPage() {
       </Section>
       <Section title="7. Reporting, blocking and moderation">
         <ul className="list-disc pl-5 space-y-1">
-          <li>Use <strong>⚑ Report</strong> on any post, meme, comment or variation. Anyone, signed in or not, can also use the <Link href="/report" className="text-accent-purple">report form</Link> or email <L k="contactEmail" mailto /> with the link, why it&apos;s illegal or breaks these rules, and a good-faith statement. Your name and email are optional.</li>
+          <li>Use <strong>⚑ Report</strong> on any post, meme, comment or variation. Anyone, signed in or not, can also use the <Link href="/report" className="text-accent">report form</Link> or email <L k="contactEmail" mailto /> with the link, why it&apos;s illegal or breaks these rules, and a good-faith statement. Your name and email are optional.</li>
           <li>You can block another user: you won&apos;t see their posts or comments, and they can&apos;t comment on yours.</li>
           <li>We review reports promptly and fairly, with human review. We may hide or remove content, or suspend accounts for serious or repeated breaches.</li>
           <li>If we act on your content we tell you why (a statement of reasons on the item), unless the law prohibits it. You can ask us to reconsider by emailing <L k="contactEmail" mailto /> within 6 months; we review it ourselves and can explain out-of-court dispute options.</li>

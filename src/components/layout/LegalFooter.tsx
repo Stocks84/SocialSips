@@ -17,6 +17,8 @@ export default function LegalFooter() {
           <Link href="/privacy" className={footerLink}>Privacy</Link>
           <Link href="/terms" className={footerLink}>Terms</Link>
           <Link href="/report" className={footerLink}>Report content</Link>
+          {/* Visible route to /help on every page, incl. mobile app pages where the tab bar has no Help tab */}
+          <Link href="/help" className={footerLink} data-testid="mobile-help-link">Help</Link>
         </nav>
         <div className="flex flex-col gap-1 text-meta text-ink-3 lg:flex-row lg:gap-6">
           <p>18+ only · Please drink responsibly</p>

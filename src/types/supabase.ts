@@ -953,9 +953,12 @@ export type Database = {
       feed_cocktails: {
         Args: {
           alcohol_free?: boolean;
+          before_at?: string | null;
+          before_id?: string | null;
           ing?: string | null;
           max_rows?: number;
           q?: string | null;
+          row_offset?: number;
           sort?: string;
         };
         Returns: {
@@ -971,9 +974,12 @@ export type Database = {
       };
       feed_games: {
         Args: {
+          before_at?: string | null;
+          before_id?: string | null;
           hangover?: Database["public"]["Enums"]["hangover_rating"] | null;
           max_rows?: number;
           q?: string | null;
+          row_offset?: number;
           sort?: string;
         };
         Returns: {
@@ -997,7 +1003,7 @@ export type Database = {
         }[];
       };
       following_feed_games: {
-        Args: { max_rows?: number };
+        Args: { before_at?: string | null; before_id?: string | null; max_rows?: number };
         Returns: {
           avg_rating: number;
           created_at: string;
@@ -1010,7 +1016,7 @@ export type Database = {
           title: string;
         }[];
       };
-      following_meme_ids: { Args: { max_rows?: number }; Returns: string[] };
+      following_meme_ids: { Args: { before_at?: string | null; before_id?: string | null; max_rows?: number }; Returns: string[] };
       gen_random_uuid: { Args: Record<PropertyKey, never>; Returns: string };
       gen_salt: { Args: { "": string }; Returns: string };
       grant_upload: {

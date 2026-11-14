@@ -7,7 +7,7 @@ import EmptyState from '@/components/ui/EmptyState'
 import Pager from '@/components/ui/Pager'
 import ChallengeBanner from '@/components/challenge/ChallengeBanner'
 import { followingGames, listGames } from '@/lib/queries/games'
-import { encodeCursor, newestFirst, parseCursor, PAGE_SIZE, RPC_MAX_ROWS } from '@/lib/paging'
+import { encodeCursor, newestFirst, parseCursor, PAGE_SIZE, PAGE_TAKE } from '@/lib/paging'
 import { followingMemes, latestMemes } from '@/lib/queries/memes'
 import { getViewer } from '@/lib/server/viewer'
 
@@ -21,11 +21,12 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
   const following = tab === 'following'
   // Memes join the default "newest" feed in date order. Search, hangover filter and "top" are about games, so they show games only.
   const withMemes = following || (!q && !hangover && sort !== 'top')
-  // Mixed games + memes page by a (created_at, id) cursor (?before=); games-only views page by number (?page=).
-  const before = withMemes ? parseCursor(sp.before) : null
-  const maxPage = Math.ceil(RPC_MAX_ROWS / PAGE_SIZE)
-  const page = withMemes ? 1 : Math.max(1, Math.min(maxPage, Number(sp.page) || 1))
-  const take = PAGE_SIZE + 1 // one extra row = "is there more?"
+  const topOnly = !withMemes && sort === 'top'
+  // Mixed games + memes, and games-only "newest", page by a (created_at, id) cursor (?before=).
+  // Games-only "top" pages by number (?page=), because the sort key is a rating, not a date.
+  const before = topOnly ? null : parseCursor(sp.before)
+  const page = topOnly ? Math.max(1, Number(sp.page) || 1) : 1
+  const take = PAGE_TAKE // one extra row = "is there more?"
   const [games, memes] = following
     ? (userId ? await Promise.all([followingGames({ limit: take, before }), followingMemes(take, before)]) : [[], []])
     : await Promise.all([
@@ -37,7 +38,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
     ...memes.map((m) => ({ kind: 'meme' as const, at: m.created_at, id: m.id, m })),
   ].sort((a, b) => (withMemes ? newestFirst(a, b) : 0))
   const items = merged.slice(0, PAGE_SIZE)
-  const hasMore = merged.length > PAGE_SIZE && (withMemes || page < maxPage)
+  const hasMore = merged.length > PAGE_SIZE
   const paged = Boolean(before) || page > 1
 
   const href = (p: { page?: number; before?: string } = {}) => {
@@ -92,22 +93,22 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
           </EmptyState>
         )
       )}
-      {withMemes ? (
+      {topOnly ? (
+        <Pager
+          label="More games"
+          prevHref={page > 1 ? href({ page: page - 1 }) : null}
+          prevText="← Previous"
+          nextHref={hasMore ? href({ page: page + 1 }) : null}
+          nextText="Load more →"
+          testId="feed-pager"
+        />
+      ) : (
         <Pager
           label="More of the feed"
           prevHref={before ? href() : null}
           prevText="↑ Back to the newest"
           nextHref={hasMore && items.length ? href({ before: encodeCursor(items[items.length - 1]) }) : null}
-          nextText="Load older →"
-          testId="feed-pager"
-        />
-      ) : (
-        <Pager
-          label="More games"
-          prevHref={page > 1 ? href({ page: page - 1 }) : null}
-          prevText={sort === 'top' ? '← Previous' : '← Newer'}
-          nextHref={hasMore ? href({ page: page + 1 }) : null}
-          nextText={sort === 'top' ? 'More →' : 'Older →'}
+          nextText="Load more →"
           testId="feed-pager"
         />
       )}

@@ -5,29 +5,33 @@ import PageHeader from '@/components/ui/PageHeader'
 import EmptyState from '@/components/ui/EmptyState'
 import Pager from '@/components/ui/Pager'
 import { listGames } from '@/lib/queries/games'
-import { PAGE_SIZE, RPC_MAX_ROWS } from '@/lib/paging'
+import { encodeCursor, parseCursor, PAGE_SIZE, PAGE_TAKE } from '@/lib/paging'
 
 export const metadata = { title: 'Games' }
 
-type SP = { q?: string; hangover?: string; sort?: string; page?: string }
+type SP = { q?: string; hangover?: string; sort?: string; page?: string; before?: string }
 
 export default async function GamesPage({ searchParams }: { searchParams: Promise<SP> }) {
-  const { q = '', hangover = '', sort = 'newest', page: pageParam } = await searchParams
-  const maxPage = Math.ceil(RPC_MAX_ROWS / PAGE_SIZE) // feed_games caps at 100 rows
-  const page = Math.max(1, Math.min(maxPage, Number(pageParam) || 1))
-  const rows = await listGames({ q, hangover, sort, offset: (page - 1) * PAGE_SIZE, limit: PAGE_SIZE + 1 })
+  const { q = '', hangover = '', sort = 'newest', page: pageParam, before: beforeParam } = await searchParams
+  const top = sort === 'top'
+  const before = top ? null : parseCursor(beforeParam)
+  const page = top ? Math.max(1, Number(pageParam) || 1) : 1
+  const rows = await listGames({ q, hangover, sort, before, offset: (page - 1) * PAGE_SIZE, limit: PAGE_TAKE })
   const games = rows.slice(0, PAGE_SIZE)
-  const hasMore = rows.length > PAGE_SIZE && page < maxPage
-  const href = (p: number) => {
+  const hasMore = rows.length > PAGE_SIZE
+  const last = games[games.length - 1]
+  const href = (p: { page?: number; before?: string } = {}) => {
     const s = new URLSearchParams()
     if (q) s.set('q', q)
     if (hangover) s.set('hangover', hangover)
     if (sort !== 'newest') s.set('sort', sort)
-    if (p > 1) s.set('page', String(p))
+    if (p.page && p.page > 1) s.set('page', String(p.page))
+    if (p.before) s.set('before', p.before)
     const qs = s.toString()
     return qs ? `/games?${qs}` : '/games'
   }
   const filtered = Boolean(q || hangover)
+  const paged = Boolean(before) || page > 1
   return (
     <>
       <div className="flex items-start justify-between gap-4">
@@ -39,8 +43,8 @@ export default async function GamesPage({ searchParams }: { searchParams: Promis
         {games.map((g) => <GameCard key={g.id} {...g} />)}
       </div>
       {games.length === 0 && (
-        page > 1 ? (
-          <EmptyState title="That's every game." action={{ href: href(1), label: 'Back to the start' }} testId="games-end">
+        paged ? (
+          <EmptyState title="That's every game." action={{ href: href(), label: 'Back to the start' }} testId="games-end">
             You&apos;ve paged past the lot. Impressive stamina.
           </EmptyState>
         ) : filtered ? (
@@ -53,14 +57,25 @@ export default async function GamesPage({ searchParams }: { searchParams: Promis
           </EmptyState>
         )
       )}
-      <Pager
-        label="More games"
-        prevHref={page > 1 ? href(page - 1) : null}
-        prevText={sort === 'top' ? '← Previous' : '← Newer'}
-        nextHref={hasMore ? href(page + 1) : null}
-        nextText={sort === 'top' ? 'More →' : 'Older →'}
-        testId="games-pager"
-      />
+      {top ? (
+        <Pager
+          label="More games"
+          prevHref={page > 1 ? href({ page: page - 1 }) : null}
+          prevText="← Previous"
+          nextHref={hasMore ? href({ page: page + 1 }) : null}
+          nextText="Load more →"
+          testId="games-pager"
+        />
+      ) : (
+        <Pager
+          label="More games"
+          prevHref={before ? href() : null}
+          prevText="↑ Back to the newest"
+          nextHref={hasMore && last?.created_at ? href({ before: encodeCursor({ at: last.created_at, id: last.id }) }) : null}
+          nextText="Load more →"
+          testId="games-pager"
+        />
+      )}
     </>
   )
 }

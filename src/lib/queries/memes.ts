@@ -1,4 +1,4 @@
-import { olderThan, type Cursor } from '@/lib/paging'
+import { olderThan, rpcPage, type Cursor } from '@/lib/paging'
 import { createClient } from '@/lib/supabase/server'
 import { parentVisibleTo, visibleTo } from './visibility'
 import type { CommentRow } from './social'
@@ -78,15 +78,14 @@ export async function getMeme(id: string, userId: string | null, isAdmin = false
 export async function followingMemes(limit = 20, before: Cursor | null = null): Promise<MemeWithStats[]> {
   const supabase = await createClient()
   if (!supabase) return []
-  // following_meme_ids caps at the newest 50, so older pages run dry there (needs a migration to lift).
-  const { data: ids, error } = await supabase.rpc('following_meme_ids', { max_rows: 50 })
+  const { data: ids, error } = await supabase.rpc('following_meme_ids', rpcPage({ limit, before }))
   if (error) { console.error('following_meme_ids', error.message); return [] }
   const list = (ids ?? []) as string[]
   if (!list.length) return []
-  let query = supabase.from('memes').select(COLS).in('id', list)
-  if (before) query = query.or(olderThan(before))
-  const { data } = await query.order('created_at', { ascending: false }).order('id', { ascending: false }).limit(limit)
-  return attachStats(supabase, (data ?? []) as unknown as MemeRow[])
+  const { data } = await supabase.from('memes').select(COLS).in('id', list)
+  const byId = new Map(((data ?? []) as unknown as MemeRow[]).map((m) => [m.id, m]))
+  const rows = list.map((id) => byId.get(id)).filter((m): m is MemeRow => Boolean(m))
+  return attachStats(supabase, rows)
 }
 
 export type MemeEditRow = {

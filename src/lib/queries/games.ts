@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { HANGOVER_RATINGS, type Game, type HangoverRating } from '@/types/database'
 import { parentVisibleTo } from './visibility'
 import { getViewer } from '@/lib/server/viewer'
-import { olderThan, PAGE_SIZE, RPC_MAX_ROWS, type Cursor } from '@/lib/paging'
+import { PAGE_SIZE, rpcPage, type Cursor } from '@/lib/paging'
 import { getSocial, type Author, type CommentRow, type RatingSummary, type VariationRow } from './social'
 
 export type GameListItem = Pick<Game, 'id' | 'title' | 'summary' | 'hangover_rating' | 'min_players' | 'tags'> & {
@@ -22,7 +22,8 @@ type GamePaging = { offset?: number; limit?: number; before?: Cursor | null }
 
 /**
  * Feed query via the feed_games() RPC (search across title/summary/rules/tags, sort).
- * Paging: `before` (keyset cursor, newest sort only) and/or `offset` + `limit` via .range().
+ * Newest pages by a (created_at, id) cursor; "top" pages by offset. Paging past the first
+ * page needs migration 0032 (keyset / offset live inside the function).
  */
 export async function listGames({ q = '', hangover = '', sort = 'newest', offset = 0, limit = PAGE_SIZE, before = null }: { q?: string; hangover?: string; sort?: string } & GamePaging): Promise<GameListItem[]> {
   const supabase = await createClient()
@@ -34,12 +35,10 @@ export async function listGames({ q = '', hangover = '', sort = 'newest', offset
     q: term.replace(/[%_\\]/g, '') || null,
     hangover: rating,
     sort: top ? 'top' : 'newest',
-    max_rows: RPC_MAX_ROWS,
+    ...rpcPage({ limit, before, offset, top }),
   })
-  if (before && !top) query = query.or(olderThan(before))
-  // Repeat the RPC's order outside it so offsets are stable across pages.
   if (top) query = query.order('avg_rating', { ascending: false, nullsFirst: false }).order('rating_count', { ascending: false })
-  const { data, error } = await query.order('created_at', { ascending: false }).order('id', { ascending: false }).range(offset, offset + limit - 1)
+  const { data, error } = await query.order('created_at', { ascending: false }).order('id', { ascending: false })
   if (error) {
     console.error('feed_games', error.message)
     return []
@@ -89,9 +88,8 @@ export async function getGameDetail(id: string): Promise<GameDetail | null> {
 export async function followingGames({ limit = PAGE_SIZE, before = null }: GamePaging = {}): Promise<GameListItem[]> {
   const supabase = await createClient()
   if (!supabase) return []
-  let query = supabase.rpc('following_feed_games', { max_rows: RPC_MAX_ROWS })
-  if (before) query = query.or(olderThan(before))
-  const { data, error } = await query.order('created_at', { ascending: false }).order('id', { ascending: false }).limit(limit)
+  const { data, error } = await supabase.rpc('following_feed_games', rpcPage({ limit, before }))
+    .order('created_at', { ascending: false }).order('id', { ascending: false })
   if (error) { console.error('following_feed_games', error.message); return [] }
   return ((data ?? []) as GameListItem[]).map(toListItem)
 }

@@ -1,9 +1,9 @@
-/** Shared paging settings for list pages (feed, cocktails). */
+/** Shared paging settings for list pages (feed, cocktails, games). */
 
-/** Page size for the feed and the cocktails list. */
+/** Page size for the feed and the list pages. */
 export const PAGE_SIZE = 20
-/** feed_games, following_feed_games and feed_cocktails cap their own result at 100 rows, so paging stops there (needs a migration to lift). */
-export const RPC_MAX_ROWS = 100
+/** One extra row lets the caller see whether another page exists. */
+export const PAGE_TAKE = PAGE_SIZE + 1
 
 export type Cursor = { at: string; id: string }
 
@@ -26,3 +26,20 @@ export const olderThan = (c: Cursor) => `created_at.lt."${c.at}",and(created_at.
 
 /** Same (created_at desc, id desc) order in JS, for merging games and memes. */
 export const newestFirst = (a: Cursor, b: Cursor) => (a.at === b.at ? (a.id < b.id ? 1 : a.id > b.id ? -1 : 0) : a.at < b.at ? 1 : -1)
+
+export type RpcPageArgs = { max_rows: number; before_at?: string; before_id?: string; row_offset?: number }
+
+/**
+ * Named args for the paged feed RPCs.
+ * First page of a newest list only sends max_rows, so it still works against the pre-0032 functions.
+ * later pages send before_at/before_id (newest) or row_offset (top), which need migration 0032.
+ */
+export function rpcPage({ limit, before = null, offset = 0, top = false }: { limit: number; before?: Cursor | null; offset?: number; top?: boolean }): RpcPageArgs {
+  const args: RpcPageArgs = { max_rows: limit }
+  if (!top && before) {
+    args.before_at = before.at
+    args.before_id = before.id
+  }
+  if (top && offset > 0) args.row_offset = offset
+  return args
+}

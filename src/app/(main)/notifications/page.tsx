@@ -32,11 +32,13 @@ export default async function NotificationsPage() {
             const t = notificationText(n)
             return (
               <li key={n.id} className={`card p-4 flex items-start gap-3 ${n.read_at ? 'opacity-70' : 'border-accent'}`} data-testid="notification" data-kind={n.kind} data-unread={!n.read_at}>
-                {/* plain <a>: full navigation so the bell count in the layout refreshes */}
-                <a href={`/notifications/${n.id}`} className="flex-1 min-w-0 hover:text-ink">
-                  <span className="block text-sm break-words">{t.text}</span>
-                  <span className="block text-xs text-ink-3 mt-1">{ago(n.updated_at)}</span>
-                </a>
+                {/* native form POST (opening marks it read; GET never does): full navigation so the bell count refreshes */}
+                <form method="post" action={`/notifications/${n.id}`} className="flex-1 min-w-0">
+                  <button type="submit" className="block w-full text-left hover:text-ink" data-testid="open-notification">
+                    <span className="block text-sm break-words">{t.text}</span>
+                    <span className="block text-xs text-ink-3 mt-1">{ago(n.updated_at)}</span>
+                  </button>
+                </form>
                 {!n.read_at && <form action={markRead}><input type="hidden" name="id" value={n.id} /><SubmitButton className="text-xs text-ink-2 hover:text-ink" aria-label="Mark as read" data-testid="mark-read" pendingLabel="Marking…">● Mark read</SubmitButton></form>}
               </li>
             )

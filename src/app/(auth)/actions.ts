@@ -1,6 +1,6 @@
 'use server'
 import { redirect } from 'next/navigation'
-import { cookies, headers } from 'next/headers'
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { signInSchema, signUpSchema } from '@/lib/validators/auth'
 import { REMEMBER_COOKIE, rememberCookieOptions } from '@/lib/supabase/cookies'
@@ -10,6 +10,7 @@ import { recordFailure, throttleOk } from '@/lib/server/throttle'
 import { clientIp } from '@/lib/server/request'
 import { isPwnedPassword, PWNED_PASSWORD_MESSAGE } from '@/lib/server/pwned'
 import { TURNSTILE_FIELD } from '@/lib/turnstile'
+import { siteUrl } from '@/lib/site-url'
 
 /** Stores the "Keep me signed in" choice so token refreshes keep the same cookie lifetime. */
 async function setRemember(remember: boolean) {
@@ -61,13 +62,13 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   const { email, password, username, dateOfBirth } = parsed.data
   // Known-breached passwords are rejected (HIBP k-anonymity; fails open if the API is down).
   if (await isPwnedPassword(password)) return fail(PWNED_PASSWORD_MESSAGE)
-  const origin = (await headers()).get('origin') ?? ''
+  // Trusted site URL from config, never the client's Origin header (open-redirect / phishing via confirm email).
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       captchaToken: token,
-      emailRedirectTo: `${origin}/auth/callback`,
+      emailRedirectTo: `${siteUrl()}/auth/callback`,
       data: { username, date_of_birth: dateOfBirth, age_confirmed: true, accepted_terms_version: LEGAL.termsVersion },
     },
   })

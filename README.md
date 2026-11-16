@@ -58,6 +58,7 @@ Without Supabase env vars the app still builds and renders, with empty lists and
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | app | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | app | Supabase anon (public) key; all access is limited by RLS |
+| `NEXT_PUBLIC_SITE_URL` | app, public (optional) | Canonical site origin for share previews and sign-up confirmation links. Defaults to `https://social-sips-livid.vercel.app` (or `VERCEL_PROJECT_PRODUCTION_URL`). Set on Production in Vercel; leave Preview unset. Must also be listed in Supabase Auth redirect URLs (with `/auth/callback`). |
 | `AUTH_THROTTLE_SECRET` | app, server-only | Shared secret for throttle/rate-limit RPCs and for signing the age and terms cookies. Must match `private.app_config.auth_throttle_secret`. Generate with `openssl rand -hex 32`. |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | app, public (optional) | Cloudflare Turnstile site key for the sign-up/sign-in CAPTCHA. Falls back to the production key in `src/lib/turnstile.ts`. Inlined at build time, so rebuild after changing it. The Turnstile **secret** lives only in Supabase Auth, never in the app. |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | scripts only | For `scripts/cleanup-orphan-media.mjs`. Never put the service role key in the app or in Vercel. |

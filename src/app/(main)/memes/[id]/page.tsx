@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const data = await getMeme(id, null)
   if (!data) return { title: 'Meme not found', robots: { index: false } }
   const m = data.meme
-  const origin = await siteOrigin()
+  const origin = siteOrigin()
   const title = snippet(m.caption ?? m.joke_text ?? 'A meme', 70)
   const description = snippet(m.caption && m.joke_text ? m.joke_text : 'Party-approved laughs from the Social Sips community. 18+ only.', 160)
   const image = isOwnStorageUrl(m.image_url) ? m.image_url : `${origin}/memes/${m.id}/og`

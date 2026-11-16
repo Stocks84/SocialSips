@@ -1,12 +1,9 @@
 import 'server-only'
-import { headers } from 'next/headers'
+import { siteUrl } from '@/lib/site-url'
 
-/** Absolute origin of this request (https://host), for OG URLs. */
-export async function siteOrigin(): Promise<string> {
-  const h = await headers()
-  const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'social-sips-livid.vercel.app'
-  const proto = h.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https')
-  return `${proto}://${host}`
+/** Canonical site origin for OG and share URLs. Same source as sign-up redirects; never the request Host. */
+export function siteOrigin(): string {
+  return siteUrl()
 }
 
 export const snippet = (s: string | null | undefined, max: number) => {

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { siteUrl } from '@/lib/site-url'
 import { DM_Serif_Display, Playfair_Display_SC, Libre_Franklin } from 'next/font/google'
 import { config as faConfig } from '@fortawesome/fontawesome-svg-core'
 import '@fortawesome/fontawesome-svg-core/styles.css' // local file from node_modules; no runtime <style> injection
@@ -23,6 +24,7 @@ const sans = Libre_Franklin({ // variable font, wght 100–900; we use 400/500/6
 
 /* ─── SEO + Social Metadata ─────────────────────────────────────────────── */
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl()),
   title: {
     default: 'Social Sips — Share Drinking Games & Cocktails',
     template: '%s | Social Sips',
@@ -56,6 +58,7 @@ export const metadata: Metadata = {
   // Open Graph (link previews on Slack, iMessage, etc.)
   openGraph: {
     type: 'website',
+    url: '/',
     title: 'Social Sips — Share Drinking Games & Cocktails',
     description:
       'The community for drinking games, cocktail recipes, and good times. 18+ only.',

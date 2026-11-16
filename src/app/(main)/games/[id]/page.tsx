@@ -1,4 +1,10 @@
 import Image from 'next/image'
+import { headers } from 'next/headers'
+import type { Metadata } from 'next'
+import { PREVIEW_HEADER } from '@/lib/preview'
+import { getSharedGame } from '@/lib/queries/share'
+import { siteOrigin } from '@/lib/server/share'
+import { buildShareMetadata, NOT_FOUND_META, snippet } from '@/lib/share-meta'
 import { isOwnStorageUrl } from '@/lib/storage'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -19,9 +25,30 @@ import AdminControls from '@/components/admin/AdminControls'
 import { faUsers } from '@fortawesome/free-solid-svg-icons'
 import { Icon } from '@/components/ui/Icon'
 
+/** Share preview (Open Graph / Twitter). Anonymous view only: hidden or missing games get generic metadata. */
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
+  const g = await getSharedGame(id)
+  if (!g) return NOT_FOUND_META
+  const origin = siteOrigin()
+  const image = isOwnStorageUrl(g.cover_image_url) ? g.cover_image_url : `${origin}/games/${g.id}/og`
+  return buildShareMetadata({ origin, path: `/games/${g.id}`, title: snippet(g.title, 70), description: snippet(g.summary, 160) || 'A drinking game on Social Sips. 18+ only.', image })
+}
+
 export default async function GamePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {
   const { id } = await params
   const { saved } = await searchParams
+  if ((await headers()).get(PREVIEW_HEADER) === '1') {
+    // Link-preview bot (no age cookie): the share tags come from generateMetadata; the body stays a stub.
+    const g = await getSharedGame(id)
+    if (!g) notFound()
+    return (
+      <article className="max-w-3xl space-y-4" data-testid="preview-stub">
+        <p className="font-semibold text-lg">{g.title}</p>
+        <Link href={`/games/${g.id}`} className="btn-primary text-sm">Open on Social Sips (18+)</Link>
+      </article>
+    )
+  }
   const detail = await getGameDetail(id)
   if (!detail) notFound()
   const { game, comments, variations, rating, userId } = detail

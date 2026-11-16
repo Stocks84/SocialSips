@@ -1,4 +1,10 @@
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
+import type { Metadata } from 'next'
+import { PREVIEW_HEADER } from '@/lib/preview'
+import { getSharedCocktail } from '@/lib/queries/share'
+import { siteOrigin } from '@/lib/server/share'
+import { buildShareMetadata, NOT_FOUND_META, snippet } from '@/lib/share-meta'
 import StarRating from '@/components/ui/StarRating'
 import CommentsSection from '@/components/social/CommentsSection'
 import RatingForm from '@/components/social/RatingForm'
@@ -16,9 +22,30 @@ import StatementOfReasons from '@/components/moderation/StatementOfReasons'
 import SavedBanner from '@/components/ui/SavedBanner'
 import AdminControls from '@/components/admin/AdminControls'
 
+/** Share preview (Open Graph / Twitter). Anonymous view only: hidden or missing cocktails get generic metadata. */
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
+  const c = await getSharedCocktail(id)
+  if (!c) return NOT_FOUND_META
+  const origin = siteOrigin()
+  const image = isOwnStorageUrl(c.image_url) ? c.image_url : `${origin}/cocktails/${c.id}/og`
+  return buildShareMetadata({ origin, path: `/cocktails/${c.id}`, title: snippet(c.name, 70), description: snippet(c.description, 160) || 'A cocktail recipe on Social Sips. 18+ only.', image })
+}
+
 export default async function CocktailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {
   const { id } = await params
   const { saved } = await searchParams
+  if ((await headers()).get(PREVIEW_HEADER) === '1') {
+    // Link-preview bot (no age cookie): the share tags come from generateMetadata; the body stays a stub.
+    const c = await getSharedCocktail(id)
+    if (!c) notFound()
+    return (
+      <article className="max-w-3xl space-y-4" data-testid="preview-stub">
+        <p className="font-semibold text-lg">{c.name}</p>
+        <Link href={`/cocktails/${c.id}`} className="btn-primary text-sm">Open on Social Sips (18+)</Link>
+      </article>
+    )
+  }
   const detail = await getCocktailDetail(id)
   if (!detail) notFound()
   const { cocktail: c, comments, variations, rating, userId } = detail

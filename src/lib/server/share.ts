@@ -6,7 +6,4 @@ export function siteOrigin(): string {
   return siteUrl()
 }
 
-export const snippet = (s: string | null | undefined, max: number) => {
-  const t = (s ?? '').replace(/\s+/g, ' ').trim()
-  return t.length > max ? `${t.slice(0, max - 1)}…` : t
-}
+export { snippet } from '@/lib/share-meta'

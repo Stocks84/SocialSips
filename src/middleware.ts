@@ -23,7 +23,7 @@ const PUBLIC_ROUTES = ['/', '/accept-terms', '/sign-in', '/sign-up', '/age-gate'
 
 // Known link-preview crawlers, and the only paths they may see without the age gate.
 const PREVIEW_BOTS = /facebookexternalhit|Facebot|Twitterbot|WhatsApp|Slackbot|LinkedInBot|Discordbot|TelegramBot/i
-const PREVIEW_PATH = /^\/memes\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(\/og)?$/i
+const PREVIEW_PATH = /^\/(?:memes|games|cocktails|challenge)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(\/og)?$/i
 
 // Write routes that need a signed-in user (in addition to the age gate).
 // Guests may browse after the age gate. Comments/ratings are also enforced by RLS
@@ -79,7 +79,7 @@ export async function middleware(request: NextRequest) {
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname)
   if (isPublicRoute) return response
 
-  // Link-preview bots may GET a meme's share page and its OG image only (they can't pass the age gate).
+  // Link-preview bots may GET a meme/game/cocktail/challenge share page and its OG image only (they can't pass the age gate).
   // Without an age cookie or session the page renders a metadata-only stub (no comments, no counts), and
   // only GET/HEAD are allowed, so a spoofed user agent gets nothing beyond the share preview.
   const isPreviewBot = PREVIEW_PATH.test(pathname) && PREVIEW_BOTS.test(request.headers.get('user-agent') ?? '')

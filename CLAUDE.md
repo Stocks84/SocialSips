@@ -20,7 +20,7 @@ Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS v4, Supabase (Auth, 
 ## Conventions
 - Use only the free Font Awesome icon set. Never commit `.env*` (except `.env.example`) or `SUPABASE_SERVICE_ROLE_KEY`.
 - Do not put the Turnstile secret in the app; it lives in Supabase Auth only.
-- Never commit secrets or `willsto84@gmail.com`. Git author must be `Stocks84 <124254214+Stocks84@users.noreply.github.com>`. Do not push to `main` or merge without Will's approval.
+- Never commit secrets. `willsto84@gmail.com` is Will's approved public contact on the legal pages only (`src/lib/legal.ts`); never remove it there, and never add it anywhere else. Git author must be `Stocks84 <124254214+Stocks84@users.noreply.github.com>`. Do not push to `main` or merge without Will's approval.
 
 ## End-of-job report
 Every finished coding job must be reported in this shape. Only list a check under CHECKS RUN if it actually ran; anything untested goes under NOT CHECKED, never left out.

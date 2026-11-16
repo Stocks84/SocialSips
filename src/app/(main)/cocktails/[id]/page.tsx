@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
 import type { Metadata } from 'next'
+import { PREVIEW_HEADER } from '@/lib/preview'
 import { getSharedCocktail } from '@/lib/queries/share'
 import { siteOrigin } from '@/lib/server/share'
 import { buildShareMetadata, NOT_FOUND_META, snippet } from '@/lib/share-meta'
@@ -33,6 +35,17 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function CocktailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {
   const { id } = await params
   const { saved } = await searchParams
+  if ((await headers()).get(PREVIEW_HEADER) === '1') {
+    // Link-preview bot (no age cookie): the share tags come from generateMetadata; the body stays a stub.
+    const c = await getSharedCocktail(id)
+    if (!c) notFound()
+    return (
+      <article className="max-w-3xl space-y-4" data-testid="preview-stub">
+        <p className="font-semibold text-lg">{c.name}</p>
+        <Link href={`/cocktails/${c.id}`} className="btn-primary text-sm">Open on Social Sips (18+)</Link>
+      </article>
+    )
+  }
   const detail = await getCocktailDetail(id)
   if (!detail) notFound()
   const { cocktail: c, comments, variations, rating, userId } = detail

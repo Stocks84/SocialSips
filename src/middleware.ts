@@ -19,7 +19,10 @@ import { signTermsToken, TERMS_COOKIE, termsCookieOptions, verifyTermsToken } fr
 // Routes that are ALWAYS accessible — no auth or age check needed
 // Legal pages and the public report form are reachable without the age gate (Impressum, DSA Art. 11–16).
 const LEGAL_ROUTES = ['/impressum', '/privacy', '/terms', '/report']
-const PUBLIC_ROUTES = ['/', '/accept-terms', '/sign-in', '/sign-up', '/age-gate', '/age-gate/sorry', '/help', '/auth/callback', '/manifest.json', '/sw.js', ...LEGAL_ROUTES]
+// Site-wide default share images (app/opengraph-image.tsx, twitter-image.tsx): static text, no user content,
+// and link-preview bots can't pass the age gate. They are served with a ?hash query; pathname excludes it.
+const DEFAULT_SHARE_IMAGES = ['/opengraph-image', '/twitter-image']
+const PUBLIC_ROUTES = ['/', '/accept-terms', '/sign-in', '/sign-up', '/age-gate', '/age-gate/sorry', '/help', '/auth/callback', '/manifest.json', '/sw.js', ...DEFAULT_SHARE_IMAGES, ...LEGAL_ROUTES]
 
 // Known link-preview crawlers, and the only paths they may see without the age gate.
 const PREVIEW_BOTS = /facebookexternalhit|Facebot|Twitterbot|WhatsApp|Slackbot|LinkedInBot|Discordbot|TelegramBot/i

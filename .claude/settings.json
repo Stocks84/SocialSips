@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "statusMessage": "Running unit tests",
+            "command": "cd \"${CLAUDE_PROJECT_DIR:-.}\" && node --test --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON src/lib/*.test.ts || { echo \"node --test src/lib/*.test.ts failed. Fix the failures before stopping.\" >&2; exit 2; }"
+          }
+        ]
+      }
+    ]
+  }
+}

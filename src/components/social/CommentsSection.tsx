@@ -10,10 +10,12 @@ import type { CommentRow } from '@/lib/queries/social'
 import { formatDate } from '@/lib/format'
 import ConfirmSubmit from '@/components/ui/ConfirmSubmit'
 import SuspendedFormBlock from '@/components/ui/SuspendedFormBlock'
+import { reportControl } from '@/lib/suspension'
 
 type Props = { kind: 'game' | 'cocktail' | 'meme'; targetId: string; comments: CommentRow[]; userId: string | null; path: string; isAdmin?: boolean; locked?: boolean; suspended?: { reason: string | null } | null }
 
 export default function CommentsSection({ kind, targetId, comments, userId, path, isAdmin = false, locked = false, suspended = null }: Props) {
+  const report = reportControl({ signedIn: Boolean(userId), suspended: Boolean(suspended) })
   return (
     <section className="space-y-3">
       <h2 className="text-xl font-bold text-accent">Comments ({comments.length})</h2>
@@ -28,9 +30,9 @@ export default function CommentsSection({ kind, targetId, comments, userId, path
                 <input type="hidden" name="commentId" value={c.id} />
                 <ConfirmSubmit message="Delete this comment? There's no undo." className="hover:text-ink" label="Delete comment">Delete</ConfirmSubmit>
               </form>
-            ) : userId ? (
+            ) : report === 'button' ? (
               <ReportButton targetType="comment" targetId={c.id} />
-            ) : !userId ? <PublicReportLink targetType="comment" targetId={c.id} /> : null}
+            ) : report === 'public' ? <PublicReportLink targetType="comment" targetId={c.id} /> : null}
           </div>
           {c.author_id === userId && !c.is_hidden && !locked && !suspended ? (
             <InlineEdit action={updateOwnComment} testId="comment" hidden={{ kind, targetId, commentId: c.id }}

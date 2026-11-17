@@ -13,12 +13,14 @@ import { deleteMeme } from '@/app/(main)/memes/actions'
 import type { MemeWithStats } from '@/lib/queries/memes'
 import { faComment } from '@fortawesome/free-regular-svg-icons'
 import { Icon } from '@/components/ui/Icon'
+import { reportControl } from '@/lib/suspension'
 
 type Props = { meme: MemeWithStats; userId: string | null; isAdmin: boolean; suspended?: boolean; detail?: boolean }
 
 /** A meme with reactions. In the list it links to its own page (with the comment count). */
 export default function MemeCard({ meme: m, userId, isAdmin, suspended = false, detail = false }: Props) {
   const path = `/memes/${m.id}`
+  const report = reportControl({ signedIn: Boolean(userId), suspended })
   // A hidden meme's image is private (migration 0041), so don't ask for it.
   const img = !m.is_hidden && isOwnStorageUrl(m.image_url) && (
     <Image src={m.image_url} alt={m.caption ?? 'Meme'} width={1200} height={900} sizes={detail ? '(min-width: 768px) 768px, 100vw' : '(min-width: 640px) 50vw, 100vw'} className="w-full h-auto" priority={detail} />
@@ -48,9 +50,9 @@ export default function MemeCard({ meme: m, userId, isAdmin, suspended = false, 
                 <ConfirmSubmit message="Delete this meme? There's no undo." className="hover:text-ink" label="Delete meme">Delete</ConfirmSubmit>
               </form>
             </span>
-          ) : userId ? (
+          ) : report === 'button' ? (
             <ReportButton targetType="meme" targetId={m.id} />
-          ) : <PublicReportLink targetType="meme" targetId={m.id} />}
+          ) : report === 'public' ? <PublicReportLink targetType="meme" targetId={m.id} /> : null}
         </div>
         {isAdmin && <AdminControls type="meme" id={m.id} compact redirectTo={detail ? '/memes' : undefined} />}
       </figcaption>

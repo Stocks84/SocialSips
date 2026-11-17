@@ -11,10 +11,12 @@ import type { VariationRow } from '@/lib/queries/social'
 import { formatDate } from '@/lib/format'
 import ConfirmSubmit from '@/components/ui/ConfirmSubmit'
 import SuspendedFormBlock from '@/components/ui/SuspendedFormBlock'
+import { reportControl } from '@/lib/suspension'
 
 type Props = { kind: 'game' | 'cocktail'; targetId: string; variations: VariationRow[]; userId: string | null; path: string; isAdmin?: boolean; locked?: boolean; suspended?: { reason: string | null } | null }
 
 export default function VariationsSection({ kind, targetId, variations, userId, path, isAdmin = false, locked = false, suspended = null }: Props) {
+  const report = reportControl({ signedIn: Boolean(userId), suspended: Boolean(suspended) })
   return (
     <section className="space-y-3">
       <h2 className="text-xl font-bold text-accent">{kind === 'game' ? 'House variations' : 'Twists & variations'}</h2>
@@ -30,9 +32,9 @@ export default function VariationsSection({ kind, targetId, variations, userId, 
                 <input type="hidden" name="variationId" value={v.id} />
                 <ConfirmSubmit message="Delete this variation? There's no undo." className="text-xs text-ink-3 hover:text-ink" label="Delete variation">Delete</ConfirmSubmit>
               </form>
-            ) : userId ? (
+            ) : report === 'button' ? (
               <ReportButton targetType={kind === 'game' ? 'variation' : 'cocktail_variation'} targetId={v.id} />
-            ) : <PublicReportLink targetType={kind === 'game' ? 'variation' : 'cocktail_variation'} targetId={v.id} />}
+            ) : report === 'public' ? <PublicReportLink targetType={kind === 'game' ? 'variation' : 'cocktail_variation'} targetId={v.id} /> : null}
           </div>
           {v.author_id === userId && !v.is_hidden && !locked && !suspended ? (
             <InlineEdit action={updateOwnVariation} testId="variation" hidden={{ kind, targetId, variationId: v.id }}

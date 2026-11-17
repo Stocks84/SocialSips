@@ -11,6 +11,7 @@ import RatingForm from '@/components/social/RatingForm'
 import SignInPrompt from '@/components/social/SignInPrompt'
 import VariationsSection from '@/components/social/VariationsSection'
 import ReportButton from '@/components/ui/ReportButton'
+import { reportControl } from '@/lib/suspension'
 import PublicReportLink from '@/components/ui/PublicReportLink'
 import Image from 'next/image'
 import { isOwnStorageUrl } from '@/lib/storage'
@@ -52,6 +53,7 @@ export default async function CocktailPage({ params, searchParams }: { params: P
   const { cocktail: c, comments, variations, rating, userId } = detail
   const { isAdmin, suspended } = await getViewer()
   const path = `/cocktails/${c.id}`
+  const report = reportControl({ signedIn: Boolean(userId), suspended: Boolean(suspended) })
   return (
     <article className="max-w-3xl space-y-10">
       <header>
@@ -64,9 +66,9 @@ export default async function CocktailPage({ params, searchParams }: { params: P
           <h1 className="text-4xl font-display font-normal text-ink mb-3">{c.name}</h1>
           {userId && c.author_id === userId && !c.is_hidden ? (
             <Link href={`${path}/edit`} className="btn-secondary text-sm py-2 px-4 shrink-0">Edit</Link>
-          ) : userId && c.author_id !== userId ? (
+          ) : userId && c.author_id !== userId && report === 'button' ? (
             <ReportButton targetType="cocktail" targetId={c.id} />
-          ) : !userId ? <PublicReportLink targetType="cocktail" targetId={c.id} /> : null}
+          ) : report === 'public' ? <PublicReportLink targetType="cocktail" targetId={c.id} /> : null}
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {c.is_alcohol_free && <span className="chip">Alcohol-free</span>}

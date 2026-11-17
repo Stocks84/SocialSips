@@ -25,6 +25,7 @@ import SavedBanner from '@/components/ui/SavedBanner'
 import AdminControls from '@/components/admin/AdminControls'
 import { faUsers } from '@fortawesome/free-solid-svg-icons'
 import { Icon } from '@/components/ui/Icon'
+import { reportControl } from '@/lib/suspension'
 
 /** Share preview (Open Graph / Twitter). Anonymous view only: hidden or missing games get generic metadata. */
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -55,6 +56,7 @@ export default async function GamePage({ params, searchParams }: { params: Promi
   const { game, comments, variations, rating, userId } = detail
   const { isAdmin, suspended } = await getViewer()
   const path = `/games/${game.id}`
+  const report = reportControl({ signedIn: Boolean(userId), suspended: Boolean(suspended) })
   const isOwner = Boolean(userId && game.author_id === userId)
   const players = game.max_players ? `${game.min_players}–${game.max_players}` : `${game.min_players}+`
 
@@ -69,9 +71,9 @@ export default async function GamePage({ params, searchParams }: { params: Promi
           <h1 className="text-4xl font-display font-normal mb-3">{game.title}</h1>
           {isOwner && !game.is_hidden ? (
             <Link href={`${path}/edit`} className="btn-secondary text-sm py-2 px-4 shrink-0">Edit</Link>
-          ) : userId && !isOwner ? (
+          ) : !isOwner && report === 'button' ? (
             <ReportButton targetType="game" targetId={game.id} />
-          ) : !userId ? <PublicReportLink targetType="game" targetId={game.id} /> : null}
+          ) : report === 'public' ? <PublicReportLink targetType="game" targetId={game.id} /> : null}
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <HangoverBadge rating={game.hangover_rating} />

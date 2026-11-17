@@ -13,3 +13,13 @@ export function suspendedBlockCopy(action: string, reason: string | null | undef
     reason: cleaned || null,
   }
 }
+
+/**
+ * Which report control to show on someone else's item.
+ * Signed-out: the public report link. Signed-in: the in-page button. Suspended: nothing, because the server
+ * refuses their reports (the public /report form and footer link stay open to everyone).
+ */
+export function reportControl(viewer: { signedIn: boolean; suspended: boolean }): 'public' | 'button' | 'none' {
+  if (!viewer.signedIn) return 'public'
+  return viewer.suspended ? 'none' : 'button'
+}

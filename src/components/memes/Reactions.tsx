@@ -1,47 +1,49 @@
 'use client'
-import { useOptimistic, useRef, useState, useTransition } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
 import { setReaction } from '@/app/(main)/memes/actions'
-import { REACTIONS } from '@/lib/memes'
+import { REACTIONS, reactionTarget, settleReaction, type ReactionReply } from '@/lib/memes'
 
 type State = { counts: Record<string, number>; mine: string | null }
 type Props = { memeId: string; counts: Record<string, number>; mine: string | null; signedIn: boolean; disabled?: boolean; suspended?: boolean; path: string }
 
 /** 😂 🔥 🍸 💀 👏 with counts. One reaction per person: tap to set, tap another to change, tap yours to remove. */
 export default function Reactions({ memeId, counts, mine, signedIn, disabled = false, suspended = false, path }: Props) {
+  // Counts only ever come from the server, so a rejected reaction never shows a wrong number.
+  // The tapped button lights up straight away (pending) so a tap still feels instant.
   const [state, setState] = useState<State>({ counts, mine })
-  const [optimistic, apply] = useOptimistic(state, (s: State, next: string | null): State => {
-    const c = { ...s.counts }
-    if (s.mine) c[s.mine] = Math.max(0, (c[s.mine] ?? 1) - 1)
-    if (next) c[next] = (c[next] ?? 0) + 1
-    return { counts: c, mine: next }
-  })
-  const [, start] = useTransition()
+  const [pending, setPending] = useState<{ emoji: string | null } | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   // Each tap gets a sequence number; only the newest reply is rendered, so out-of-order replies can't win.
   const seq = useRef(0)
 
-  function react(emoji: string) {
+  async function react(emoji: string) {
     if (!signedIn || disabled || suspended) return
-    const next = optimistic.mine === emoji ? null : emoji
+    const shown = pending ? pending.emoji : state.mine
+    const next = reactionTarget(shown, emoji)
     const mySeq = ++seq.current
     setError(null)
-    start(async () => {
-      apply(next)
-      const res = await setReaction(memeId, next)
-      if (mySeq !== seq.current) return
-      if (res.error) setError(res.error)
-      else setState({ counts: res.counts ?? {}, mine: res.mine ?? null })
-    })
+    setPending({ emoji: next })
+    let reply: ReactionReply
+    try {
+      reply = await setReaction(memeId, next)
+    } catch {
+      reply = { error: 'Could not save your reaction. Check your connection and try again.' }
+    }
+    const r = settleReaction(reply, mySeq !== seq.current)
+    if (r.ignore) return
+    setPending(null)
+    if (r.error) setError(r.error)
+    else if (r.view) setState(r.view)
   }
 
   return (
-    <div data-testid="reactions">
+    <div data-testid="reactions" aria-busy={pending !== null}>
       <div className="flex flex-wrap gap-2" role="group" aria-label="Reactions">
         {REACTIONS.map((e) => {
-          const n = optimistic.counts[e] ?? 0
-          const active = optimistic.mine === e
+          const n = state.counts[e] ?? 0
+          const active = (pending ? pending.emoji : state.mine) === e
           return (
             <button
               key={e}
@@ -51,7 +53,7 @@ export default function Reactions({ memeId, counts, mine, signedIn, disabled = f
               aria-pressed={active}
               aria-label={`${e} ${n}`}
               data-testid="reaction"
-              className={`px-2.5 py-1 rounded-sm text-sm border transition-colors ${active ? 'border-accent bg-raised' : 'border-line hover:border-accent'} disabled:cursor-default`}
+              className={`px-2.5 py-1 rounded-sm text-sm border transition-colors ${active ? 'border-accent bg-raised' : 'border-line hover:border-accent'} disabled:cursor-default ${pending && active ? 'opacity-70' : ''}`}
             >
               {e} <span className="text-ink-2 text-xs">{n}</span>
             </button>

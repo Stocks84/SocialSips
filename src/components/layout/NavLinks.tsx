@@ -16,7 +16,7 @@ export default function NavLinks({ items }: { items: readonly NavItem[] }) {
             key={i.href}
             href={i.href}
             aria-current={active ? 'page' : undefined}
-            className={`relative inline-flex items-center text-[15px] leading-6 font-medium ${active ? 'text-ink' : 'text-ink-2 hover:text-ink'}`}
+            className={`relative inline-flex min-w-11 items-center justify-center text-[15px] leading-6 font-medium ${active ? 'text-ink' : 'text-ink-2 hover:text-ink'}`}
           >
             {i.label}
             {active && <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 bg-accent" />}

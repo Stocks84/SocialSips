@@ -1,7 +1,7 @@
 {
   "name": "Social Sips",
   "short_name": "SocialSips",
-  "description": "Share drinking games & cocktails with friends. Play responsibly.",
+  "description": "Share drinking games & drinks with friends. Play responsibly.",
   "start_url": "/feed",
   "scope": "/",
   "display": "standalone",
@@ -77,9 +77,9 @@
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {
-      "name": "Cocktail Recipes",
-      "short_name": "Cocktails",
-      "description": "Browse cocktail recipes",
+      "name": "Drink Recipes",
+      "short_name": "Drinks",
+      "description": "Browse drink recipes",
       "url": "/cocktails",
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
     },

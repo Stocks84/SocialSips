@@ -1,6 +1,6 @@
 import { ogCard } from '@/lib/server/og-card'
 
-export const alt = 'Social Sips: drinking games & cocktails'
+export const alt = 'Social Sips: drinking games & drinks'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -8,7 +8,7 @@ export const contentType = 'image/png'
 export default function Image() {
   return ogCard({
     kicker: '18+ only',
-    title: 'Drinking games & cocktails',
+    title: 'Drinking games & drinks',
     body: 'Share games and recipes with friends. Rated by hangover severity.',
     footer: 'Play responsibly',
   })

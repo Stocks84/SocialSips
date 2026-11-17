@@ -19,7 +19,7 @@ const menu = [
   },
   {
     no: 'No. 2',
-    title: 'Cocktails',
+    title: 'Drinks',
     text: 'Community-submitted recipes. Rate them, remix them, make them your own.',
     href: '/cocktails',
   },
@@ -58,7 +58,7 @@ export default function LandingPage() {
               Drinking games, rated by the morning after.
             </h1>
             <p className="enter mt-4 max-w-xl text-body-lg text-ink-2 lg:mt-8 lg:max-w-md lg:text-body-lg-lg" style={{ '--enter-step': 1 } as React.CSSProperties}>
-              Post the games your group plays, the cocktails you mix and the memes you can&apos;t stop sending.
+              Post the games your group plays, the drinks you mix and the memes you can&apos;t stop sending.
             </p>
             <div className="enter mt-6 flex flex-col gap-1 lg:mt-8 lg:flex-row lg:items-center lg:gap-8" style={{ '--enter-step': 2 } as React.CSSProperties}>
               <Link href="/age-gate" className="btn-primary w-full lg:w-auto">Enter Social Sips</Link>

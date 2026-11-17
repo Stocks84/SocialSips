@@ -46,7 +46,7 @@ export default async function ChallengeView({ c, current, error }: { c: Challeng
     <>
       <section className="card p-6 mb-6" data-testid="challenge-hero">
         <div className="flex flex-wrap items-center gap-2 text-xs mb-3">
-          <span className="chip">Weekly challenge</span>
+          <span className="chip">Weekly dare</span>
           <span className="chip">{KIND_LABEL[c.kind]}s</span>
           <span className="text-ink-3">{weekLabel(c.starts_on)} (Vienna time)</span>
         </div>

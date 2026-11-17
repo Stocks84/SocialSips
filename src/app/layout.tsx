@@ -26,11 +26,11 @@ const sans = Libre_Franklin({ // variable font, wght 100–900; we use 400/500/6
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: {
-    default: 'Social Sips — Share Drinking Games & Cocktails',
+    default: 'Social Sips — Share Drinking Games & Drinks',
     template: '%s | Social Sips',
   },
   description:
-    'Share drinking games and cocktail recipes with friends. ' +
+    'Share drinking games and drink recipes with friends. ' +
     'Rated by hangover severity. Play responsibly. 18+.',
   keywords: [
     'drinking games',
@@ -59,9 +59,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: '/',
-    title: 'Social Sips — Share Drinking Games & Cocktails',
+    title: 'Social Sips — Share Drinking Games & Drinks',
     description:
-      'The community for drinking games, cocktail recipes, and good times. 18+ only.',
+      'The community for drinking games, drinks and good times. 18+ only.',
     siteName: 'Social Sips',
     // images: [{ url: '/images/og-image.png', width: 1200, height: 630 }],
   },
@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Social Sips',
     description:
-      'The community for drinking games, cocktail recipes, and good times.',
+      'The community for drinking games, drinks and good times.',
     // images: ['/images/og-image.png'],
   },
 

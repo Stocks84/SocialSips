@@ -21,8 +21,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const origin = siteOrigin()
   return buildShareMetadata({
     origin, path: `/challenge/${c.id}`,
-    title: `${snippet(c.theme, 60)} · Weekly challenge`,
-    description: snippet(c.description, 160) || `${KIND_LABEL[c.kind]} challenge, ${weekLabel(c.starts_on)}. Enter and vote on Social Sips. 18+ only.`,
+    title: `${snippet(c.theme, 60)} · Weekly dare`,
+    description: snippet(c.description, 160) || `${KIND_LABEL[c.kind]} dare, ${weekLabel(c.starts_on)}. Enter and vote on Social Sips. 18+ only.`,
     image: `${origin}/challenge/${c.id}/og`,
   })
 }
@@ -46,7 +46,7 @@ export default async function ChallengeDetailPage({ params, searchParams }: { pa
   if (cur?.id === c.id && !error) redirect('/challenge')
   return (
     <>
-      <Link href="/challenge" className="text-sm text-ink-2 hover:text-ink">← This week&apos;s challenge</Link>
+      <Link href="/challenge" className="text-sm text-ink-2 hover:text-ink">← This week&apos;s dare</Link>
       <div className="mt-3"><ChallengeView c={c} current={false} error={error?.slice(0, 200)} /></div>
     </>
   )

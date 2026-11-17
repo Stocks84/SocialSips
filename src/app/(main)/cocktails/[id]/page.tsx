@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!c) return NOT_FOUND_META
   const origin = siteOrigin()
   const image = isOwnStorageUrl(c.image_url) ? c.image_url : `${origin}/cocktails/${c.id}/og`
-  return buildShareMetadata({ origin, path: `/cocktails/${c.id}`, title: snippet(c.name, 70), description: snippet(c.description, 160) || 'A cocktail recipe on Social Sips. 18+ only.', image })
+  return buildShareMetadata({ origin, path: `/cocktails/${c.id}`, title: snippet(c.name, 70), description: snippet(c.description, 160) || 'A drink recipe on Social Sips. 18+ only.', image })
 }
 
 export default async function CocktailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {

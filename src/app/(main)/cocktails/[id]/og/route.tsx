@@ -6,5 +6,5 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const { id } = await params
   const c = await getSharedCocktail(id)
   if (!c) return new Response('Not found', { status: 404 })
-  return ogCard({ kicker: 'Cocktail', title: c.name, body: c.description, footer: `${c.is_alcohol_free ? 'Alcohol-free · ' : ''}Cocktails · 18+` })
+  return ogCard({ kicker: 'Drink', title: c.name, body: c.description, footer: `${c.is_alcohol_free ? 'Alcohol-free · ' : ''}Drinks · 18+` })
 }

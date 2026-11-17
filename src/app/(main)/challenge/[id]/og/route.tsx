@@ -7,5 +7,5 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const { id } = await params
   const c = await getSharedChallenge(id)
   if (!c) return new Response('Not found', { status: 404 })
-  return ogCard({ kicker: 'Weekly challenge', title: c.theme, body: c.description, footer: `${KIND_LABEL[c.kind]} · ${weekLabel(c.starts_on)} · 18+` })
+  return ogCard({ kicker: 'Weekly dare', title: c.theme, body: c.description, footer: `${KIND_LABEL[c.kind]} · ${weekLabel(c.starts_on)} · 18+` })
 }

@@ -7,7 +7,7 @@ import Pager from '@/components/ui/Pager'
 import { listCocktails } from '@/lib/queries/cocktails'
 import { encodeCursor, parseCursor, PAGE_SIZE, PAGE_TAKE } from '@/lib/paging'
 
-export const metadata = { title: 'Cocktails' }
+export const metadata = { title: 'Drinks' }
 
 export default async function CocktailsPage({ searchParams }: { searchParams: Promise<{ q?: string; af?: string; sort?: string; ing?: string; page?: string; before?: string }> }) {
   const { q = '', af, sort = 'newest', ing = '', page: pageParam, before: beforeParam } = await searchParams
@@ -35,10 +35,10 @@ export default async function CocktailsPage({ searchParams }: { searchParams: Pr
   return (
     <>
       <div className="flex items-start justify-between gap-4">
-        <PageHeader title="Cocktail Recipes" subtitle="Shake, stir, share. Alcohol-free options included." />
+        <PageHeader title="Drink Recipes" subtitle="Shake, stir, share. Alcohol-free options included." />
         <div className="flex flex-col sm:flex-row gap-2 shrink-0">
           <Link href="/cocktails/make" className="btn-secondary text-sm text-center" data-testid="make-link">What can I make?</Link>
-          <Link href="/cocktails/new" className="btn-primary text-sm text-center">+ Add cocktail</Link>
+          <Link href="/cocktails/new" className="btn-primary text-sm text-center">+ Add drink</Link>
         </div>
       </div>
       <CocktailFilters q={q} alcoholFree={alcoholFree} sort={sort} ing={ing} />
@@ -49,18 +49,18 @@ export default async function CocktailsPage({ searchParams }: { searchParams: Pr
         paged ? (
           <EmptyState title="Last call. That's every recipe." action={{ href: href(), label: 'Back to the start' }} testId="cocktails-end" />
         ) : filtered ? (
-          <EmptyState title="No cocktails match." action={{ href: '/cocktails', label: 'Clear filters' }} testId="cocktails-empty">
+          <EmptyState title="No drinks match." action={{ href: '/cocktails', label: 'Clear filters' }} testId="cocktails-empty">
             Try another search or ingredient.
           </EmptyState>
         ) : (
-          <EmptyState title="The bar is empty." action={{ href: '/cocktails/new', label: '+ Add a cocktail' }} testId="cocktails-empty">
+          <EmptyState title="The bar is empty." action={{ href: '/cocktails/new', label: '+ Add a drink' }} testId="cocktails-empty">
             No recipes yet. Shake things up and add the first one.
           </EmptyState>
         )
       )}
       {top ? (
         <Pager
-          label="More cocktails"
+          label="More drinks"
           prevHref={page > 1 ? href({ page: page - 1 }) : null}
           prevText="← Previous"
           nextHref={hasMore ? href({ page: page + 1 }) : null}
@@ -69,7 +69,7 @@ export default async function CocktailsPage({ searchParams }: { searchParams: Pr
         />
       ) : (
         <Pager
-          label="More cocktails"
+          label="More drinks"
           prevHref={before ? href() : null}
           prevText="↑ Back to the newest"
           nextHref={hasMore && last?.created_at ? href({ before: encodeCursor({ at: last.created_at, id: last.id }) }) : null}

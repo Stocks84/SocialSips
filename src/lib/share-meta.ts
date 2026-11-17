@@ -50,7 +50,7 @@ export function profileMetadata(profile: ProfileMetaInput | null): Metadata {
   const bio = snippet(profile.bio, 160)
   return {
     title: name,
-    description: bio || `Drinking games, cocktails and memes shared by ${name} on Social Sips. 18+ only.`,
+    description: bio || `Drinking games, drinks and memes shared by ${name} on Social Sips. 18+ only.`,
   }
 }
 
@@ -62,15 +62,15 @@ export type ChallengeShareInput = { theme: string; description: string | null; k
 
 /** Text on the /challenge share card and og:image. No active challenge = a generic card, never an error. */
 export function challengeCardText(c: ChallengeShareInput | null): { kicker: string; title: string; body: string | null; footer: string } {
-  if (!c) return { kicker: 'Weekly challenge', title: 'A new challenge every week', body: 'Enter a meme or cocktail variation and vote for your favourites.', footer: '18+' }
-  return { kicker: 'Weekly challenge', title: c.theme, body: c.description, footer: `${c.kindLabel} · ${c.week} · 18+` }
+  if (!c) return { kicker: 'Weekly dare', title: 'A new dare every week', body: 'Enter a meme or cocktail variation and vote for your favourites.', footer: '18+' }
+  return { kicker: 'Weekly dare', title: c.theme, body: c.description, footer: `${c.kindLabel} · ${c.week} · 18+` }
 }
 
 /** Share metadata for /challenge (this week's challenge). `c` null = no active challenge, so the default wording and card. */
 export function challengePageMetadata(origin: string, c: ChallengeShareInput | null): Metadata {
-  const title = c ? `${snippet(c.theme, 60)} · This week's challenge` : 'Weekly challenge'
+  const title = c ? `${snippet(c.theme, 60)} · This week's dare` : 'Weekly dare'
   const description = c
-    ? snippet(c.description, 160) || `${c.kindLabel} challenge, ${c.week}. Enter and vote on Social Sips. 18+ only.`
-    : 'A new Social Sips challenge every week. Enter a meme or cocktail variation and vote for your favourites. 18+ only.'
+    ? snippet(c.description, 160) || `${c.kindLabel} dare, ${c.week}. Enter and vote on Social Sips. 18+ only.`
+    : 'A new Social Sips dare every week. Enter a meme or cocktail variation and vote for your favourites. 18+ only.'
   return buildShareMetadata({ origin, path: '/challenge', title, description, image: `${origin}/challenge/og`, type: 'website' })
 }

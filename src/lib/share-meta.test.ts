@@ -37,7 +37,7 @@ describe('challengePageMetadata (/challenge share card)', () => {
   const c = { theme: 'Worst pickup line', description: 'Funniest wins', kindLabel: 'Meme', week: '16 Nov – 22 Nov' }
   const m = challengePageMetadata('https://x.test', c)
   it("uses this week's theme and description, the /challenge canonical and the /challenge/og image", () => {
-    assert.equal(m.title, "Worst pickup line · This week's challenge")
+    assert.equal(m.title, "Worst pickup line · This week's dare")
     assert.equal(m.description, 'Funniest wins')
     assert.equal(m.alternates?.canonical, 'https://x.test/challenge')
     const og = m.openGraph as { url: string; type: string; images: { url: string; width: number; height: number }[] }
@@ -49,13 +49,13 @@ describe('challengePageMetadata (/challenge share card)', () => {
     assert.deepEqual(tw.images, ['https://x.test/challenge/og'])
   })
   it('falls back to a generated description when the challenge has none, and trims long text', () => {
-    assert.match(String(challengePageMetadata('https://x.test', { ...c, description: null }).description), /^Meme challenge, 16 Nov – 22 Nov\. Enter and vote on Social Sips\. 18\+ only\.$/)
+    assert.match(String(challengePageMetadata('https://x.test', { ...c, description: null }).description), /^Meme dare, 16 Nov – 22 Nov\. Enter and vote on Social Sips\. 18\+ only\.$/)
     assert.ok(String(challengePageMetadata('https://x.test', { ...c, theme: 'x'.repeat(200), description: 'y'.repeat(500) }).description).length <= 160)
   })
   it('no active challenge gives a sensible default (still with the image)', () => {
     const d = challengePageMetadata('https://x.test', null)
-    assert.equal(d.title, 'Weekly challenge')
-    assert.match(String(d.description), /new Social Sips challenge every week/)
+    assert.equal(d.title, 'Weekly dare')
+    assert.match(String(d.description), /new Social Sips dare every week/)
     assert.equal((d.openGraph as { images: { url: string }[] }).images[0].url, 'https://x.test/challenge/og')
   })
 })
@@ -67,6 +67,6 @@ describe('challengeCardText', () => {
   })
   it('has a generic card when none is active', () => {
     const t = challengeCardText(null)
-    assert.equal(t.kicker, 'Weekly challenge'); assert.ok(t.title.length > 0)
+    assert.equal(t.kicker, 'Weekly dare'); assert.ok(t.title.length > 0)
   })
 })

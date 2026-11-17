@@ -3,6 +3,7 @@ import { isOwnStorageUrl } from '@/lib/storage'
 import { notFound, redirect } from 'next/navigation'
 import MemeForm from '@/components/memes/MemeForm'
 import PageHeader from '@/components/ui/PageHeader'
+import SuspendedFormBlock from '@/components/ui/SuspendedFormBlock'
 import { getMemeForEdit } from '@/lib/queries/memes'
 import { getViewer } from '@/lib/server/viewer'
 import { updateMeme } from '../../actions'
@@ -13,13 +14,13 @@ export default async function EditMemePage({ params }: { params: Promise<{ id: s
   const { id } = await params
   const meme = await getMemeForEdit(id)
   if (!meme) notFound()
-  const { userId } = await getViewer()
+  const { userId, suspended } = await getViewer()
   if (meme.author_id !== userId) redirect('/memes')
   return (
     <>
       <PageHeader title="Edit meme" />
       {!meme.is_hidden && isOwnStorageUrl(meme.image_url) && <Image src={meme.image_url!} alt="" width={600} height={450} className="rounded-sm mb-6 max-w-sm h-auto border border-rule" />}
-      {meme.is_hidden ? <p className="card p-4 text-sm text-ink-2 max-w-2xl" data-testid="edit-locked">A moderator has hidden this post, so it can&apos;t be edited right now.</p> : <MemeForm action={updateMeme} defaults={meme} submitLabel="Save changes" />}
+      {suspended ? <SuspendedFormBlock action="edit this meme" reason={suspended.reason} /> : meme.is_hidden ? <p className="card p-4 text-sm text-ink-2 max-w-2xl" data-testid="edit-locked">A moderator has hidden this post, so it can&apos;t be edited right now.</p> : <MemeForm action={updateMeme} defaults={meme} submitLabel="Save changes" />}
     </>
   )
 }

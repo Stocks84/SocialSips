@@ -1,6 +1,8 @@
 import { notFound, redirect } from 'next/navigation'
 import GameForm from '@/components/games/GameForm'
 import PageHeader from '@/components/ui/PageHeader'
+import { getViewer } from '@/lib/server/viewer'
+import SuspendedFormBlock from '@/components/ui/SuspendedFormBlock'
 import { getGameDetail } from '@/lib/queries/games'
 import { deleteGame, updateGame } from '../../actions'
 import SubmitButton from '@/components/ui/SubmitButton'
@@ -13,10 +15,11 @@ export default async function EditGamePage({ params }: { params: Promise<{ id: s
   if (!detail) notFound()
   if (!detail.userId || detail.game.author_id !== detail.userId) redirect(`/games/${id}`)
   const g = detail.game
+  const { suspended } = await getViewer()
   return (
     <>
       <PageHeader title="Edit game" subtitle={g.title} />
-      {g.is_hidden ? <p className="card p-4 text-sm text-ink-2 max-w-2xl" data-testid="edit-locked">A moderator has hidden this post, so it can&apos;t be edited right now.</p> : (
+      {suspended ? <SuspendedFormBlock action="edit this game" reason={suspended.reason} /> : g.is_hidden ? <p className="card p-4 text-sm text-ink-2 max-w-2xl" data-testid="edit-locked">A moderator has hidden this post, so it can&apos;t be edited right now.</p> : (
         <GameForm
           action={updateGame}
           submitLabel="Save changes"

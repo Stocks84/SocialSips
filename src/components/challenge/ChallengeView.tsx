@@ -8,6 +8,7 @@ import { challengeEnd, challengeStatus, KIND_LABEL, weekLabel, type Challenge } 
 import { isOwnStorageUrl } from '@/lib/storage'
 import { enterChallenge, voteChallenge, withdrawEntry } from '@/app/(main)/challenge/actions'
 import SubmitButton from '@/components/ui/SubmitButton'
+import SuspendedFormBlock from '@/components/ui/SuspendedFormBlock'
 
 /** Own memes / cocktail variations that can still be entered (visible, not already in this challenge). */
 async function eligible(c: Challenge, userId: string) {
@@ -25,7 +26,7 @@ async function eligible(c: Challenge, userId: string) {
 }
 
 export default async function ChallengeView({ c, current, error }: { c: Challenge; current: boolean; error?: string }) {
-  const { userId } = await getViewer()
+  const { userId, suspended } = await getViewer()
   const status = challengeStatus(c.starts_on)
   const [board, winner] = await Promise.all([getBoard(c.id), status === 'ended' ? getWinner(c.id) : Promise.resolve(null)])
   const mine = userId ? board.find((e) => e.user_id === userId) : undefined
@@ -36,7 +37,7 @@ export default async function ChallengeView({ c, current, error }: { c: Challeng
     const { data } = supabase ? await supabase.from('challenge_entries').select('id').eq('challenge_id', c.id).eq('user_id', userId).maybeSingle() : { data: null }
     hasEntry = Boolean(data)
   }
-  const options = userId && status === 'open' && !hasEntry ? await eligible(c, userId) : []
+  const options = userId && !suspended && status === 'open' && !hasEntry ? await eligible(c, userId) : []
   const myVote = board.find((e) => e.my_vote)?.entry_id
   const hidden = (<><input type="hidden" name="challengeId" value={c.id} />{current && <input type="hidden" name="current" value="1" />}</>)
   const createHref = c.kind === 'meme' ? '/memes/new' : '/cocktails'
@@ -72,6 +73,8 @@ export default async function ChallengeView({ c, current, error }: { c: Challeng
               <span>You&apos;re in! {mine ? `${mine.votes} vote${mine.votes === 1 ? '' : 's'} so far.` : '(Your entry is hidden by a moderator.)'}</span>
               <SubmitButton className="btn-ghost text-sm" data-testid="withdraw-entry" pendingLabel="Withdrawing…">Withdraw entry</SubmitButton>
             </form>
+          ) : suspended ? (
+            <SuspendedFormBlock action="enter the challenge" reason={suspended.reason} />
           ) : options.length ? (
             <form action={enterChallenge} className="flex flex-wrap items-end gap-3">{hidden}
               <label className="text-sm flex-1 min-w-[220px]">Enter one of your {c.kind === 'meme' ? 'memes' : 'cocktail variations'}

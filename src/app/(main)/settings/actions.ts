@@ -6,6 +6,7 @@ import { requireActiveUser, requireUser, UUID } from '@/lib/server/auth'
 import { friendlyError, NOT_SAVED } from '@/lib/server/errors'
 import { safePath } from '@/lib/safe-path'
 import { removeImage, uploadImage } from '@/lib/server/uploads'
+import { HIDDEN_BUCKET } from '@/lib/hidden-media'
 import { fail, type EditState } from '@/lib/server/forms'
 import { fieldErrors } from '@/lib/validators/issues'
 import { profileSchema } from '@/lib/validators/profile'
@@ -61,6 +62,7 @@ export async function setBlock(formData: FormData) {
 // ─── Delete account ──────────────────────────────────────────────────────────
 
 const BUCKETS = ['avatars', 'game-covers', 'memes', 'cocktails'] as const
+const HIDEABLE = ['game-covers', 'memes', 'cocktails'] as const
 
 /** Deletes the signed-in user's files, content and login. Needs the username typed as confirmation. */
 export async function deleteAccount(_prev: EditState, formData: FormData): Promise<EditState> {
@@ -84,6 +86,18 @@ export async function deleteAccount(_prev: EditState, formData: FormData): Promi
       if (!files?.length) break
       const { error: rmErr } = await supabase.storage.from(bucket).remove(files.map((f) => `${user.id}/${f.name}`))
       if (rmErr) { console.error('delete account: remove', bucket, rmErr.message); return { error: 'We couldn’t delete your files. Please try again.' } }
+      if (files.length < 100) break
+    }
+  }
+  // 1b. Images of hidden posts sit in the private hidden-media bucket as '<bucket>/<user id>/<file>' (migration 0041).
+  for (const bucket of HIDEABLE) {
+    for (let round = 0; round < 20; round++) {
+      const prefix = `${bucket}/${user.id}`
+      const { data: files, error } = await supabase.storage.from(HIDDEN_BUCKET).list(prefix, { limit: 100 })
+      if (error) { console.error('delete account: list hidden', bucket, error.message); return { error: 'We couldn’t delete your files. Please try again.' } }
+      if (!files?.length) break
+      const { error: rmErr } = await supabase.storage.from(HIDDEN_BUCKET).remove(files.map((f) => `${prefix}/${f.name}`))
+      if (rmErr) { console.error('delete account: remove hidden', bucket, rmErr.message); return { error: 'We couldn’t delete your files. Please try again.' } }
       if (files.length < 100) break
     }
   }

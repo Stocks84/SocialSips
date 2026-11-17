@@ -56,7 +56,7 @@ export default async function CocktailPage({ params, searchParams }: { params: P
       <header>
         <SavedBanner show={saved === '1'} />
         {c.is_hidden && <><HiddenNotice />{userId && c.author_id === userId && <StatementOfReasons type="cocktail" id={c.id} />}</>}
-        {isOwnStorageUrl(c.image_url) && (
+        {!c.is_hidden && isOwnStorageUrl(c.image_url) && (
           <Image src={c.image_url} alt="" width={1200} height={630} className="rounded-sm mb-6 w-full h-64 object-cover border border-rule" />
         )}
         <div className="flex items-start justify-between gap-4">

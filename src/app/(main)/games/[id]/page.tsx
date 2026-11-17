@@ -61,7 +61,7 @@ export default async function GamePage({ params, searchParams }: { params: Promi
     <article className="space-y-10 max-w-3xl">
       <header>
         <SavedBanner show={saved === '1'} />
-        {isOwnStorageUrl(game.cover_image_url) && (
+        {!game.is_hidden && isOwnStorageUrl(game.cover_image_url) && (
           <Image src={game.cover_image_url} alt="" width={1200} height={630} className="rounded-sm mb-6 w-full h-64 object-cover border border-rule" />
         )}
         <div className="flex items-start justify-between gap-4">

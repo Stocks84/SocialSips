@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getViewer } from '@/lib/server/viewer'
 import { resolveTargets, TARGETS, type TargetType } from '@/lib/server/moderation'
 import { formatDate } from '@/lib/format'
-import { deleteItem, unhideItem } from '../actions'
+import { deleteItem, secureHiddenImages, unhideItem } from '../actions'
 import SubmitButton from '@/components/ui/SubmitButton'
 
 export const metadata = { title: 'Hidden items', robots: { index: false } }
@@ -13,10 +13,11 @@ export const dynamic = 'force-dynamic'
 
 const TYPES = Object.keys(TARGETS) as TargetType[]
 
-export default async function AdminHiddenPage() {
+export default async function AdminHiddenPage({ searchParams }: { searchParams: Promise<{ secured?: string; failed?: string }> }) {
   const supabase = await createClient()
   const { isAdmin } = await getViewer()
   if (!supabase || !isAdmin) notFound()
+  const { secured, failed } = await searchParams
 
   // Admin RLS can see hidden rows. Fetch hidden ids per table, then resolve previews.
   const lists = await Promise.all(
@@ -33,6 +34,15 @@ export default async function AdminHiddenPage() {
     <>
       <PageHeader title="Hidden items" subtitle={`${items.length} hidden`} />
       <p className="text-sm mb-6"><Link href="/admin/reports" className="text-accent">← Open reports</Link></p>
+      {secured !== undefined && (
+        <p role="status" className={`card p-4 mb-4 text-sm ${Number(failed) > 0 ? 'text-danger' : 'text-accent'}`} data-testid="secure-result">
+          {Number(secured) || 0} image{Number(secured) === 1 ? '' : 's'} made private{Number(failed) > 0 ? `, ${Number(failed)} failed (try again)` : ''}.
+        </p>
+      )}
+      <form action={secureHiddenImages} className="card p-4 mb-6 flex flex-wrap items-center justify-between gap-3 text-sm">
+        <p className="text-ink-2 max-w-md">Hidden items&apos; images move to a private bucket automatically. Press this to catch any that are still public (items hidden before this feature, or a move that failed).</p>
+        <SubmitButton className="btn-secondary text-sm py-2 px-4" pendingLabel="Working…" data-testid="secure-hidden">Make hidden images private</SubmitButton>
+      </form>
       {items.length === 0 && <p className="card p-6 text-center text-ink-2">Nothing hidden.</p>}
       <div className="space-y-4">
         {items.map((it, i) => {

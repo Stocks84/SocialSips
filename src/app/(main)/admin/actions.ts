@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation'
 import { requireAdmin, UUID } from '@/lib/server/auth'
 import { TARGETS, type TargetType } from '@/lib/server/moderation'
 import { removeImage } from '@/lib/server/uploads'
+import { hideImage, restoreImage } from '@/lib/server/hidden-media'
+import type { HideableBucket } from '@/lib/hidden-media'
 import { safePath } from '@/lib/safe-path'
 import { variationSchema } from '@/lib/validators/game'
 import { friendlyError, NOT_SAVED } from '@/lib/server/errors'
@@ -69,12 +71,34 @@ export async function dismissReport(formData: FormData) {
   revalidatePath('/admin/reports')
 }
 
+/** The item's stored image URL (games, cocktails, memes only), or null. */
+async function imageUrlOf(p: Prepped): Promise<string | null> {
+  if (!p.cfg.imageCol) return null
+  const { data } = await p.supabase.from(p.cfg.table).select(p.cfg.imageCol).eq('id', p.targetId).maybeSingle()
+  return (data as Record<string, string | null> | null)?.[p.cfg.imageCol] ?? null
+}
+
+/**
+ * Hide / unhide. Hiding also moves the image out of its public bucket into the private hidden-media bucket
+ * (otherwise its public URL keeps working); unhiding moves it back first, so an unhidden item never shows a broken image.
+ */
 async function setHidden(formData: FormData, hidden: boolean) {
   const p = await prep(formData)
   if (!p) return failBack('Admins only, or that item no longer exists.', '/admin/reports')
   const row = hidden ? await targetRow(p) : null
+  const bucket = p.cfg.bucket as HideableBucket | undefined
+  const imageUrl = bucket ? await imageUrlOf(p) : null
+  if (!hidden && bucket) {
+    const back = await restoreImage(p.supabase, bucket, imageUrl)
+    if (!back.ok) return failBack('We couldn’t restore this item’s image, so it was left hidden. Please try again.', '/admin/hidden')
+  }
   const { error } = await p.supabase.from(p.cfg.table).update({ is_hidden: hidden }).eq('id', p.targetId)
-  if (error) return failBack(friendlyError(error, hidden ? 'hideItem' : 'unhideItem'), '/admin/reports')
+  if (error) {
+    if (!hidden && bucket) await hideImage(p.supabase, bucket, imageUrl) // keep image and flag in step
+    return failBack(friendlyError(error, hidden ? 'hideItem' : 'unhideItem'), '/admin/reports')
+  }
+  let imageStillPublic = false
+  if (hidden && bucket) imageStillPublic = !(await hideImage(p.supabase, bucket, imageUrl)).ok
   if (hidden) {
     await recordNotice(p, formData, row)
     await closeReports(p, 'reviewed')
@@ -83,7 +107,31 @@ async function setHidden(formData: FormData, hidden: boolean) {
       .eq('target_type', p.type).eq('target_id', p.targetId).is('reversed_at', null)
   }
   revalidatePath('/', 'layout')
+  if (imageStillPublic) return failBack('Hidden, but its image is still public. Open Hidden items and press “Make hidden images private”.', '/admin/hidden')
   maybeRedirect(formData)
+}
+
+/**
+ * Admin-only sweep: make sure every hidden item's image is in the private bucket. Covers items hidden before
+ * migration 0041 and any hide whose image move failed. Safe to run repeatedly.
+ */
+export async function secureHiddenImages() {
+  const auth = await requireAdmin()
+  if ('error' in auth) return failBack(auth.error, '/admin/hidden')
+  let moved = 0
+  let failed = 0
+  for (const type of ['game', 'cocktail', 'meme'] as const) {
+    const cfg = TARGETS[type]
+    if (!cfg.imageCol || !cfg.bucket) continue
+    const { data } = await auth.supabase.from(cfg.table).select(cfg.imageCol).eq('is_hidden', true).not(cfg.imageCol, 'is', null).limit(500)
+    for (const r of (data ?? []) as unknown as Record<string, string | null>[]) {
+      const res = await hideImage(auth.supabase, cfg.bucket as HideableBucket, r[cfg.imageCol])
+      if (!res.ok) failed++
+      else if (res.moved) moved++
+    }
+  }
+  revalidatePath('/admin/hidden')
+  redirect(`/admin/hidden?secured=${moved}&failed=${failed}`)
 }
 
 export async function hideItem(formData: FormData) {

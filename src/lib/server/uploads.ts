@@ -2,6 +2,7 @@ import 'server-only'
 import sharp from 'sharp'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { storagePathFromUrl } from '@/lib/storage'
+import { HIDDEN_BUCKET, hiddenObjectName } from '@/lib/hidden-media'
 
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024
 const MAX_EDGE = 1600
@@ -104,5 +105,8 @@ export async function uploadImage(supabase: SupabaseClient, bucket: Bucket, user
 export async function removeImage(supabase: SupabaseClient, bucket: Bucket, url: string | null | undefined, ownerId?: string | null) {
   const path = storagePathFromUrl(url, bucket)
   if (ownerId !== undefined && (!ownerId || !path?.startsWith(`${ownerId}/`))) return
-  if (path) await supabase.storage.from(bucket).remove([path])
+  if (!path) return
+  await supabase.storage.from(bucket).remove([path])
+  // A hidden item's image lives in the private hidden-media bucket (migration 0041): remove it there too.
+  if (bucket !== 'avatars') await supabase.storage.from(HIDDEN_BUCKET).remove([hiddenObjectName(bucket, path)])
 }

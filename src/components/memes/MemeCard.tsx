@@ -19,7 +19,8 @@ type Props = { meme: MemeWithStats; userId: string | null; isAdmin: boolean; det
 /** A meme with reactions. In the list it links to its own page (with the comment count). */
 export default function MemeCard({ meme: m, userId, isAdmin, detail = false }: Props) {
   const path = `/memes/${m.id}`
-  const img = isOwnStorageUrl(m.image_url) && (
+  // A hidden meme's image is private (migration 0041), so don't ask for it.
+  const img = !m.is_hidden && isOwnStorageUrl(m.image_url) && (
     <Image src={m.image_url} alt={m.caption ?? 'Meme'} width={1200} height={900} sizes={detail ? '(min-width: 768px) 768px, 100vw' : '(min-width: 640px) 50vw, 100vw'} className="w-full h-auto" priority={detail} />
   )
   return (

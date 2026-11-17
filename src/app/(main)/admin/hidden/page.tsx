@@ -7,8 +7,9 @@ import { resolveTargets, TARGETS, type TargetType } from '@/lib/server/moderatio
 import { formatDate } from '@/lib/format'
 import { deleteItem, secureHiddenImages, unhideItem } from '../actions'
 import SubmitButton from '@/components/ui/SubmitButton'
+import { adminTitle } from '@/lib/server/page-meta'
 
-export const metadata = { title: 'Hidden items', robots: { index: false } }
+export const generateMetadata = adminTitle('Hidden items')
 export const dynamic = 'force-dynamic'
 
 const TYPES = Object.keys(TARGETS) as TargetType[]

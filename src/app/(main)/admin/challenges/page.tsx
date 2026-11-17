@@ -6,8 +6,9 @@ import { getCurrentChallenge, listChallenges } from '@/lib/queries/challenges'
 import { KIND_LABEL, weekLabel } from '@/lib/challenge'
 import { deleteChallenge, scheduleChallenge } from './actions'
 import SubmitButton from '@/components/ui/SubmitButton'
+import { adminTitle } from '@/lib/server/page-meta'
 
-export const metadata = { title: 'Challenges · Admin' }
+export const generateMetadata = adminTitle('Challenges · Admin')
 export const dynamic = 'force-dynamic'
 
 const addDays = (iso: string, n: number) => { const [y, m, d] = iso.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10) }

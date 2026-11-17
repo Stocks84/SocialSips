@@ -6,8 +6,9 @@ import { createClient } from '@/lib/supabase/server'
 import { getViewer } from '@/lib/server/viewer'
 import { formatDate } from '@/lib/format'
 import { setSuspension } from './actions'
+import { adminTitle } from '@/lib/server/page-meta'
 
-export const metadata = { title: 'Accounts · Admin', robots: { index: false } }
+export const generateMetadata = adminTitle('Accounts · Admin')
 export const dynamic = 'force-dynamic'
 
 export default async function AdminUsersPage({ searchParams }: { searchParams: Promise<{ q?: string; error?: string; saved?: string }> }) {

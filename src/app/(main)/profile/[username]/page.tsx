@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { NoticeBody } from '@/components/moderation/StatementOfReasons'
 import { setBlock } from '../../settings/actions'
@@ -21,6 +22,16 @@ import { createClient } from '@/lib/supabase/server'
 import { REACTIONS } from '@/lib/memes'
 import SubmitButton from '@/components/ui/SubmitButton'
 import EmptyState from '@/components/ui/EmptyState'
+import { profileMetadata } from '@/lib/share-meta'
+
+/** Tab title + description. Unknown profiles get {} (the normal 404 title). Only public fields go in; the lookup is cached, so this costs no extra query. */
+export async function generateMetadata({ params }: { params: Promise<{ username: string }> }): Promise<Metadata> {
+  const { username } = await params
+  let name = username
+  try { name = decodeURIComponent(username) } catch { /* already decoded */ }
+  const profile = await getProfileByUsername(name)
+  return profile ? profileMetadata({ username: profile.username, display_name: profile.display_name, bio: profile.bio }) : {}
+}
 
 export default async function ProfilePage({ params, searchParams }: { params: Promise<{ username: string }>; searchParams: Promise<{ saved?: string; followError?: string }> }) {
   const { username } = await params

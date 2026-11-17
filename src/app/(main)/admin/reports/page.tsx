@@ -10,8 +10,9 @@ import { formatDate } from '@/lib/format'
 import { deleteItem, dismissReport, hideItem } from '../actions'
 import ModReasonFields from '@/components/admin/ModReasonFields'
 import SubmitButton from '@/components/ui/SubmitButton'
+import { adminTitle } from '@/lib/server/page-meta'
 
-export const metadata = { title: 'Reports', robots: { index: false } }
+export const generateMetadata = adminTitle('Reports')
 export const dynamic = 'force-dynamic'
 
 export default async function AdminReportsPage() {

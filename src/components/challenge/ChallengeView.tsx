@@ -89,6 +89,7 @@ export default async function ChallengeView({ c, current, error }: { c: Challeng
         </section>
       )}
 
+      {status === 'open' && userId && suspended && hasEntry && <div className="mb-4"><SuspendedFormBlock compact action="vote" reason={suspended.reason} /></div>}
       <h2 id="entries" className="text-xl font-bold mb-3">Entries {board.length > 0 && <span className="text-ink-3 text-sm font-normal">({board.length})</span>}</h2>
       {board.length === 0 ? <p className="text-ink-2 text-sm" data-testid="no-entries">No entries yet. Be the first!</p> : (
         <ul className="grid gap-4 sm:grid-cols-2" data-testid="challenge-entries">
@@ -110,7 +111,7 @@ export default async function ChallengeView({ c, current, error }: { c: Challeng
                 </Link>
                 <div className="mt-auto flex items-center justify-between gap-2">
                   <span className="font-bold" data-testid="entry-votes">{e.votes} vote{e.votes === 1 ? '' : 's'}</span>
-                  {status === 'open' && userId && e.can_vote && (
+                  {status === 'open' && userId && e.can_vote && !suspended && (
                     <form action={voteChallenge}>{hidden}
                       <input type="hidden" name="entryId" value={e.my_vote ? '' : e.entry_id} />
                       <SubmitButton className={e.my_vote ? 'btn-primary text-sm py-1.5 px-3' : 'btn-secondary text-sm py-1.5 px-3'} data-testid={e.my_vote ? 'unvote' : 'vote'} aria-pressed={e.my_vote} pendingLabel="Saving…">

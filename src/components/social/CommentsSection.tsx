@@ -9,10 +9,11 @@ import HiddenNotice from '@/components/ui/HiddenNotice'
 import type { CommentRow } from '@/lib/queries/social'
 import { formatDate } from '@/lib/format'
 import ConfirmSubmit from '@/components/ui/ConfirmSubmit'
+import SuspendedFormBlock from '@/components/ui/SuspendedFormBlock'
 
-type Props = { kind: 'game' | 'cocktail' | 'meme'; targetId: string; comments: CommentRow[]; userId: string | null; path: string; isAdmin?: boolean; locked?: boolean }
+type Props = { kind: 'game' | 'cocktail' | 'meme'; targetId: string; comments: CommentRow[]; userId: string | null; path: string; isAdmin?: boolean; locked?: boolean; suspended?: { reason: string | null } | null }
 
-export default function CommentsSection({ kind, targetId, comments, userId, path, isAdmin = false, locked = false }: Props) {
+export default function CommentsSection({ kind, targetId, comments, userId, path, isAdmin = false, locked = false, suspended = null }: Props) {
   return (
     <section className="space-y-3">
       <h2 className="text-xl font-bold text-accent">Comments ({comments.length})</h2>
@@ -31,7 +32,7 @@ export default function CommentsSection({ kind, targetId, comments, userId, path
               <ReportButton targetType="comment" targetId={c.id} />
             ) : !userId ? <PublicReportLink targetType="comment" targetId={c.id} /> : null}
           </div>
-          {c.author_id === userId && !c.is_hidden && !locked ? (
+          {c.author_id === userId && !c.is_hidden && !locked && !suspended ? (
             <InlineEdit action={updateOwnComment} testId="comment" hidden={{ kind, targetId, commentId: c.id }}
               fields={[{ name: 'body', label: 'Edit comment', value: c.body, max: 1000, rows: 3 }]}>
               <p className="whitespace-pre-line" data-testid="comment-body">{c.body}</p>
@@ -42,7 +43,7 @@ export default function CommentsSection({ kind, targetId, comments, userId, path
           {isAdmin && <div className="mt-2"><AdminControls type="comment" id={c.id} compact /></div>}
         </div>
       ))}
-      {locked ? <HiddenNotice locked /> : userId ? <CommentForm kind={kind} targetId={targetId} /> : <SignInPrompt path={path} what="comment" />}
+      {locked ? <HiddenNotice locked /> : userId ? (suspended ? <SuspendedFormBlock compact action="comment" reason={suspended.reason} /> : <CommentForm kind={kind} targetId={targetId} />) : <SignInPrompt path={path} what="comment" />}
     </section>
   )
 }

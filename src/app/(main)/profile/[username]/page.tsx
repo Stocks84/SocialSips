@@ -29,7 +29,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
   try { name = decodeURIComponent(username) } catch { /* already decoded */ }
   const supabase = await createClient()
   // Round 1: the profile and the viewer don't depend on each other.
-  const [profile, { userId: viewerId }] = await Promise.all([
+  const [profile, { userId: viewerId, suspended }] = await Promise.all([
     supabase ? getProfileByUsername(name) : Promise.resolve(null),
     getViewer(),
   ])
@@ -57,7 +57,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
         <section className="mb-6 flex flex-wrap items-center gap-4 text-sm" data-testid="follow-bar">
           <Link href={`/profile/${profile.username}/followers`} className="hover:text-ink" data-testid="followers-link"><strong data-testid="followers-count">{counts.followers}</strong> follower{counts.followers === 1 ? '' : 's'}</Link>
           <Link href={`/profile/${profile.username}/following`} className="hover:text-ink" data-testid="following-link"><strong data-testid="following-count">{counts.following}</strong> following</Link>
-          {canBlock && !blocking && <FollowButton userId={profile.id} username={profile.username} following={following} />}
+          {canBlock && !blocking && <FollowButton userId={profile.id} username={profile.username} following={following} suspended={Boolean(suspended)} />}
           {followError && <span role="alert" className="text-danger" data-testid="follow-error">{followError.slice(0, 120)}</span>}
         </section>
       )}

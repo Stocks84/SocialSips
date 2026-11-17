@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { suspendedBlockCopy } from './suspension.ts'
+import { suspendedBlockCopy, suspendedNoteCopy } from './suspension.ts'
 
 test('block copy names the action and says suspended', () => {
   const c = suspendedBlockCopy('add a game', null)
@@ -13,4 +13,12 @@ test('reason is trimmed; blank or missing reason gives null', () => {
   assert.equal(suspendedBlockCopy('post a meme', '  spam  ').reason, 'spam')
   assert.equal(suspendedBlockCopy('post a meme', '   ').reason, null)
   assert.equal(suspendedBlockCopy('post a meme', undefined).reason, null)
+})
+
+test('note copy is one line naming the action; reason trimmed or null', () => {
+  const n = suspendedNoteCopy('comment', ' spam ')
+  assert.match(n.text, /suspended, so you can’t comment right now/)
+  assert.equal(n.reason, 'spam')
+  assert.equal(suspendedNoteCopy('vote', '').reason, null)
+  assert.equal(suspendedNoteCopy('vote', null).reason, null)
 })

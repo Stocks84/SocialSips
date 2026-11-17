@@ -10,10 +10,11 @@ import HiddenNotice from '@/components/ui/HiddenNotice'
 import type { VariationRow } from '@/lib/queries/social'
 import { formatDate } from '@/lib/format'
 import ConfirmSubmit from '@/components/ui/ConfirmSubmit'
+import SuspendedFormBlock from '@/components/ui/SuspendedFormBlock'
 
-type Props = { kind: 'game' | 'cocktail'; targetId: string; variations: VariationRow[]; userId: string | null; path: string; isAdmin?: boolean; locked?: boolean }
+type Props = { kind: 'game' | 'cocktail'; targetId: string; variations: VariationRow[]; userId: string | null; path: string; isAdmin?: boolean; locked?: boolean; suspended?: { reason: string | null } | null }
 
-export default function VariationsSection({ kind, targetId, variations, userId, path, isAdmin = false, locked = false }: Props) {
+export default function VariationsSection({ kind, targetId, variations, userId, path, isAdmin = false, locked = false, suspended = null }: Props) {
   return (
     <section className="space-y-3">
       <h2 className="text-xl font-bold text-accent">{kind === 'game' ? 'House variations' : 'Twists & variations'}</h2>
@@ -33,7 +34,7 @@ export default function VariationsSection({ kind, targetId, variations, userId, 
               <ReportButton targetType={kind === 'game' ? 'variation' : 'cocktail_variation'} targetId={v.id} />
             ) : <PublicReportLink targetType={kind === 'game' ? 'variation' : 'cocktail_variation'} targetId={v.id} />}
           </div>
-          {v.author_id === userId && !v.is_hidden && !locked ? (
+          {v.author_id === userId && !v.is_hidden && !locked && !suspended ? (
             <InlineEdit action={updateOwnVariation} testId="variation" hidden={{ kind, targetId, variationId: v.id }}
               fields={[{ name: 'title', label: 'Variation name', value: v.title, max: 80 }, { name: 'rules', label: 'Variation details', value: v.rules, max: 3000, rows: 4 }]}>
               <p className="text-sm whitespace-pre-line mt-1" data-testid="variation-rules">{v.rules}</p>
@@ -50,7 +51,7 @@ export default function VariationsSection({ kind, targetId, variations, userId, 
           )}
         </div>
       ))}
-      {locked ? <HiddenNotice locked /> : userId ? <VariationForm kind={kind} targetId={targetId} /> : <SignInPrompt path={path} what="add a variation" />}
+      {locked ? <HiddenNotice locked /> : userId ? (suspended ? <SuspendedFormBlock compact action="add a variation" reason={suspended.reason} /> : <VariationForm kind={kind} targetId={targetId} />) : <SignInPrompt path={path} what="add a variation" />}
     </section>
   )
 }

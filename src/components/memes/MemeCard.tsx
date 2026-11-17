@@ -14,10 +14,10 @@ import type { MemeWithStats } from '@/lib/queries/memes'
 import { faComment } from '@fortawesome/free-regular-svg-icons'
 import { Icon } from '@/components/ui/Icon'
 
-type Props = { meme: MemeWithStats; userId: string | null; isAdmin: boolean; detail?: boolean }
+type Props = { meme: MemeWithStats; userId: string | null; isAdmin: boolean; suspended?: boolean; detail?: boolean }
 
 /** A meme with reactions. In the list it links to its own page (with the comment count). */
-export default function MemeCard({ meme: m, userId, isAdmin, detail = false }: Props) {
+export default function MemeCard({ meme: m, userId, isAdmin, suspended = false, detail = false }: Props) {
   const path = `/memes/${m.id}`
   // A hidden meme's image is private (migration 0041), so don't ask for it.
   const img = !m.is_hidden && isOwnStorageUrl(m.image_url) && (
@@ -33,7 +33,7 @@ export default function MemeCard({ meme: m, userId, isAdmin, detail = false }: P
         {m.is_hidden ? (
           <HiddenNotice locked />
         ) : (
-          <Reactions memeId={m.id} counts={m.stats.reactions} mine={m.stats.mine} signedIn={Boolean(userId)} path={path} />
+          <Reactions memeId={m.id} counts={m.stats.reactions} mine={m.stats.mine} signedIn={Boolean(userId)} suspended={suspended} path={path} />
         )}
         <div className="flex items-center justify-between gap-3 text-xs text-ink-3">
           <span>

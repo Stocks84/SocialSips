@@ -46,7 +46,7 @@ export default async function MemePage({ params, searchParams }: { params: Promi
       </article>
     )
   }
-  const { userId, isAdmin } = await getViewer()
+  const { userId, isAdmin, suspended } = await getViewer()
   const data = await getMeme(id, userId, isAdmin)
   if (!data) notFound()
   const { meme, comments } = data
@@ -55,9 +55,9 @@ export default async function MemePage({ params, searchParams }: { params: Promi
     <article className="max-w-3xl space-y-8">
       <SavedBanner show={saved === '1'} />
       <Link href="/memes" className="text-sm text-ink-2 hover:text-ink">← All memes</Link>
-      <MemeCard meme={meme} userId={userId} isAdmin={isAdmin} detail />
+      <MemeCard meme={meme} userId={userId} isAdmin={isAdmin} suspended={Boolean(suspended)} detail />
       <div id="comments">
-        <CommentsSection kind="meme" targetId={meme.id} comments={comments} userId={userId} path={path} isAdmin={isAdmin} locked={Boolean(meme.is_hidden)} />
+        <CommentsSection kind="meme" targetId={meme.id} comments={comments} userId={userId} path={path} isAdmin={isAdmin} locked={Boolean(meme.is_hidden)} suspended={suspended} />
       </div>
     </article>
   )

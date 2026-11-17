@@ -18,6 +18,7 @@ import SignInPrompt from '@/components/social/SignInPrompt'
 import VariationsSection from '@/components/social/VariationsSection'
 import { getGameDetail } from '@/lib/queries/games'
 import { getViewer } from '@/lib/server/viewer'
+import SuspendedFormBlock from '@/components/ui/SuspendedFormBlock'
 import HiddenNotice from '@/components/ui/HiddenNotice'
 import StatementOfReasons from '@/components/moderation/StatementOfReasons'
 import SavedBanner from '@/components/ui/SavedBanner'
@@ -52,7 +53,7 @@ export default async function GamePage({ params, searchParams }: { params: Promi
   const detail = await getGameDetail(id)
   if (!detail) notFound()
   const { game, comments, variations, rating, userId } = detail
-  const { isAdmin } = await getViewer()
+  const { isAdmin, suspended } = await getViewer()
   const path = `/games/${game.id}`
   const isOwner = Boolean(userId && game.author_id === userId)
   const players = game.max_players ? `${game.min_players}–${game.max_players}` : `${game.min_players}+`
@@ -96,12 +97,12 @@ export default async function GamePage({ params, searchParams }: { params: Promi
 
       <section>
         <h2 className="text-xl font-bold mb-3 text-accent">Rate it</h2>
-        {game.is_hidden ? <HiddenNotice locked /> : userId ? <RatingForm kind="game" targetId={game.id} myScore={rating.mine} /> : <SignInPrompt path={path} what="rate this game" />}
+        {game.is_hidden ? <HiddenNotice locked /> : userId ? (suspended ? <SuspendedFormBlock compact action="rate" reason={suspended.reason} /> : <RatingForm kind="game" targetId={game.id} myScore={rating.mine} />) : <SignInPrompt path={path} what="rate this game" />}
       </section>
 
-      <VariationsSection kind="game" targetId={game.id} variations={variations} userId={userId} path={path} isAdmin={isAdmin} locked={Boolean(game.is_hidden)} />
+      <VariationsSection kind="game" targetId={game.id} variations={variations} userId={userId} path={path} isAdmin={isAdmin} locked={Boolean(game.is_hidden)} suspended={suspended} />
 
-      <CommentsSection kind="game" targetId={game.id} comments={comments} userId={userId} path={path} isAdmin={isAdmin} locked={Boolean(game.is_hidden)} />
+      <CommentsSection kind="game" targetId={game.id} comments={comments} userId={userId} path={path} isAdmin={isAdmin} locked={Boolean(game.is_hidden)} suspended={suspended} />
     </article>
   )
 }

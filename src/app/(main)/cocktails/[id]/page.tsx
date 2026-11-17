@@ -17,6 +17,7 @@ import { isOwnStorageUrl } from '@/lib/storage'
 import Link from 'next/link'
 import { getCocktailDetail } from '@/lib/queries/cocktails'
 import { getViewer } from '@/lib/server/viewer'
+import SuspendedFormBlock from '@/components/ui/SuspendedFormBlock'
 import HiddenNotice from '@/components/ui/HiddenNotice'
 import StatementOfReasons from '@/components/moderation/StatementOfReasons'
 import SavedBanner from '@/components/ui/SavedBanner'
@@ -49,7 +50,7 @@ export default async function CocktailPage({ params, searchParams }: { params: P
   const detail = await getCocktailDetail(id)
   if (!detail) notFound()
   const { cocktail: c, comments, variations, rating, userId } = detail
-  const { isAdmin } = await getViewer()
+  const { isAdmin, suspended } = await getViewer()
   const path = `/cocktails/${c.id}`
   return (
     <article className="max-w-3xl space-y-10">
@@ -93,10 +94,10 @@ export default async function CocktailPage({ params, searchParams }: { params: P
       )}
       <section>
         <h2 className="text-xl font-bold mb-3 text-accent">Rate it</h2>
-        {c.is_hidden ? <HiddenNotice locked /> : userId ? <RatingForm kind="cocktail" targetId={c.id} myScore={rating.mine} /> : <SignInPrompt path={path} what="rate this cocktail" />}
+        {c.is_hidden ? <HiddenNotice locked /> : userId ? (suspended ? <SuspendedFormBlock compact action="rate" reason={suspended.reason} /> : <RatingForm kind="cocktail" targetId={c.id} myScore={rating.mine} />) : <SignInPrompt path={path} what="rate this cocktail" />}
       </section>
-      <VariationsSection kind="cocktail" targetId={c.id} variations={variations} userId={userId} path={path} isAdmin={isAdmin} locked={Boolean(c.is_hidden)} />
-      <CommentsSection kind="cocktail" targetId={c.id} comments={comments} userId={userId} path={path} isAdmin={isAdmin} locked={Boolean(c.is_hidden)} />
+      <VariationsSection kind="cocktail" targetId={c.id} variations={variations} userId={userId} path={path} isAdmin={isAdmin} locked={Boolean(c.is_hidden)} suspended={suspended} />
+      <CommentsSection kind="cocktail" targetId={c.id} comments={comments} userId={userId} path={path} isAdmin={isAdmin} locked={Boolean(c.is_hidden)} suspended={suspended} />
     </article>
   )
 }

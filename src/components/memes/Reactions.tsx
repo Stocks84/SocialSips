@@ -5,10 +5,10 @@ import { setReaction } from '@/app/(main)/memes/actions'
 import { REACTIONS } from '@/lib/memes'
 
 type State = { counts: Record<string, number>; mine: string | null }
-type Props = { memeId: string; counts: Record<string, number>; mine: string | null; signedIn: boolean; disabled?: boolean; path: string }
+type Props = { memeId: string; counts: Record<string, number>; mine: string | null; signedIn: boolean; disabled?: boolean; suspended?: boolean; path: string }
 
 /** 😂 🔥 🍸 💀 👏 with counts. One reaction per person: tap to set, tap another to change, tap yours to remove. */
-export default function Reactions({ memeId, counts, mine, signedIn, disabled = false, path }: Props) {
+export default function Reactions({ memeId, counts, mine, signedIn, disabled = false, suspended = false, path }: Props) {
   const [state, setState] = useState<State>({ counts, mine })
   const [optimistic, apply] = useOptimistic(state, (s: State, next: string | null): State => {
     const c = { ...s.counts }
@@ -23,7 +23,7 @@ export default function Reactions({ memeId, counts, mine, signedIn, disabled = f
   const seq = useRef(0)
 
   function react(emoji: string) {
-    if (!signedIn || disabled) return
+    if (!signedIn || disabled || suspended) return
     const next = optimistic.mine === emoji ? null : emoji
     const mySeq = ++seq.current
     setError(null)
@@ -47,7 +47,7 @@ export default function Reactions({ memeId, counts, mine, signedIn, disabled = f
               key={e}
               type="button"
               onClick={() => react(e)}
-              disabled={!signedIn || disabled}
+              disabled={!signedIn || disabled || suspended}
               aria-pressed={active}
               aria-label={`${e} ${n}`}
               data-testid="reaction"
@@ -59,6 +59,7 @@ export default function Reactions({ memeId, counts, mine, signedIn, disabled = f
         })}
       </div>
       {!signedIn && <p className="text-ink-3 text-xs mt-2"><Link href={`/sign-in?redirectTo=${path}`} className="text-accent">Sign in</Link> to react.</p>}
+      {suspended && <p className="text-ink-3 text-xs mt-2" data-testid="reactions-suspended">Reactions are paused while your account is suspended.</p>}
       {error && <p className="error-msg text-xs mt-2" role="alert">{error}</p>}
     </div>
   )

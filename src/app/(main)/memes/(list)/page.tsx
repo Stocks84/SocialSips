@@ -23,7 +23,7 @@ export default async function MemesPage({ searchParams }: { searchParams: Promis
   const page = Math.max(1, Math.min(100, Number(sp.page) || 1))
   const sort: MemeSort = sp.sort === 'top' ? 'top' : 'new'
   const range: TopRange = sp.range === 'all' ? 'all' : 'week'
-  const { userId, isAdmin } = await getViewer()
+  const { userId, isAdmin, suspended } = await getViewer()
   const { memes, hasMore } = await listMemes({ page, pageSize: PAGE_SIZE, sort, range, userId })
 
   const href = (p: Partial<{ page: number; sort: MemeSort; range: TopRange }>) => {
@@ -73,7 +73,7 @@ export default async function MemesPage({ searchParams }: { searchParams: Promis
         <p className="text-ink-2 text-sm mb-6">That&apos;s the bottom of the barrel. <Link href={href({ page: 1 })} className="text-accent">Back to the start →</Link></p>
       )}
       <div className="grid gap-5 sm:grid-cols-2">
-        {memes.map((m) => <MemeCard key={m.id} meme={m} userId={userId} isAdmin={isAdmin} />)}
+        {memes.map((m) => <MemeCard key={m.id} meme={m} userId={userId} isAdmin={isAdmin} suspended={Boolean(suspended)} />)}
       </div>
       {(page > 1 || hasMore) && (
         <nav className="flex justify-between mt-8 text-sm" aria-label="More memes">

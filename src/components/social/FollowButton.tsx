@@ -1,7 +1,9 @@
 import { setFollow } from '@/app/(main)/settings/actions'
 import SubmitButton from '@/components/ui/SubmitButton'
 
-export default function FollowButton({ userId, username, following }: { userId: string; username: string; following: boolean }) {
+export default function FollowButton({ userId, username, following, suspended = false }: { userId: string; username: string; following: boolean; suspended?: boolean }) {
+  // Unfollowing still works while suspended; following is blocked by the server, so don't offer it.
+  if (suspended && !following) return <span className="text-ink-3 text-xs" data-testid="follow-suspended">Following is paused while your account is suspended.</span>
   return (
     <form action={setFollow}>
       <input type="hidden" name="userId" value={userId} />

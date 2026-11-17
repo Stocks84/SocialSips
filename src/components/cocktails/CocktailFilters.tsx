@@ -34,12 +34,17 @@ export default function CocktailFilters({ q = '', alcoholFree = false, sort = 'n
         {CHIPS.map((c) => {
           const on = active === c.toLowerCase()
           return (
-            <Link key={c} href={chipHref(on ? '' : c.toLowerCase())} className={`chip ${on ? 'border-accent bg-raised text-ink' : ''} hover:text-ink`} aria-pressed={on}>
-              {on ? '✓ ' : ''}{c}
+            <Link
+              key={c}
+              href={chipHref(on ? '' : c.toLowerCase())}
+              className="group inline-flex min-h-11 min-w-11 items-center justify-center px-1"
+              aria-pressed={on}
+            >
+              <span className={`chip ${on ? 'border-accent bg-raised text-ink' : ''} group-hover:text-ink`}>{on ? '✓ ' : ''}{c}</span>
             </Link>
           )
         })}
-        {active && <Link href={chipHref('')} className="text-xs text-ink-3 self-center hover:text-ink">Clear ingredient</Link>}
+        {active && <Link href={chipHref('')} className="inline-flex min-h-11 items-center px-1 text-xs text-ink-3 hover:text-ink">Clear ingredient</Link>}
       </div>
     </div>
   )

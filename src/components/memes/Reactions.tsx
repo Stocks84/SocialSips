@@ -53,7 +53,7 @@ export default function Reactions({ memeId, counts, mine, signedIn, disabled = f
               aria-pressed={active}
               aria-label={`${e} ${n}`}
               data-testid="reaction"
-              className={`px-2.5 py-1 rounded-sm text-sm border transition-colors ${active ? 'border-accent bg-raised' : 'border-line hover:border-accent'} disabled:cursor-default ${pending && active ? 'opacity-70' : ''}`}
+              className={`inline-flex min-h-11 min-w-11 items-center justify-center px-2.5 rounded-sm text-sm border transition-colors ${active ? 'border-accent bg-raised' : 'border-line hover:border-accent'} disabled:cursor-default ${pending && active ? 'opacity-70' : ''}`}
             >
               {e} <span className="text-ink-2 text-xs">{n}</span>
             </button>

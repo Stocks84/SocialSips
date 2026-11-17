@@ -4,7 +4,7 @@ import SubmitButton, { PendingNote } from '@/components/ui/SubmitButton'
 /** 1–5 star buttons; each is its own submit (works without JS). */
 export default function RatingForm({ kind, targetId, myScore }: { kind: 'game' | 'cocktail'; targetId: string; myScore: number | null }) {
   return (
-    <form action={rate} className="flex items-center gap-1" aria-label="Rate">
+    <form action={rate} className="flex flex-wrap items-center gap-2" aria-label="Rate">
       <input type="hidden" name="kind" value={kind} />
       <input type="hidden" name="targetId" value={targetId} />
       {[1, 2, 3, 4, 5].map((n) => (
@@ -12,7 +12,7 @@ export default function RatingForm({ kind, targetId, myScore }: { kind: 'game' |
           key={n}
           name="score"
           value={n}
-          className={`text-2xl transition-colors ${myScore && n <= myScore ? 'text-accent' : 'text-ink-3 hover:text-ink'}`}
+          className={`inline-flex min-h-11 min-w-11 items-center justify-center text-2xl transition-colors ${myScore && n <= myScore ? 'text-accent' : 'text-ink-3 hover:text-ink'}`}
           aria-label={`${n} star${n > 1 ? 's' : ''}`}
         >
           ★

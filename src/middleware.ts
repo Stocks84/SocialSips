@@ -26,7 +26,7 @@ const PUBLIC_ROUTES = ['/', '/accept-terms', '/sign-in', '/sign-up', '/age-gate'
 
 // Known link-preview crawlers, and the only paths they may see without the age gate.
 const PREVIEW_BOTS = /facebookexternalhit|Facebot|Twitterbot|WhatsApp|Slackbot|LinkedInBot|Discordbot|TelegramBot/i
-const PREVIEW_PATH = /^\/(?:memes|games|cocktails|challenge)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(\/og)?$/i
+const PREVIEW_PATH = /^\/(?:(?:memes|games|cocktails|challenge)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:\/og)?|challenge(?:\/og)?)$/i
 
 // Write routes that need a signed-in user (in addition to the age gate).
 // Guests may browse after the age gate. Comments/ratings are also enforced by RLS

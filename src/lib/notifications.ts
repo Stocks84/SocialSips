@@ -5,7 +5,7 @@ const who = (n: NotificationRow, more = 'others') => {
   const a = n.actor ? `@${n.actor.username}` : 'Someone'
   return n.count > 1 ? `${a} and ${n.count - 1} ${n.count === 2 ? more.replace(/s$/, '') : more}` : a
 }
-const POST: Record<string, string> = { game: 'game', cocktail: 'cocktail', meme: 'meme' }
+const POST: Record<string, string> = { game: 'game', cocktail: 'drink', meme: 'meme' }
 
 export function notificationText(n: NotificationRow): { icon: string; text: string } {
   switch (n.kind) {
@@ -14,7 +14,7 @@ export function notificationText(n: NotificationRow): { icon: string; text: stri
     case 'comment': return { icon: '💬', text: `${n.count > 1 ? `${n.count} new comments` : `${who(n)} commented`} on your ${POST[n.target_type] ?? 'post'} ${q(n.preview)}` }
     case 'variation': return { icon: '🔀', text: `${n.count > 1 ? `${n.count} new variations` : `${who(n)} added a variation`} to your ${POST[n.target_type] ?? 'post'} ${q(n.preview)}` }
     case 'challenge_votes': return { icon: '🗳️', text: `Your entry in ${q(n.preview)} got ${n.count} new vote${n.count === 1 ? '' : 's'}` }
-    case 'challenge_win': return { icon: '🏆', text: `You won the challenge ${q(n.preview)}!` }
+    case 'challenge_win': return { icon: '🏆', text: `You won the dare ${q(n.preview)}!` }
     case 'moderation': return { icon: '🛡️', text: `A moderator took action on your post ${q(n.preview)}. See why.` }
   }
 }

@@ -98,13 +98,13 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
           </ul>
         </section>
       )}
-      <h2 className="text-xl font-bold mb-3">{result?.isOwner ? 'Your posts' : 'Games and cocktails they\u2019ve shared'}</h2>
+      <h2 className="text-xl font-bold mb-3">{result?.isOwner ? 'Your posts' : 'Games and drinks they\u2019ve shared'}</h2>
       {!result ? (
         <ComingSoon />
       ) : result.posts.length === 0 ? (
         result.isOwner ? (
           <EmptyState title="Your shelf is looking dry." action={{ href: '/games/new', label: '+ Share your first game' }} testId="profile-empty">
-            Post a drinking game (or a cocktail) and it lives here for everyone to rate.
+            Post a drinking game (or a drink) and it lives here for everyone to rate.
           </EmptyState>
         ) : (
           <EmptyState title={`@${profile?.username ?? name} hasn't shared anything yet.`} action={{ href: '/feed', label: 'Browse the feed' }} testId="profile-empty">

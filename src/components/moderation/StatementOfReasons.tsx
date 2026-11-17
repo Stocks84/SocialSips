@@ -6,7 +6,7 @@ import { formatDate } from '@/lib/format'
 
 export type Notice = { id: string; target_type: string; target_id: string; reason: string; explanation: string | null; preview: string | null; created_at: string; reversed_at: string | null }
 
-const LABEL: Record<string, string> = { game: 'game', cocktail: 'cocktail', meme: 'meme', comment: 'comment', variation: 'game variation', cocktail_variation: 'cocktail variation' }
+const LABEL: Record<string, string> = { game: 'game', cocktail: 'drink', meme: 'meme', comment: 'comment', variation: 'game variation', cocktail_variation: 'drink variation' }
 
 /** One statement of reasons (DSA Art. 17). Only the author (and admins) can read notices (RLS). */
 export function NoticeBody({ n }: { n: Notice }) {

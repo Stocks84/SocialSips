@@ -33,7 +33,7 @@ export default function CocktailForm({ action: serverAction, defaults = {}, subm
     <form action={action} className="card p-6 space-y-5 max-w-2xl">
       {defaults.id && <input type="hidden" name="cocktailId" value={defaults.id} />}
       <div>
-        <label className="label" htmlFor="name">Cocktail name</label>
+        <label className="label" htmlFor="name">Drink name</label>
         <input id="name" name="name" className="input" required minLength={2} maxLength={80} defaultValue={val('name', defaults.name)} {...aria('name')} />
         <FieldError id="name" message={err('name')} />
       </div>

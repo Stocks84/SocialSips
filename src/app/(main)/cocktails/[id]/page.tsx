@@ -96,7 +96,7 @@ export default async function CocktailPage({ params, searchParams }: { params: P
       )}
       <section>
         <h2 className="text-xl font-bold mb-3 text-accent">Rate it</h2>
-        {c.is_hidden ? <HiddenNotice locked /> : userId ? (suspended ? <SuspendedFormBlock compact action="rate" reason={suspended.reason} /> : <RatingForm kind="cocktail" targetId={c.id} myScore={rating.mine} />) : <SignInPrompt path={path} what="rate this cocktail" />}
+        {c.is_hidden ? <HiddenNotice locked /> : userId ? (suspended ? <SuspendedFormBlock compact action="rate" reason={suspended.reason} /> : <RatingForm kind="cocktail" targetId={c.id} myScore={rating.mine} />) : <SignInPrompt path={path} what="rate this drink" />}
       </section>
       <VariationsSection kind="cocktail" targetId={c.id} variations={variations} userId={userId} path={path} isAdmin={isAdmin} locked={Boolean(c.is_hidden)} suspended={suspended} />
       <CommentsSection kind="cocktail" targetId={c.id} comments={comments} userId={userId} path={path} isAdmin={isAdmin} locked={Boolean(c.is_hidden)} suspended={suspended} />

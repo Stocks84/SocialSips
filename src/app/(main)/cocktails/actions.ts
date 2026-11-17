@@ -54,9 +54,9 @@ export async function updateCocktail(_prev: FormState, formData: FormData): Prom
   if ('error' in auth) return { error: auth.error }
   const { supabase, user } = auth
   const id = String(formData.get('cocktailId'))
-  if (!UUID.test(id)) return { error: 'Unknown cocktail' }
+  if (!UUID.test(id)) return { error: 'Unknown drink' }
   const { data: existing } = await supabase.from('cocktails').select('author_id, image_url, is_hidden').eq('id', id).maybeSingle()
-  if (!existing || existing.author_id !== user.id) return fail(formData, 'You can only edit your own cocktails.')
+  if (!existing || existing.author_id !== user.id) return fail(formData, 'You can only edit your own drinks.')
   if (existing.is_hidden) return fail(formData, HIDDEN_LOCKED)
   const parsed = parseCocktail(formData)
   if (!parsed.success) return fail(formData, firstIssue(parsed.error.issues), fieldErrors(parsed.error.issues))
@@ -88,7 +88,7 @@ export async function deleteCocktail(formData: FormData) {
   if ('error' in auth) return failBack(auth.error, '/cocktails')
   const { supabase, user } = auth
   const id = String(formData.get('cocktailId'))
-  if (!UUID.test(id)) return failBack('Unknown cocktail.', '/cocktails')
+  if (!UUID.test(id)) return failBack('Unknown drink.', '/cocktails')
   const { data: existing } = await supabase.from('cocktails').select('author_id, image_url').eq('id', id).maybeSingle()
   if (!existing || existing.author_id !== user.id) return failBack('We couldn’t delete that. It may already be gone, or it’s not yours.', '/cocktails')
   const { error } = await supabase.from('cocktails').delete().eq('id', id).eq('author_id', user.id)

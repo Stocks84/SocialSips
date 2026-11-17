@@ -74,17 +74,17 @@ export default async function ChallengeView({ c, current, error }: { c: Challeng
               <SubmitButton className="btn-ghost text-sm" data-testid="withdraw-entry" pendingLabel="Withdrawing…">Withdraw entry</SubmitButton>
             </form>
           ) : suspended ? (
-            <SuspendedFormBlock action="enter the challenge" reason={suspended.reason} />
+            <SuspendedFormBlock action="enter the dare" reason={suspended.reason} />
           ) : options.length ? (
             <form action={enterChallenge} className="flex flex-wrap items-end gap-3">{hidden}
-              <label className="text-sm flex-1 min-w-[220px]">Enter one of your {c.kind === 'meme' ? 'memes' : 'cocktail variations'}
+              <label className="text-sm flex-1 min-w-[220px]">Enter one of your {c.kind === 'meme' ? 'memes' : 'drink variations'}
                 <select name="submissionId" className="input mt-1" required data-testid="entry-select">{options.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}</select>
               </label>
-              <SubmitButton className="btn-primary" data-testid="enter-challenge" pendingLabel="Entering…">Enter challenge</SubmitButton>
+              <SubmitButton className="btn-primary" data-testid="enter-challenge" pendingLabel="Entering…">Enter dare</SubmitButton>
               <p className="w-full text-xs text-ink-3">One entry per person. Or <Link href={createHref} className="text-accent">make a new one</Link>.</p>
             </form>
           ) : (
-            <p className="text-sm">{c.kind === 'meme' ? <>Post a <Link href="/memes/new" className="text-accent">new meme</Link></> : <>Add a variation to any <Link href="/cocktails" className="text-accent">cocktail</Link></>}, then come back to enter it.</p>
+            <p className="text-sm">{c.kind === 'meme' ? <>Post a <Link href="/memes/new" className="text-accent">new meme</Link></> : <>Add a variation to any <Link href="/cocktails" className="text-accent">drink</Link></>}, then come back to enter it.</p>
           )}
         </section>
       )}

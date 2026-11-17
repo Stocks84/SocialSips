@@ -6,7 +6,7 @@ export default function DeleteAccountForm({ action, username }: { action: (s: Ed
   const [state, formAction, pending] = useActionState(action, {} as EditState)
   return (
     <form action={formAction} className="space-y-3" data-testid="delete-account-form">
-      <p className="text-sm text-ink-2">This permanently deletes your profile, games, cocktails, memes, comments, variations, ratings, reactions and uploaded images, and your login. It can&apos;t be undone.</p>
+      <p className="text-sm text-ink-2">This permanently deletes your profile, games, drinks, memes, comments, variations, ratings, reactions and uploaded images, and your login. It can&apos;t be undone.</p>
       <label className="block text-sm">Type your username <strong>{username}</strong> to confirm
         <input name="confirm" className="input mt-1" autoComplete="off" data-testid="delete-confirm" required />
       </label>

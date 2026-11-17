@@ -5,13 +5,13 @@ import { requireActiveUser, requireUser, UUID } from '@/lib/server/auth'
 import { friendlyError } from '@/lib/server/errors'
 
 const MSG: Record<string, string> = {
-  challenge_closed: 'This challenge is closed.',
-  already_entered: 'You’ve already entered this challenge.',
+  challenge_closed: 'This dare is closed.',
+  already_entered: 'You’ve already entered this dare.',
   not_your_submission: 'You can only enter your own (visible) submission.',
   own_entry: 'You can’t vote for your own entry.',
   blocked: 'You can’t vote for this entry.',
   entry_not_found: 'That entry isn’t available any more.',
-  challenge_not_found: 'That challenge doesn’t exist.',
+  challenge_not_found: 'That dare doesn’t exist.',
 }
 const back = (formData: FormData, err?: string) => {
   const id = String(formData.get('challengeId') ?? '')

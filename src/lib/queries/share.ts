@@ -1,6 +1,6 @@
 import 'server-only'
 import { createClient } from '@/lib/supabase/server'
-import { getChallenge } from '@/lib/queries/challenges'
+import { getChallenge, getCurrentChallenge } from '@/lib/queries/challenges'
 import { UUID } from '@/lib/server/auth'
 import type { Challenge } from '@/lib/challenge'
 
@@ -32,4 +32,9 @@ export async function getSharedCocktail(id: string): Promise<SharedCocktail | nu
 
 export async function getSharedChallenge(id: string): Promise<Challenge | null> {
   return UUID.test(id) ? getChallenge(id) : null
+}
+
+/** This week's challenge for the /challenge share card. Same public columns as getSharedChallenge; null if none is active. */
+export async function getSharedCurrentChallenge(): Promise<Challenge | null> {
+  return getCurrentChallenge()
 }

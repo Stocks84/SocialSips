@@ -32,3 +32,6 @@ export const weekLabel = (startsOn: string) => {
   const f = (x: Date) => x.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Europe/Vienna' })
   return `${f(s)} – ${f(e)}`
 }
+
+/** The only challenge fields that reach a share card (see share-meta.ts), with labels already resolved. */
+export const challengeShareInput = (c: Challenge) => ({ theme: c.theme, description: c.description, kindLabel: KIND_LABEL[c.kind], week: weekLabel(c.starts_on) })

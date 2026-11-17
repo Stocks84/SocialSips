@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import AdminTabs from '@/components/admin/AdminTabs'
 import { notFound } from 'next/navigation'
 import PageHeader from '@/components/ui/PageHeader'
 import SubmitButton from '@/components/ui/SubmitButton'
@@ -24,7 +25,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
   return (
     <>
       <PageHeader title="Accounts" subtitle="Suspend or restore an account. Suspended members can browse but can’t post or interact." />
-      <p className="text-sm mb-6"><Link href="/admin/reports" className="text-accent">← Open reports</Link></p>
+      <AdminTabs active="users" />
       {error && <p role="alert" className="card p-4 mb-4 text-sm text-danger" data-testid="admin-users-error">{error.slice(0, 200)}</p>}
       {saved && <p role="status" className="card p-4 mb-4 text-sm text-accent">Account {saved === 'suspended' ? 'suspended' : 'restored'}</p>}
       <form className="card p-5 mb-6 flex flex-wrap items-end gap-3" role="search">

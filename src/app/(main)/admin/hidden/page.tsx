@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import AdminTabs from '@/components/admin/AdminTabs'
 import { notFound } from 'next/navigation'
 import PageHeader from '@/components/ui/PageHeader'
 import { createClient } from '@/lib/supabase/server'
@@ -34,7 +34,7 @@ export default async function AdminHiddenPage({ searchParams }: { searchParams: 
   return (
     <>
       <PageHeader title="Hidden items" subtitle={`${items.length} hidden`} />
-      <p className="text-sm mb-6"><Link href="/admin/reports" className="text-accent">← Open reports</Link></p>
+      <AdminTabs active="hidden" />
       {secured !== undefined && (
         <p role="status" className={`card p-4 mb-4 text-sm ${Number(failed) > 0 ? 'text-danger' : 'text-accent'}`} data-testid="secure-result">
           {Number(secured) || 0} image{Number(secured) === 1 ? '' : 's'} made private{Number(failed) > 0 ? `, ${Number(failed)} failed (try again)` : ''}.

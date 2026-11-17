@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import AdminTabs from '@/components/admin/AdminTabs'
 import { notFound } from 'next/navigation'
 import PageHeader from '@/components/ui/PageHeader'
 import { createClient } from '@/lib/supabase/server'
@@ -25,7 +26,7 @@ export default async function AdminReportsPage() {
   return (
     <>
       <PageHeader title="Reports" subtitle={`${reports.length} open`} />
-      <p className="text-sm mb-6"><Link href="/admin/hidden" className="text-accent">Hidden items →</Link> · <Link href="/admin/challenges" className="text-accent" data-testid="admin-challenges-link">Challenges →</Link> · <Link href="/admin/users" className="text-accent" data-testid="admin-users-link">Accounts →</Link></p>
+      <AdminTabs active="reports" />
       {reports.length === 0 && <p className="card p-6 text-center text-ink-2">All clear. No open reports</p>}
       <div className="space-y-4">
         {reports.map((r) => {

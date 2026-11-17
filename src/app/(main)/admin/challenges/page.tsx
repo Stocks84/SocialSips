@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import AdminTabs from '@/components/admin/AdminTabs'
 import { notFound } from 'next/navigation'
 import PageHeader from '@/components/ui/PageHeader'
 import { getViewer } from '@/lib/server/viewer'
@@ -25,7 +26,8 @@ export default async function AdminChallengesPage({ searchParams }: { searchPara
   return (
     <>
       <PageHeader title="Weekly challenges" subtitle="Schedule themes for coming weeks. Weeks run Monday 00:00 to Sunday 23:59, Vienna time. Unscheduled weeks get a default (meme / cocktail of the week, alternating)." />
-      <p className="text-sm mb-6 flex gap-4"><Link href="/admin/reports" className="text-accent">← Reports</Link><Link href="/challenge" className="text-accent">View current challenge →</Link></p>
+      <AdminTabs active="challenges" />
+      <p className="text-sm mb-6"><Link href="/challenge" className="text-accent">View current challenge →</Link></p>
       {error && <p role="alert" className="card p-4 mb-4 text-sm text-danger" data-testid="admin-challenge-error">{error.slice(0, 200)}</p>}
       {saved && <p role="status" className="card p-4 mb-4 text-sm text-accent">Saved</p>}
       <section className="card p-5 mb-6">

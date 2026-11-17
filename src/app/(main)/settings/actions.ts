@@ -2,7 +2,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
-import { requireUser, UUID } from '@/lib/server/auth'
+import { requireActiveUser, requireUser, UUID } from '@/lib/server/auth'
 import { friendlyError, NOT_SAVED } from '@/lib/server/errors'
 import { safePath } from '@/lib/safe-path'
 import { removeImage, uploadImage } from '@/lib/server/uploads'
@@ -13,7 +13,7 @@ import { failBack } from '@/lib/server/action-error'
 
 /** Saves the signed-in user's display name, bio and avatar. RLS only lets a user update their own row. */
 export async function updateProfile(_prev: EditState, formData: FormData): Promise<EditState> {
-  const auth = await requireUser()
+  const auth = await requireActiveUser()
   if ('error' in auth) return { error: auth.error }
   const { supabase, user } = auth
   const parsed = profileSchema.safeParse({ displayName: String(formData.get('displayName') ?? ''), bio: String(formData.get('bio') ?? '') })
@@ -103,8 +103,9 @@ export async function deleteAccount(_prev: EditState, formData: FormData): Promi
 
 /** Follow / unfollow. RLS refuses following yourself or anyone in a block with you; a trigger rate-limits. */
 export async function setFollow(formData: FormData) {
-  const auth = await requireUser()
-  if ('error' in auth) redirect('/sign-in')
+  // Unfollowing stays possible while suspended; following needs an active account.
+  const auth = formData.get('follow') === '1' ? await requireActiveUser() : await requireUser()
+  if ('error' in auth) { if ('suspended' in auth) return failBack(auth.error); redirect('/sign-in') }
   const target = String(formData.get('userId') ?? '')
   const safeBack = safePath(formData.get('back'))
   if (!UUID.test(target) || target === auth.user.id) redirect(safeBack)

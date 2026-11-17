@@ -4,13 +4,13 @@ import { fail, type FormState } from '@/lib/server/forms'
 import { fieldErrors } from '@/lib/validators/issues'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { requireUser, UUID } from '@/lib/server/auth'
+import { requireActiveUser, requireUser, UUID } from '@/lib/server/auth'
 import { removeImage, uploadImage } from '@/lib/server/uploads'
 import { memeSchema } from '@/lib/validators/cocktail'
 import { isReaction } from '@/lib/memes'
 
 export async function createMeme(_prev: FormState, formData: FormData): Promise<FormState> {
-  const auth = await requireUser()
+  const auth = await requireActiveUser()
   if ('error' in auth) return { error: auth.error }
   const { supabase, user } = auth
   const parsed = memeSchema.safeParse({
@@ -56,7 +56,7 @@ export async function deleteMeme(formData: FormData) {
 }
 
 export async function updateMeme(_prev: FormState, formData: FormData): Promise<FormState> {
-  const auth = await requireUser()
+  const auth = await requireActiveUser()
   if ('error' in auth) return { error: auth.error }
   const { supabase, user } = auth
   const id = String(formData.get('memeId'))
@@ -95,8 +95,8 @@ export type ReactionResult = { error?: string; counts?: Record<string, number>; 
 
 /** Set, change or (emoji = null) remove the viewer's reaction on a meme. One atomic DB call; returns the fresh counts. */
 export async function setReaction(memeId: string, emoji: string | null): Promise<ReactionResult> {
-  const auth = await requireUser()
-  if ('error' in auth) return { error: 'Sign in to react.' }
+  const auth = await requireActiveUser()
+  if ('error' in auth) return { error: 'suspended' in auth ? auth.error : 'Sign in to react.' }
   if (!UUID.test(memeId)) return { error: 'Unknown meme' }
   if (emoji !== null && !isReaction(emoji)) return { error: 'Pick one of the reactions' }
   const { data, error } = await auth.supabase.rpc('set_reaction', { p_meme: memeId, p_emoji: emoji })

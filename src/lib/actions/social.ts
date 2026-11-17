@@ -1,7 +1,7 @@
 'use server'
 import { friendlyError, HIDDEN_LOCKED, NOT_SAVED } from '@/lib/server/errors'
 import { revalidatePath } from 'next/cache'
-import { requireUser, UUID } from '@/lib/server/auth'
+import { requireActiveUser, requireUser, UUID } from '@/lib/server/auth'
 import { fail, type FormState } from '@/lib/server/forms'
 import { fieldErrors } from '@/lib/validators/issues'
 import { variationSchema } from '@/lib/validators/game'
@@ -27,7 +27,7 @@ const commentTarget = (formData: FormData) => {
 }
 
 export async function addComment(_prev: FormState, formData: FormData): Promise<FormState> {
-  const auth = await requireUser()
+  const auth = await requireActiveUser()
   if ('error' in auth) return { error: auth.error }
   const t = commentTarget(formData)
   if (!UUID.test(t.id)) return { error: 'Unknown item' }
@@ -58,7 +58,7 @@ export async function deleteComment(formData: FormData) {
 
 export async function rate(formData: FormData) {
   const t = target(formData)
-  const auth = await requireUser()
+  const auth = await requireActiveUser()
   if ('error' in auth) return failBack(auth.error, t.path)
   const parsed = ratingSchema.safeParse({ score: formData.get('score') })
   if (!parsed.success || !UUID.test(t.id)) {
@@ -83,7 +83,7 @@ const variationTarget = (formData: FormData) => {
 }
 
 export async function addVariation(_prev: FormState, formData: FormData): Promise<FormState> {
-  const auth = await requireUser()
+  const auth = await requireActiveUser()
   if ('error' in auth) return { error: auth.error }
   const t = variationTarget(formData)
   if (!UUID.test(t.id)) return { error: 'Unknown item' }
@@ -116,7 +116,7 @@ export async function deleteVariation(formData: FormData) {
 
 /** Author edits their own comment. RLS refuses hidden comments and comments under hidden posts. */
 export async function updateOwnComment(_prev: FormState, formData: FormData): Promise<FormState> {
-  const auth = await requireUser()
+  const auth = await requireActiveUser()
   if ('error' in auth) return { error: auth.error }
   const t = commentTarget(formData)
   const commentId = String(formData.get('commentId'))
@@ -135,7 +135,7 @@ export async function updateOwnComment(_prev: FormState, formData: FormData): Pr
 
 /** Author edits their own game or cocktail variation. Same hidden rules as comments. */
 export async function updateOwnVariation(_prev: FormState, formData: FormData): Promise<FormState> {
-  const auth = await requireUser()
+  const auth = await requireActiveUser()
   if ('error' in auth) return { error: auth.error }
   const t = variationTarget(formData)
   const variationId = String(formData.get('variationId'))
@@ -158,7 +158,7 @@ export async function updateOwnVariation(_prev: FormState, formData: FormData): 
 // ─── Reports ────────────────────────────────────────────────────────────────
 
 export async function reportContent(_prev: FormState, formData: FormData): Promise<FormState> {
-  const auth = await requireUser()
+  const auth = await requireActiveUser()
   if ('error' in auth) return { error: auth.error }
   const parsed = reportSchema.safeParse({
     targetType: formData.get('targetType'),

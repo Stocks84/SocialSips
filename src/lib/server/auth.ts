@@ -1,5 +1,6 @@
 import 'server-only'
 import { createClient } from '@/lib/supabase/server'
+import { SUSPENDED_MESSAGE } from '@/lib/server/errors'
 
 /** Signed-in Supabase client + user, or an error. All writes go through RLS as this user. */
 export async function requireUser() {
@@ -10,7 +11,21 @@ export async function requireUser() {
   return { supabase, user } as const
 }
 
-/** Same, but also requires profiles.is_admin. */
+/**
+ * Signed-in user who is NOT suspended: use for anything that creates, edits or reacts.
+ * (Deleting your own posts, withdrawing, blocking and deleting your account stay on requireUser.)
+ * The database enforces the same rule (migration 0040), this just gives a clear message first.
+ * `suspended: true` in the error result lets callers tell "suspended" apart from "not signed in".
+ */
+export async function requireActiveUser() {
+  const auth = await requireUser()
+  if ('error' in auth) return auth
+  const { data } = await auth.supabase.rpc('my_suspension')
+  if (Array.isArray(data) && data.length > 0) return { error: SUSPENDED_MESSAGE, suspended: true } as const
+  return auth
+}
+
+/** Same as requireUser, but also requires profiles.is_admin. */
 export async function requireAdmin() {
   const auth = await requireUser()
   if ('error' in auth) return auth

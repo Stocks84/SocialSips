@@ -2,11 +2,16 @@ import 'server-only'
 
 type DbError = { message?: string; code?: string; hint?: string | null; details?: string | null } | null | undefined
 
+/** Shown when a suspended member tries to post or interact (the database refuses it too, migration 0040). */
+export const SUSPENDED_MESSAGE =
+  'Your account is suspended, so you can’t post or interact right now. You can still browse, and you can read how to appeal in the Terms.'
+
 /** Maps a Supabase/Postgres error to a user-safe message (no schema details). Logs the original. */
 export function friendlyError(error: DbError, context = 'db'): string {
   if (!error) return 'Something went wrong. Please try again.'
   console.error(context, error.code, error.message)
   const msg = error.message ?? ''
+  if (error.hint === 'account_suspended' || msg.includes('account_suspended')) return SUSPENDED_MESSAGE
   if (error.hint === 'rate_limit' || msg.startsWith('Slow down')) return msg || 'Slow down a bit 🍹'
   if (msg.includes('Only admins can hide or unhide')) return 'Only moderators can hide or unhide posts.'
   if (/fetch failed|network|ECONN|ETIMEDOUT|timeout/i.test(msg)) return 'We couldn’t reach the server. Check your connection and try again.'

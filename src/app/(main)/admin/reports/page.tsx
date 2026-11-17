@@ -24,7 +24,7 @@ export default async function AdminReportsPage() {
   return (
     <>
       <PageHeader title="Reports" subtitle={`${reports.length} open`} />
-      <p className="text-sm mb-6"><Link href="/admin/hidden" className="text-accent">Hidden items →</Link> · <Link href="/admin/challenges" className="text-accent" data-testid="admin-challenges-link">Challenges →</Link></p>
+      <p className="text-sm mb-6"><Link href="/admin/hidden" className="text-accent">Hidden items →</Link> · <Link href="/admin/challenges" className="text-accent" data-testid="admin-challenges-link">Challenges →</Link> · <Link href="/admin/users" className="text-accent" data-testid="admin-users-link">Accounts →</Link></p>
       {reports.length === 0 && <p className="card p-6 text-center text-ink-2">All clear. No open reports</p>}
       <div className="space-y-4">
         {reports.map((r) => {

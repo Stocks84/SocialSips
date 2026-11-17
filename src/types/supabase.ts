@@ -714,6 +714,8 @@ export type Database = {
           id: string;
           is_admin: boolean;
           party_vibe: string | null;
+          suspended_at: string | null;
+          suspension_reason: string | null;
           username: string;
         };
         ComputedFields: never;
@@ -730,6 +732,8 @@ export type Database = {
           id: string;
           is_admin?: boolean;
           party_vibe?: string | null;
+          suspended_at?: string | null;
+          suspension_reason?: string | null;
           username: string;
         };
         Update: {
@@ -745,6 +749,8 @@ export type Database = {
           id?: string;
           is_admin?: boolean;
           party_vibe?: string | null;
+          suspended_at?: string | null;
+          suspension_reason?: string | null;
           username?: string;
         };
         Relationships: [];
@@ -878,6 +884,16 @@ export type Database = {
     };
     Functions: {
       accept_terms: { Args: { p_version: string }; Returns: string };
+      admin_list_users: {
+        Args: { p_query?: string };
+        Returns: {
+          id: string;
+          is_admin: boolean;
+          suspended_at: string | null;
+          suspension_reason: string | null;
+          username: string;
+        }[];
+      };
       auth_throttle_fail: {
         Args: { p_keys: string[]; p_secret: string };
         Returns: undefined;
@@ -1059,6 +1075,8 @@ export type Database = {
           id: string;
           is_admin: boolean;
           party_vibe: string | null;
+          suspended_at: string | null;
+          suspension_reason: string | null;
           username: string;
         }[];
         SetofOptions: {
@@ -1067,6 +1085,10 @@ export type Database = {
           isOneToOne: false;
           isSetofReturn: true;
         };
+      };
+      my_suspension: {
+        Args: Record<PropertyKey, never>;
+        Returns: { reason: string | null; suspended_at: string }[];
       };
       my_terms_version: { Args: Record<PropertyKey, never>; Returns: string };
       orphan_media: {
@@ -1108,6 +1130,10 @@ export type Database = {
           avg_score: number;
           rating_count: number;
         }[];
+      };
+      set_account_suspension: {
+        Args: { p_reason?: string; p_suspended: boolean; p_user: string };
+        Returns: undefined;
       };
       set_challenge_vote: {
         Args: { p_challenge: string; p_entry: string | null };

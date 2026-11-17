@@ -3,7 +3,7 @@ import { friendlyError, HIDDEN_LOCKED, NOT_SAVED } from '@/lib/server/errors'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { requireUser, UUID } from '@/lib/server/auth'
+import { requireActiveUser, requireUser, UUID } from '@/lib/server/auth'
 import { removeImage, uploadImage } from '@/lib/server/uploads'
 import { fail, type FormState } from '@/lib/server/forms'
 import { fieldErrors, firstIssue } from '@/lib/validators/issues'
@@ -36,7 +36,7 @@ const removeCover = (supabase: SupabaseClient, url: string | null) => removeImag
 // ─── Games ──────────────────────────────────────────────────────────────────
 
 export async function createGame(_prev: FormState, formData: FormData): Promise<FormState> {
-  const auth = await requireUser()
+  const auth = await requireActiveUser()
   if ('error' in auth) return { error: auth.error }
   const { supabase, user } = auth
   const parsed = parseGame(formData)
@@ -72,7 +72,7 @@ export async function createGame(_prev: FormState, formData: FormData): Promise<
 }
 
 export async function updateGame(_prev: FormState, formData: FormData): Promise<FormState> {
-  const auth = await requireUser()
+  const auth = await requireActiveUser()
   if ('error' in auth) return { error: auth.error }
   const { supabase, user } = auth
   const gameId = String(formData.get('gameId'))

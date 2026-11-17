@@ -1,7 +1,7 @@
 'use server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { requireUser, UUID } from '@/lib/server/auth'
+import { requireActiveUser, requireUser, UUID } from '@/lib/server/auth'
 import { friendlyError } from '@/lib/server/errors'
 
 const MSG: Record<string, string> = {
@@ -22,8 +22,8 @@ const back = (formData: FormData, err?: string) => {
 const explain = (e: { message?: string; code?: string; hint?: string | null }) => MSG[e.message ?? ''] ?? friendlyError(e, 'challenge')
 
 export async function enterChallenge(formData: FormData) {
-  const auth = await requireUser()
-  if ('error' in auth) redirect('/sign-in?redirectTo=/challenge')
+  const auth = await requireActiveUser()
+  if ('error' in auth) { if ('suspended' in auth) back(formData, auth.error); redirect('/sign-in?redirectTo=/challenge') }
   const challengeId = String(formData.get('challengeId') ?? ''), submission = String(formData.get('submissionId') ?? '')
   if (!UUID.test(challengeId) || !UUID.test(submission)) back(formData, 'Pick one of your submissions.')
   const { error } = await auth.supabase.rpc('enter_challenge', { p_challenge: challengeId, p_submission: submission })
@@ -40,8 +40,8 @@ export async function withdrawEntry(formData: FormData) {
 }
 
 export async function voteChallenge(formData: FormData) {
-  const auth = await requireUser()
-  if ('error' in auth) redirect('/sign-in?redirectTo=/challenge')
+  const auth = await requireActiveUser()
+  if ('error' in auth) { if ('suspended' in auth) back(formData, auth.error); redirect('/sign-in?redirectTo=/challenge') }
   const challengeId = String(formData.get('challengeId') ?? ''), entry = String(formData.get('entryId') ?? '')
   if (!UUID.test(challengeId) || (entry && !UUID.test(entry))) back(formData)
   const { error } = await auth.supabase.rpc('set_challenge_vote', { p_challenge: challengeId, p_entry: entry || null })

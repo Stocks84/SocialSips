@@ -31,7 +31,7 @@ export default async function NotificationsPage() {
           {items.map((n) => {
             const t = notificationText(n)
             return (
-              <li key={n.id} className={`card p-4 flex items-start gap-3 ${n.read_at ? 'opacity-70' : 'border-accent'}`} data-testid="notification" data-kind={n.kind} data-unread={!n.read_at}>
+              <li key={n.id} className={`card p-4 flex items-start gap-3 ${n.read_at ? 'text-ink-2' : 'border-accent'}`} data-testid="notification" data-kind={n.kind} data-unread={!n.read_at}>
                 {/* native form POST (opening marks it read; GET never does): full navigation so the bell count refreshes */}
                 <form method="post" action={`/notifications/${n.id}`} className="flex-1 min-w-0">
                   <button type="submit" className="block w-full text-left hover:text-ink" data-testid="open-notification">

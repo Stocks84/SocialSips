@@ -14,11 +14,11 @@ import {
 export const navItems = [
   { href: '/feed', label: 'Feed', icon: faNewspaper },
   { href: '/games', label: 'Games', icon: faBeerMugEmpty }, // Font Awesome Free has no spade
-  { href: '/cocktails', label: 'Cocktails', tabLabel: 'Drinks', icon: faMartiniGlassCitrus },
+  { href: '/cocktails', label: 'Drinks', icon: faMartiniGlassCitrus },
   { href: '/games/new', label: 'Add', icon: faPlus },
   { href: '/memes', label: 'Memes', icon: faFaceGrinSquintTears },
   { href: '/play', label: 'Play', icon: faDice },
-  { href: '/challenge', label: 'Challenge', tabLabel: 'Dares', icon: faTrophy },
+  { href: '/challenge', label: 'Dares', icon: faTrophy },
   { href: '/help', label: 'Help', icon: faCircleQuestion }, // desktop top nav only; filtered out of the tab bar
 ] as const
 

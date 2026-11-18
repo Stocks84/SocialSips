@@ -5,9 +5,9 @@ import { REPORT_REASONS } from '@/lib/validators/comment'
 import type { EditState } from '@/lib/validators/issues'
 import { submitPublicReport } from './actions'
 
-type Props = { targetType?: string; targetId?: string; targetLabel?: string; signedIn: boolean }
+type Props = { targetType?: string; targetId?: string; targetLabel?: string; initialUrl?: string; signedIn: boolean }
 
-export default function ReportForm({ targetType, targetId, targetLabel, signedIn }: Props) {
+export default function ReportForm({ targetType, targetId, targetLabel, initialUrl, signedIn }: Props) {
   const [state, action, pending] = useActionState<EditState, FormData>(submitPublicReport, {})
   const val = (k: string) => { const v = state.values?.[k]; return typeof v === 'string' ? v : '' }
   const err = (k: string) => state.fieldErrors?.[k]
@@ -30,7 +30,8 @@ export default function ReportForm({ targetType, targetId, targetLabel, signedIn
       ) : (
         <div>
           <label className="label" htmlFor="url">Link to the content</label>
-          <input id="url" name="url" maxLength={500} className="input" defaultValue={val('url')} placeholder="https://… (the post, meme, comment or profile)" aria-describedby="url-error" />
+          <input id="url" name="url" maxLength={500} className="input" defaultValue={val('url') || initialUrl || ''} placeholder="https://… (the post, meme, comment or a comment link)" aria-describedby="url-hint url-error" />
+          <p id="url-hint" className="text-ink-3 text-xs mt-1">To report one comment, paste its link (Copy link on the comment).</p>
           <FieldError id="url" message={err('url')} />
         </div>
       )}

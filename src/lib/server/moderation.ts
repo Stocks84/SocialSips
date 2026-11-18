@@ -2,6 +2,7 @@ import 'server-only'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 import type { Bucket } from './uploads'
+import { commentHref } from '@/lib/report-url'
 
 export type TargetType = 'game' | 'comment' | 'variation' | 'cocktail' | 'cocktail_variation' | 'meme'
 
@@ -63,7 +64,7 @@ export async function resolveTargets(
     switch (type) {
       case 'game': return { exists: true, href: `/games/${id}`, preview: `${s('title')}: ${cut(s('summary'))}`, hidden }
       case 'cocktail': return { exists: true, href: `/cocktails/${id}`, preview: `${s('name')}: ${cut(s('description'))}`, hidden }
-      case 'comment': return { exists: true, href: s('game_id') ? `/games/${s('game_id')}` : s('meme_id') ? `/memes/${s('meme_id')}` : `/cocktails/${s('cocktail_id')}`, preview: cut(s('body')), hidden }
+      case 'comment': return { exists: true, href: commentHref({ game_id: s('game_id'), cocktail_id: s('cocktail_id'), meme_id: s('meme_id') }, id), preview: cut(s('body')), hidden }
       case 'variation': return { exists: true, href: `/games/${s('game_id')}`, preview: `${s('title')}: ${cut(s('rules'))}`, hidden }
       case 'cocktail_variation': return { exists: true, href: `/cocktails/${s('cocktail_id')}`, preview: `${s('title')}: ${cut(s('rules'))}`, hidden }
       case 'meme': return { exists: true, href: `/memes/${id}`, preview: cut(s('caption') ?? s('joke_text') ?? '(image)'), hidden }

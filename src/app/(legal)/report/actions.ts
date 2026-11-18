@@ -7,22 +7,19 @@ import { fail } from '@/lib/server/forms'
 import { publicReportSchema } from '@/lib/validators/comment'
 import { fieldErrors, type EditState } from '@/lib/validators/issues'
 import { maybeSendModerationAlertEmail } from '@/lib/server/moderation-alert-email'
+import { parseReportUrl, reportTargetFromParsed, type CommentParentRow } from '@/lib/report-url'
 
-const UUID_RE = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
-const PATHS: [RegExp, 'meme' | 'game' | 'cocktail'][] = [
-  [new RegExp(`^/memes/(${UUID_RE})(?:/|$)`, 'i'), 'meme'],
-  [new RegExp(`^/games/(${UUID_RE})(?:/|$)`, 'i'), 'game'],
-  [new RegExp(`^/cocktails/(${UUID_RE})(?:/|$)`, 'i'), 'cocktail'],
-]
-
-/** A pasted Social Sips link to a meme/game/cocktail becomes an exact target; anything else stays a link. */
-function targetFromUrl(raw: string, host: string | null) {
-  try {
-    const u = new URL(raw, `https://${host ?? 'localhost'}`)
-    if (host && u.host !== host) return null
-    for (const [re, type] of PATHS) { const m = re.exec(u.pathname); if (m) return { type, id: m[1].toLowerCase() } }
-  } catch { /* not a URL: keep as text */ }
-  return null
+/** Look up a comment to attach to a public report. Never selects the body, so hidden text can't leak. */
+async function loadCommentForReport(
+  supabase: NonNullable<Awaited<ReturnType<typeof createClient>>>,
+  id: string,
+): Promise<CommentParentRow | null> {
+  const { data } = await supabase
+    .from('comments')
+    .select('id, game_id, cocktail_id, meme_id, is_hidden')
+    .eq('id', id)
+    .maybeSingle()
+  return (data as CommentParentRow | null) ?? null
 }
 
 /** Notice-and-action form (DSA Art. 16) for anyone, signed in or not. Max 10 reports per IP per 15 minutes. */
@@ -43,9 +40,11 @@ export async function submitPublicReport(_prev: EditState, formData: FormData): 
   await recordFailure(supabase, keys) // counts every report towards the IP limit
 
   const host = (await headers()).get('host')
-  const fromUrl = r.url ? targetFromUrl(r.url, host) : null
-  const type = r.targetType && r.targetId ? r.targetType : fromUrl?.type ?? 'link'
-  const id = r.targetType && r.targetId ? r.targetId : fromUrl?.id ?? null
+  const fromUrl = r.url ? parseReportUrl(r.url, host) : null
+  const comment = fromUrl?.commentId ? await loadCommentForReport(supabase, fromUrl.commentId) : null
+  const resolved = reportTargetFromParsed(fromUrl, comment)
+  const type = r.targetType && r.targetId ? r.targetType : resolved.type
+  const id = r.targetType && r.targetId ? r.targetId : resolved.id
   const { error } = await supabase.rpc('submit_public_report', {
     p_secret: secret, p_target_type: type, p_target_id: id, p_target_url: r.url ?? null,
     p_reason: r.reason, p_note: r.note, p_email: r.email || null,

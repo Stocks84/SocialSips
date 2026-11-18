@@ -9,8 +9,8 @@ export const metadata = { title: 'Report content', robots: { index: false } }
 const LABELS: Record<string, string> = { game: 'Game', comment: 'Comment', variation: 'Game variation', cocktail: 'Drink', cocktail_variation: 'Drink variation', meme: 'Meme' }
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-export default async function ReportPage({ searchParams }: { searchParams: Promise<{ type?: string; id?: string }> }) {
-  const { type, id } = await searchParams
+export default async function ReportPage({ searchParams }: { searchParams: Promise<{ type?: string; id?: string; url?: string }> }) {
+  const { type, id, url } = await searchParams
   const exact = type && id && (REPORT_TARGETS as readonly string[]).includes(type) && UUID.test(id)
   const supabase = await createClient()
   const signedIn = Boolean(supabase && (await supabase.auth.getClaims()).data?.claims?.sub)
@@ -20,7 +20,7 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
         <h1 className="text-3xl sm:text-4xl font-display font-normal"><span className="text-ink">Report content or contact us</span></h1>
         <p className="text-ink-2 text-sm mt-2">Anyone can report illegal content or a breach of our <Link href="/terms" className="text-accent">Terms</Link>, signed in or not. You can also email <L k="contactEmail" mailto />.</p>
       </header>
-      <ReportForm targetType={exact ? type : undefined} targetId={exact ? id : undefined} targetLabel={exact ? LABELS[type!] : undefined} signedIn={signedIn} />
+      <ReportForm targetType={exact ? type : undefined} targetId={exact ? id : undefined} targetLabel={exact ? LABELS[type!] : undefined} initialUrl={!exact && url ? url.slice(0, 500) : undefined} signedIn={signedIn} />
       <p className="text-ink-3 text-xs">If someone is in immediate danger, call 112 (EU) or 999 (UK). For child sexual abuse material you don&apos;t have to give your name or email.</p>
     </div>
   )

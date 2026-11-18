@@ -1,7 +1,7 @@
 type Issue = { path: PropertyKey[]; message: string; code?: string; minimum?: number | bigint; maximum?: number | bigint; origin?: string; type?: string }
 
 const LABELS: Record<string, string> = {
-  title: 'Name', name: 'Name', summary: 'Description', description: 'Description', rules: 'Rules', method: 'Method',
+  title: 'Title', name: 'Drink name', summary: 'Description', description: 'Description', rules: 'Rules', method: 'Method',
   minPlayers: 'Min players', maxPlayers: 'Max players', hangoverRating: 'Hangover rating', ingredients: 'Ingredients',
   equipment: 'Equipment', tags: 'Tags', caption: 'Caption', jokeText: 'Joke', body: 'Comment',
 }
@@ -22,7 +22,7 @@ export function issueMessage(i: Issue): string {
   return i.message
 }
 
-/** "Name: At least 3 characters" for the first zod issue. */
+/** "Title: At least 3 characters" (or "Drink name: …") for the first zod issue. */
 export const firstIssue = (issues: Issue[]) => {
   const i = issues[0]
   if (!i) return 'Check the form'

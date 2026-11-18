@@ -6,7 +6,7 @@ import HangoverPicker from './HangoverPicker'
 import ImageInput from '@/components/ui/ImageInput'
 import FieldError from '@/components/ui/FieldError'
 import LengthHint, { defaultHint, uniqueFieldError } from '@/components/ui/LengthHint'
-import { gameFieldsFromForm, listItems } from '@/lib/validators/game'
+import { EQUIPMENT_ITEM_MAX, GAME_LIST_LIMIT, TAG_ITEM_MAX, gameFieldsFromForm, listItems } from '@/lib/validators/game'
 import { fieldErrors, firstIssue } from '@/lib/validators/issues'
 
 export type GameFormDefaults = {
@@ -32,7 +32,9 @@ const LIMITS = {
   title: { min: 3, max: 80 },
   summary: { min: 10, max: 200 },
   rules: { min: 20, max: 5000 },
-  list: 10,
+  list: GAME_LIST_LIMIT,
+  equipmentItem: EQUIPMENT_ITEM_MAX,
+  tagItem: TAG_ITEM_MAX,
 } as const
 
 const HINTS = {
@@ -44,6 +46,16 @@ const HINTS = {
   equipment: 'Up to 10 items, comma separated',
   tags: 'Up to 10 items, comma separated',
 } as const
+
+function listHint(items: string[], itemMax: number) {
+  if (items.length > LIMITS.list) return HINTS.equipment
+  if (items.some((s) => s.length > itemMax)) return `Each item up to ${itemMax} characters`
+  return HINTS.equipment
+}
+
+function listInvalid(items: string[], itemMax: number) {
+  return items.length > LIMITS.list || items.some((s) => s.length > itemMax)
+}
 
 /** Fields are controlled so a failed submit (React resets the form after a server action) cannot wipe what was typed. */
 export default function GameForm({ action: serverAction, defaults = {}, submitLabel }: Props) {
@@ -86,8 +98,14 @@ export default function GameForm({ action: serverAction, defaults = {}, submitLa
 
   const minN = Number(minPlayers)
   const maxN = maxPlayers.trim() === '' ? null : Number(maxPlayers)
-  const equipmentCount = listItems(equipment).length
-  const tagsCount = listItems(tags, true).length
+  const equipmentItems = listItems(equipment)
+  const tagItems = listItems(tags, true)
+  const equipmentCount = equipmentItems.length
+  const tagsCount = tagItems.length
+  const equipmentHint = listHint(equipmentItems, LIMITS.equipmentItem)
+  const tagsHint = listHint(tagItems, LIMITS.tagItem)
+  const equipmentOver = listInvalid(equipmentItems, LIMITS.equipmentItem)
+  const tagsOver = listInvalid(tagItems, LIMITS.tagItem)
 
   return (
     <form action={action} onSubmit={onSubmit} noValidate className="card p-6 space-y-5 max-w-2xl" data-testid="game-form">
@@ -128,14 +146,14 @@ export default function GameForm({ action: serverAction, defaults = {}, submitLa
       <div>
         <label className="label" htmlFor="equipment">Equipment (comma separated)</label>
         <input id="equipment" name="equipment" className="input" value={equipment} onChange={(e) => setEquipment(e.target.value)} placeholder="cups, ping pong ball, cards" {...aria('equipment')} />
-        <LengthHint id="equipment" count={equipmentCount} max={LIMITS.list} hint={HINTS.equipment} met={equipmentCount > 0 && equipmentCount <= LIMITS.list} invalid={Boolean(err('equipment'))} />
-        <FieldError id="equipment" message={fieldErr('equipment', HINTS.equipment)} />
+        <LengthHint id="equipment" count={equipmentCount} max={LIMITS.list} hint={equipmentHint} met={equipmentCount > 0 && !equipmentOver} invalid={equipmentOver || Boolean(err('equipment'))} />
+        <FieldError id="equipment" message={fieldErr('equipment', equipmentHint)} />
       </div>
       <div>
         <label className="label" htmlFor="tags">Tags (comma separated)</label>
         <input id="tags" name="tags" className="input" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="party, cards, team" {...aria('tags')} />
-        <LengthHint id="tags" count={tagsCount} max={LIMITS.list} hint={HINTS.tags} met={tagsCount > 0 && tagsCount <= LIMITS.list} invalid={Boolean(err('tags'))} />
-        <FieldError id="tags" message={fieldErr('tags', HINTS.tags)} />
+        <LengthHint id="tags" count={tagsCount} max={LIMITS.list} hint={tagsHint} met={tagsCount > 0 && !tagsOver} invalid={tagsOver || Boolean(err('tags'))} />
+        <FieldError id="tags" message={fieldErr('tags', tagsHint)} />
       </div>
       <HangoverPicker value={hangover} onChange={setHangover} />
       <FieldError id="hangoverRating" message={fieldErr('hangoverRating')} />

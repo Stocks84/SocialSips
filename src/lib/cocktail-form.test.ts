@@ -58,7 +58,7 @@ describe('cocktailFieldsFromForm', () => {
       const fields = fieldErrors(parsed.error.issues)
       assert.equal(fields.name, 'At least 2 characters')
       assert.equal(fields.description, 'At least 10 characters')
-      assert.equal(firstIssue(parsed.error.issues), 'Name: At least 2 characters')
+      assert.equal(firstIssue(parsed.error.issues), 'Drink name: At least 2 characters')
     }
   })
 

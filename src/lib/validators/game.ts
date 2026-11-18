@@ -3,15 +3,22 @@ import { z } from 'zod'
 /** Same values as HANGOVER_RATINGS in src/types/domain.ts (local so unit tests can import this file without path aliases). */
 const HANGOVER = ['no_hangover', 'mild_hangover', 'two_day_hangover'] as const
 
+export const GAME_LIST_LIMIT = 10
+export const EQUIPMENT_ITEM_MAX = 60
+export const TAG_ITEM_MAX = 40
+
+const equipmentItem = z.string().max(EQUIPMENT_ITEM_MAX, `Each item up to ${EQUIPMENT_ITEM_MAX} characters`)
+const tagItem = z.string().max(TAG_ITEM_MAX, `Each item up to ${TAG_ITEM_MAX} characters`)
+
 export const gameSchema = z.object({
   title: z.string().min(3).max(80),
   summary: z.string().min(10).max(200),
   rules: z.string().min(20).max(5000),
-  equipment: z.array(z.string().max(60)).default([]),
+  equipment: z.array(equipmentItem).max(GAME_LIST_LIMIT, 'Up to 10 items').default([]),
   minPlayers: z.coerce.number().int().min(1),
   maxPlayers: z.coerce.number().int().min(1).optional(),
   hangoverRating: z.enum(HANGOVER),
-  tags: z.array(z.string().max(40)).default([]),
+  tags: z.array(tagItem).max(GAME_LIST_LIMIT, 'Up to 10 items').default([]),
 }).refine((g) => !g.maxPlayers || g.maxPlayers >= g.minPlayers, {
   message: 'Max players must be at least min players',
   path: ['maxPlayers'],
@@ -23,9 +30,6 @@ export const listItems = (v: FormDataEntryValue | null, lower = false) =>
     .split(',')
     .map((s) => (lower ? s.trim().toLowerCase() : s.trim()))
     .filter(Boolean)
-
-/** Same as listItems, capped at 10 (what we store). */
-export const splitList = (v: FormDataEntryValue | null, lower = false) => listItems(v, lower).slice(0, 10)
 
 export const variationSchema = z.object({
   title: z.string().min(3).max(80),
@@ -40,10 +44,10 @@ export function gameFieldsFromForm(formData: FormData) {
     title: String(formData.get('title') ?? '').trim(),
     summary: String(formData.get('summary') ?? '').trim(),
     rules: String(formData.get('rules') ?? '').trim(),
-    equipment: splitList(formData.get('equipment')),
+    equipment: listItems(formData.get('equipment')),
     minPlayers: formData.get('minPlayers') || 2,
     maxPlayers: formData.get('maxPlayers') || undefined,
     hangoverRating: formData.get('hangoverRating'),
-    tags: splitList(formData.get('tags'), true),
+    tags: listItems(formData.get('tags'), true),
   })
 }

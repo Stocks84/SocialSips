@@ -3,6 +3,7 @@ import { useActionState, useState } from 'react'
 import ImageInput from '@/components/ui/ImageInput'
 import IngredientRows, { type IngredientRow } from './IngredientRows'
 import FieldError from '@/components/ui/FieldError'
+import LengthHint, { defaultHint, uniqueFieldError } from '@/components/ui/LengthHint'
 import { cocktailFieldsFromForm } from '@/lib/validators/cocktail'
 import { fieldErrors, firstIssue, type EditState } from '@/lib/validators/issues'
 export type CocktailFormDefaults = {
@@ -26,6 +27,13 @@ const LIMITS = {
   description: { min: 10, max: 300 },
   method: { min: 10, max: 3000 },
   ingredients: { min: 1, max: 20 },
+} as const
+
+const HINTS = {
+  name: defaultHint(LIMITS.name.min),
+  description: defaultHint(LIMITS.description.min),
+  method: defaultHint(LIMITS.method.min),
+  ingredients: defaultHint(LIMITS.ingredients.min, 'ingredient'),
 } as const
 
 /** Fields are controlled so a failed submit (React resets the form after a server action) cannot wipe what was typed. */
@@ -76,23 +84,23 @@ export default function CocktailForm({ action: serverAction, defaults = {}, subm
       <div>
         <label className="label" htmlFor="name">Drink name</label>
         <input id="name" name="name" className="input" required minLength={LIMITS.name.min} maxLength={LIMITS.name.max} value={name} onChange={(e) => setName(e.target.value)} {...aria('name')} />
-        <LengthHint id="name" value={name} min={LIMITS.name.min} max={LIMITS.name.max} />
-        <FieldError id="name" message={err('name')} />
+        <LengthHint id="name" value={name} min={LIMITS.name.min} max={LIMITS.name.max} hint={HINTS.name} invalid={Boolean(err('name'))} />
+        <FieldError id="name" message={uniqueFieldError(err('name'), HINTS.name, topError)} />
       </div>
       <div>
         <label className="label" htmlFor="description">Description</label>
         <input id="description" name="description" className="input" required minLength={LIMITS.description.min} maxLength={LIMITS.description.max} value={description} onChange={(e) => setDescription(e.target.value)} {...aria('description')} />
-        <LengthHint id="description" value={description} min={LIMITS.description.min} max={LIMITS.description.max} />
-        <FieldError id="description" message={err('description')} />
+        <LengthHint id="description" value={description} min={LIMITS.description.min} max={LIMITS.description.max} hint={HINTS.description} invalid={Boolean(err('description'))} />
+        <FieldError id="description" message={uniqueFieldError(err('description'), HINTS.description, topError)} />
       </div>
       <IngredientRows rows={rows} onChange={setRows} />
-      <LengthHint id="ingredients" count={filledIngredients} min={LIMITS.ingredients.min} max={LIMITS.ingredients.max} unit="ingredient" />
-      <FieldError id="ingredients" message={err('ingredients')} />
+      <LengthHint id="ingredients" count={filledIngredients} min={LIMITS.ingredients.min} max={LIMITS.ingredients.max} unit="ingredient" hint={HINTS.ingredients} invalid={Boolean(err('ingredients'))} />
+      <FieldError id="ingredients" message={uniqueFieldError(err('ingredients'), HINTS.ingredients, topError)} />
       <div>
         <label className="label" htmlFor="method">Method</label>
         <textarea id="method" name="method" rows={5} className="input" required minLength={LIMITS.method.min} maxLength={LIMITS.method.max} value={method} onChange={(e) => setMethod(e.target.value)} {...aria('method')} />
-        <LengthHint id="method" value={method} min={LIMITS.method.min} max={LIMITS.method.max} />
-        <FieldError id="method" message={err('method')} />
+        <LengthHint id="method" value={method} min={LIMITS.method.min} max={LIMITS.method.max} hint={HINTS.method} invalid={Boolean(err('method'))} />
+        <FieldError id="method" message={uniqueFieldError(err('method'), HINTS.method, topError)} />
       </div>
       <label className="flex min-h-11 items-center gap-2 text-sm">
         <input type="checkbox" name="isAlcoholFree" value="true" checked={alcoholFree} onChange={(e) => setAlcoholFree(e.target.checked)} className="accent-accent" /> Alcohol-free 🌱
@@ -106,24 +114,5 @@ export default function CocktailForm({ action: serverAction, defaults = {}, subm
       )}
       <button className="btn-primary" disabled={pending} data-testid="drink-submit">{pending ? 'Saving…' : submitLabel}</button>
     </form>
-  )
-}
-
-function LengthHint({ id, value, count, min, max, unit = 'character' }: {
-  id: string
-  value?: string
-  count?: number
-  min: number
-  max: number
-  unit?: 'character' | 'ingredient'
-}) {
-  const n = count ?? (value ?? '').trim().length
-  const noun = unit === 'ingredient' ? (min === 1 ? 'ingredient' : 'ingredients') : (min === 1 ? 'character' : 'characters')
-  const hint = unit === 'ingredient' ? `Add at least ${min} ${noun}` : `At least ${min} ${noun}`
-  return (
-    <p id={`${id}-hint`} className="text-ink-3 text-xs mt-1 flex justify-between gap-3" data-testid={`${id}-hint`}>
-      <span>{hint}</span>
-      <span className="tabular-nums shrink-0">{n}/{max}</span>
-    </p>
   )
 }

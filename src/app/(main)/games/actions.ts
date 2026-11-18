@@ -7,26 +7,13 @@ import { requireActiveUser, requireUser, UUID } from '@/lib/server/auth'
 import { removeImage, uploadImage } from '@/lib/server/uploads'
 import { fail, type FormState } from '@/lib/server/forms'
 import { fieldErrors, firstIssue } from '@/lib/validators/issues'
-import { gameSchema, splitList } from '@/lib/validators/game'
+import { gameFieldsFromForm } from '@/lib/validators/game'
 import { failBack } from '@/lib/server/action-error'
 
 export type { FormState }
 
 const slugify = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50) || 'game'
-
-function parseGame(formData: FormData) {
-  return gameSchema.safeParse({
-    title: String(formData.get('title') ?? '').trim(),
-    summary: String(formData.get('summary') ?? '').trim(),
-    rules: String(formData.get('rules') ?? '').trim(),
-    equipment: splitList(formData.get('equipment')),
-    minPlayers: formData.get('minPlayers') || 2,
-    maxPlayers: formData.get('maxPlayers') || undefined,
-    hangoverRating: formData.get('hangoverRating'),
-    tags: splitList(formData.get('tags'), true),
-  })
-}
 
 const uploadCover = (supabase: SupabaseClient, userId: string, formData: FormData) =>
   uploadImage(supabase, 'game-covers', userId, formData)
@@ -37,9 +24,9 @@ const removeCover = (supabase: SupabaseClient, url: string | null) => removeImag
 
 export async function createGame(_prev: FormState, formData: FormData): Promise<FormState> {
   const auth = await requireActiveUser()
-  if ('error' in auth) return { error: auth.error }
+  if ('error' in auth) return fail(formData, auth.error ?? 'Please sign in first.')
   const { supabase, user } = auth
-  const parsed = parseGame(formData)
+  const parsed = gameFieldsFromForm(formData)
   if (!parsed.success) return fail(formData, firstIssue(parsed.error.issues), fieldErrors(parsed.error.issues))
   const g = parsed.data
 
@@ -73,17 +60,17 @@ export async function createGame(_prev: FormState, formData: FormData): Promise<
 
 export async function updateGame(_prev: FormState, formData: FormData): Promise<FormState> {
   const auth = await requireActiveUser()
-  if ('error' in auth) return { error: auth.error }
+  if ('error' in auth) return fail(formData, auth.error ?? 'Please sign in first.')
   const { supabase, user } = auth
   const gameId = String(formData.get('gameId'))
-  if (!UUID.test(gameId)) return { error: 'Unknown game' }
+  if (!UUID.test(gameId)) return fail(formData, 'Unknown game')
 
   const { data: existing } = await supabase
     .from('games').select('author_id, cover_image_url, is_hidden').eq('id', gameId).maybeSingle()
   if (!existing || existing.author_id !== user.id) return fail(formData, 'You can only edit your own games.')
   if (existing.is_hidden) return fail(formData, HIDDEN_LOCKED)
 
-  const parsed = parseGame(formData)
+  const parsed = gameFieldsFromForm(formData)
   if (!parsed.success) return fail(formData, firstIssue(parsed.error.issues), fieldErrors(parsed.error.issues))
   const g = parsed.data
 

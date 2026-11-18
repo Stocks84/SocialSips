@@ -112,7 +112,7 @@ export default function GameForm({ action: serverAction, defaults = {}, submitLa
       {defaults.id && <input type="hidden" name="gameId" value={defaults.id} />}
       {topError && <p id="game-form-error" className="error-msg" role="alert" data-testid="form-error">{topError}</p>}
       <div>
-        <label className="label" htmlFor="title">Game name</label>
+        <label className="label" htmlFor="title">Title</label>
         <input id="title" name="title" className="input" required minLength={LIMITS.title.min} maxLength={LIMITS.title.max} value={title} onChange={(e) => setTitle(e.target.value)} {...aria('title')} />
         <LengthHint id="title" value={title} min={LIMITS.title.min} max={LIMITS.title.max} hint={HINTS.title} invalid={Boolean(err('title'))} />
         <FieldError id="title" message={fieldErr('title', HINTS.title)} />

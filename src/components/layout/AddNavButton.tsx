@@ -103,7 +103,7 @@ export default function AddNavButton({ variant, active }: { variant: 'tab' | 'li
         >
           {active && <span aria-hidden="true" className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-5 bg-accent" />}
           <Icon icon={faPlus} className="text-icon-lg" />
-          <span className="max-w-full truncate px-0.5">Add</span>
+          <span className="max-w-full truncate px-0.5" data-testid="tab-label">Add</span>
         </button>
         {menu}
       </div>

@@ -15,7 +15,9 @@ function TabPending() {
 
 /** Mobile app-style tab bar (below 1024px). */
 export default function BottomNav({ isAdmin = false, openReports = 0 }: { isAdmin?: boolean; openReports?: number }) {
-  // Help sits in the legal footer row (and the desktop top nav) so the tab bar keeps 7 (8 for admins) tabs.
+  // Help sits in the legal footer row (and the desktop top nav) so the tab bar keeps 7 items for everyone,
+  // or 8 when the Admin tab is included. Admin labels drop the extra padding and use tighter tracking so
+  // “Memes” and the others still read in full at 360px; the non-admin 7-tab bar is left as it is.
   const items: NavItem[] = (isAdmin ? [...navItems, adminNavItem] : [...navItems]).filter((i) => i.href !== '/help')
   const pathname = usePathname()
   const hrefs = navHrefsForActive(items.map((i) => i.href))
@@ -44,11 +46,14 @@ export default function BottomNav({ isAdmin = false, openReports = 0 }: { isAdmi
                       <CountBadge
                         count={openReports}
                         testId="admin-report-count"
-                        className="absolute -right-2.5 -top-1"
+                        className="absolute -right-1.5 -top-1"
                       />
                     )}
                   </span>
-                  <span className="max-w-full truncate px-0.5">{i.tabLabel ?? i.label}</span>
+                  <span
+                    data-testid="tab-label"
+                    className={isAdmin ? 'max-w-full whitespace-nowrap tracking-tight' : 'max-w-full truncate px-0.5'}
+                  >{i.tabLabel ?? i.label}</span>
                   <TabPending />
                 </Link>
               )}

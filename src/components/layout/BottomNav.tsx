@@ -29,7 +29,7 @@ export default function BottomNav({ isAdmin = false, openReports = 0 }: { isAdmi
           return (
             <li key={i.href} className="min-w-0">
               {i.href === '/games/new' ? (
-                <AddNavButton variant="tab" active={active} />
+                <AddNavButton variant="tab" active={active} compactLabel={isAdmin} />
               ) : (
                 <Link
                   href={i.href}

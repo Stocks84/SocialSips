@@ -19,6 +19,23 @@ async function overflowPx(locator: import('@playwright/test').Locator) {
   return locator.evaluate((el) => Math.ceil(el.scrollWidth - el.clientWidth))
 }
 
+/** The Add label must share a vertical position with the other tab labels (within 1px). */
+async function assertAddLabelAligns(nav: import('@playwright/test').Locator) {
+  const add = nav.getByTestId('nav-add').getByTestId('tab-label')
+  const addBox = await add.boundingBox()
+  expect(addBox, 'Add tab label should be visible').toBeTruthy()
+  const offsets: { label: string; top: number }[] = []
+  for (const label of await nav.getByTestId('tab-label').all()) {
+    const box = await label.boundingBox()
+    expect(box).toBeTruthy()
+    const text = (await label.innerText()).trim()
+    const delta = Math.abs(box!.y - addBox!.y)
+    offsets.push({ label: text, top: delta })
+    expect(delta, `${text} label top vs Add`).toBeLessThanOrEqual(1)
+  }
+  return offsets
+}
+
 test.describe('mobile tab bar labels', () => {
   test.use({ storageState: { cookies: [], origins: [] } })
 
@@ -37,6 +54,7 @@ test.describe('mobile tab bar labels', () => {
       }
       const extra = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
       expect(extra).toBeLessThanOrEqual(1)
+      await assertAddLabelAligns(nav)
     })
   }
 })

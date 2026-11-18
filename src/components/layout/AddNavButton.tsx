@@ -14,7 +14,7 @@ const OPTIONS = [
  * The nav "Add" control: a menu to choose Add a game or Add a drink.
  * Used in the desktop top nav and the mobile tab bar (both stay in the DOM; `variant` matches each).
  */
-export default function AddNavButton({ variant, active }: { variant: 'tab' | 'link'; active: boolean }) {
+export default function AddNavButton({ variant, active, compactLabel = false }: { variant: 'tab' | 'link'; active: boolean; compactLabel?: boolean }) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -102,8 +102,15 @@ export default function AddNavButton({ variant, active }: { variant: 'tab' | 'li
           onClick={toggle}
         >
           {active && <span aria-hidden="true" className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-5 bg-accent" />}
-          <Icon icon={faPlus} className="text-icon-lg" />
-          <span className="max-w-full truncate px-0.5" data-testid="tab-label">Add</span>
+          <span className="relative">
+            <Icon icon={faPlus} className="text-icon-lg" />
+          </span>
+          <span
+            data-testid="tab-label"
+            className={compactLabel ? 'max-w-full whitespace-nowrap tracking-tight' : 'max-w-full truncate px-0.5'}
+          >Add</span>
+          {/* Same slot as TabPending on the other tabs, so the icon and label share their baseline. */}
+          <span aria-hidden="true" className="mt-0.5 h-0.5 w-5 bg-transparent" />
         </button>
         {menu}
       </div>

@@ -24,7 +24,7 @@ export default async function EditCocktailPage({ params }: { params: Promise<{ i
         <input type="hidden" name="cocktailId" value={c.id} />
         <h2 className="font-bold text-accent mb-2">Danger zone</h2>
         <p className="text-ink-2 text-sm mb-4">Deletes the drink, its photo, variations, comments and ratings. No undo.</p>
-        <label className="flex items-center gap-2 text-sm mb-4">
+        <label className="flex min-h-11 items-center gap-2 text-sm mb-4">
           <input type="checkbox" required className="accent-accent" /> Yes, delete this drink
         </label>
         <SubmitButton className="btn-danger" pendingLabel="Deleting…">Delete drink</SubmitButton>

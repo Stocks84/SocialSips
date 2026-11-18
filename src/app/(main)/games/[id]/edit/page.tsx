@@ -30,7 +30,7 @@ export default async function EditGamePage({ params }: { params: Promise<{ id: s
         <input type="hidden" name="gameId" value={g.id} />
         <h2 className="font-bold text-accent mb-2">Danger zone</h2>
         <p className="text-ink-2 text-sm mb-4">Deletes the game, its cover image, variations, comments and ratings. No undo.</p>
-        <label className="flex items-center gap-2 text-sm mb-4">
+        <label className="flex min-h-11 items-center gap-2 text-sm mb-4">
           <input type="checkbox" required className="accent-accent" /> Yes, delete this game
         </label>
         <SubmitButton className="btn-danger" pendingLabel="Deleting…">Delete game</SubmitButton>

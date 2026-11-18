@@ -1,4 +1,5 @@
 import type { NotificationRow } from '@/lib/queries/follows'
+import { reportNotificationHref, reportNotificationText } from '@/lib/moderation-alert'
 
 const q = (s: string | null) => (s ? `“${s.length > 60 ? s.slice(0, 60) + '…' : s}”` : '')
 const who = (n: NotificationRow, more = 'others') => {
@@ -16,12 +17,14 @@ export function notificationText(n: NotificationRow): { icon: string; text: stri
     case 'challenge_votes': return { icon: '🗳️', text: `Your entry in ${q(n.preview)} got ${n.count} new vote${n.count === 1 ? '' : 's'}` }
     case 'challenge_win': return { icon: '🏆', text: `You won the dare ${q(n.preview)}!` }
     case 'moderation': return { icon: '🛡️', text: `A moderator took action on your post ${q(n.preview)}. See why.` }
+    case 'report': return reportNotificationText(n.preview)
   }
 }
 
 export function notificationHref(n: NotificationRow, me: string): string {
   if (n.kind === 'follow') return n.actor ? `/profile/${n.actor.username}` : `/profile/${me}/followers`
   if (n.kind === 'moderation') return `/profile/${me}#moderation-notices`
+  if (n.kind === 'report') return reportNotificationHref(n.target_id)
   if (n.target_type === 'challenge') return `/challenge/${n.target_id}`
   if (n.target_type === 'game') return `/games/${n.target_id}`
   if (n.target_type === 'cocktail') return `/cocktails/${n.target_id}`

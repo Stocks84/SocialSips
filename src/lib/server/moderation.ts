@@ -23,8 +23,8 @@ export const TARGETS: Record<
   game: { table: 'games', label: 'Game', bucket: 'game-covers', imageCol: 'cover_image_url' },
   comment: { table: 'comments', label: 'Comment' },
   variation: { table: 'game_variations', label: 'Game variation' },
-  cocktail: { table: 'cocktails', label: 'Cocktail', bucket: 'cocktails', imageCol: 'image_url' },
-  cocktail_variation: { table: 'cocktail_variations', label: 'Cocktail variation' },
+  cocktail: { table: 'cocktails', label: 'Drink', bucket: 'cocktails', imageCol: 'image_url' },
+  cocktail_variation: { table: 'cocktail_variations', label: 'Drink variation' },
   meme: { table: 'memes', label: 'Meme', bucket: 'memes', imageCol: 'image_url' },
 }
 

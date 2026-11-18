@@ -6,7 +6,7 @@ import ReportForm from './ReportForm'
 
 export const metadata = { title: 'Report content', robots: { index: false } }
 
-const LABELS: Record<string, string> = { game: 'Game', comment: 'Comment', variation: 'Game variation', cocktail: 'Cocktail', cocktail_variation: 'Cocktail variation', meme: 'Meme' }
+const LABELS: Record<string, string> = { game: 'Game', comment: 'Comment', variation: 'Game variation', cocktail: 'Drink', cocktail_variation: 'Drink variation', meme: 'Meme' }
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export default async function ReportPage({ searchParams }: { searchParams: Promise<{ type?: string; id?: string }> }) {

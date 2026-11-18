@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import PageHeader from '@/components/ui/PageHeader'
 import { createClient } from '@/lib/supabase/server'
 import { getViewer } from '@/lib/server/viewer'
+import { getOpenReportCount } from '@/lib/queries/admin'
 import { resolveTargets, TARGETS, type TargetType } from '@/lib/server/moderation'
 import { formatDate } from '@/lib/format'
 import { deleteItem, secureHiddenImages, unhideItem } from '../actions'
@@ -18,6 +19,7 @@ export default async function AdminHiddenPage({ searchParams }: { searchParams: 
   const supabase = await createClient()
   const { isAdmin } = await getViewer()
   if (!supabase || !isAdmin) notFound()
+  const openReports = await getOpenReportCount()
   const { secured, failed } = await searchParams
 
   // Admin RLS can see hidden rows. Fetch hidden ids per table, then resolve previews.
@@ -34,7 +36,7 @@ export default async function AdminHiddenPage({ searchParams }: { searchParams: 
   return (
     <>
       <PageHeader title="Hidden items" subtitle={`${items.length} hidden`} />
-      <AdminTabs active="hidden" />
+      <AdminTabs active="hidden" openReports={openReports} />
       {secured !== undefined && (
         <p role="status" className={`card p-4 mb-4 text-sm ${Number(failed) > 0 ? 'text-danger' : 'text-accent'}`} data-testid="secure-result">
           {Number(secured) || 0} image{Number(secured) === 1 ? '' : 's'} made private{Number(failed) > 0 ? `, ${Number(failed)} failed (try again)` : ''}.

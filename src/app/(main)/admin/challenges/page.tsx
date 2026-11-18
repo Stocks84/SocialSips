@@ -3,6 +3,7 @@ import AdminTabs from '@/components/admin/AdminTabs'
 import { notFound } from 'next/navigation'
 import PageHeader from '@/components/ui/PageHeader'
 import { getViewer } from '@/lib/server/viewer'
+import { getOpenReportCount } from '@/lib/queries/admin'
 import { getCurrentChallenge, listChallenges } from '@/lib/queries/challenges'
 import { KIND_LABEL, weekLabel } from '@/lib/challenge'
 import { deleteChallenge, scheduleChallenge } from './actions'
@@ -17,6 +18,7 @@ const addDays = (iso: string, n: number) => { const [y, m, d] = iso.split('-').m
 export default async function AdminChallengesPage({ searchParams }: { searchParams: Promise<{ error?: string; saved?: string }> }) {
   const { isAdmin } = await getViewer()
   if (!isAdmin) notFound()
+  const openReports = await getOpenReportCount()
   const { error, saved } = await searchParams
   const cur = await getCurrentChallenge()
   if (!cur) notFound()
@@ -26,7 +28,7 @@ export default async function AdminChallengesPage({ searchParams }: { searchPara
   return (
     <>
       <PageHeader title="Weekly challenges" subtitle="Schedule themes for coming weeks. Weeks run Monday 00:00 to Sunday 23:59, Vienna time. Unscheduled weeks get a default (meme / cocktail of the week, alternating)." />
-      <AdminTabs active="challenges" />
+      <AdminTabs active="challenges" openReports={openReports} />
       <p className="text-sm mb-6"><Link href="/challenge" className="text-accent">View current challenge →</Link></p>
       {error && <p role="alert" className="card p-4 mb-4 text-sm text-danger" data-testid="admin-challenge-error">{error.slice(0, 200)}</p>}
       {saved && <p role="status" className="card p-4 mb-4 text-sm text-accent">Saved</p>}

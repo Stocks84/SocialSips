@@ -5,6 +5,7 @@ import PageHeader from '@/components/ui/PageHeader'
 import SubmitButton from '@/components/ui/SubmitButton'
 import { createClient } from '@/lib/supabase/server'
 import { getViewer } from '@/lib/server/viewer'
+import { getOpenReportCount } from '@/lib/queries/admin'
 import { formatDate } from '@/lib/format'
 import { setSuspension } from './actions'
 import { adminTitle } from '@/lib/server/page-meta'
@@ -16,6 +17,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
   const supabase = await createClient()
   const { isAdmin } = await getViewer()
   if (!supabase || !isAdmin) notFound()
+  const openReports = await getOpenReportCount()
   const { q = '', error, saved } = await searchParams
   const query = q.trim().slice(0, 40)
   // No query: the currently suspended accounts. With a query: usernames starting with it.
@@ -25,7 +27,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
   return (
     <>
       <PageHeader title="Accounts" subtitle="Suspend or restore an account. Suspended members can browse but can’t post or interact." />
-      <AdminTabs active="users" />
+      <AdminTabs active="users" openReports={openReports} />
       {error && <p role="alert" className="card p-4 mb-4 text-sm text-danger" data-testid="admin-users-error">{error.slice(0, 200)}</p>}
       {saved && <p role="status" className="card p-4 mb-4 text-sm text-accent">Account {saved === 'suspended' ? 'suspended' : 'restored'}</p>}
       <form className="card p-5 mb-6 flex flex-wrap items-end gap-3" role="search">

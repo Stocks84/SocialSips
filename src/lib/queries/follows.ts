@@ -5,7 +5,7 @@ import { getViewer } from '@/lib/server/viewer'
 
 export type PersonRow = { id: string; username: string; display_name: string | null; avatar_url: string | null }
 export type NotificationRow = {
-  id: string; kind: 'follow' | 'reaction' | 'comment' | 'variation' | 'challenge_votes' | 'challenge_win' | 'moderation'
+  id: string; kind: 'follow' | 'reaction' | 'comment' | 'variation' | 'challenge_votes' | 'challenge_win' | 'moderation' | 'report'
   target_type: string; target_id: string; preview: string | null; count: number; read_at: string | null; updated_at: string
   actor: { username: string } | null
 }

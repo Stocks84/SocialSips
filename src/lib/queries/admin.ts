@@ -1,5 +1,7 @@
 import 'server-only'
+import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { getViewer } from '@/lib/server/viewer'
 import { resolveTargets, type TargetType, type ResolvedTarget } from '@/lib/server/moderation'
 import { REPORT_REASONS } from '@/lib/validators/comment'
 
@@ -46,3 +48,17 @@ export async function listOpenReports(): Promise<OpenReportWithTarget[] | null> 
   })
   return reports.map((r) => ({ ...r, resolved: byId.get(r.id) ?? linkTarget(r) }))
 }
+
+/** Open reports in the queue. 0 for non-admins (do not rely on RLS alone). Capped display is separate. */
+export const getOpenReportCount = cache(async (): Promise<number> => {
+  const { isAdmin } = await getViewer()
+  if (!isAdmin) return 0
+  const supabase = await createClient()
+  if (!supabase) return 0
+  const { count, error } = await supabase.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'open')
+  if (error) {
+    console.error('open report count', error.message)
+    return 0
+  }
+  return count ?? 0
+})

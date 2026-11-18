@@ -1,6 +1,8 @@
 'use client'
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
+import CountBadge from '@/components/ui/CountBadge'
+import { openReportsLabel } from '@/lib/moderation-alert'
 
 const TABS = [
   { key: 'reports', href: '/admin/reports', label: 'Reports' },
@@ -16,7 +18,7 @@ export type AdminTabKey = (typeof TABS)[number]['key']
  * 44px-tall tap targets, brass underline + bright text on the active tab. The active tab is scrolled into view on load,
  * so on a phone it is never hidden off the edge. Only rendered by admin pages (non-admins get a 404 before this).
  */
-export default function AdminTabs({ active }: { active: AdminTabKey }) {
+export default function AdminTabs({ active, openReports = 0 }: { active: AdminTabKey; openReports?: number }) {
   const navRef = useRef<HTMLElement>(null)
   useEffect(() => {
     const nav = navRef.current
@@ -41,11 +43,13 @@ export default function AdminTabs({ active }: { active: AdminTabKey }) {
                 href={t.href}
                 aria-current={isActive ? 'page' : undefined}
                 data-testid={'testId' in t ? t.testId : undefined}
-                className={`inline-flex min-h-11 items-center whitespace-nowrap border-b-2 px-3 text-sm font-semibold ${
+                aria-label={t.key === 'reports' && openReports > 0 ? `Reports, ${openReportsLabel(openReports)}` : undefined}
+                className={`inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-sm font-semibold ${
                   isActive ? 'border-accent text-ink' : 'border-transparent text-ink-2 hover:text-ink hover:bg-raised'
                 }`}
               >
                 {t.label}
+                {t.key === 'reports' && <CountBadge count={openReports} testId="admin-tab-report-count" />}
               </Link>
             </li>
           )

@@ -7,6 +7,7 @@ import { fieldErrors } from '@/lib/validators/issues'
 import { variationSchema } from '@/lib/validators/game'
 import { commentSchema, ratingSchema, reportSchema } from '@/lib/validators/comment'
 import { failBack } from '@/lib/server/action-error'
+import { maybeSendModerationAlertEmail } from '@/lib/server/moderation-alert-email'
 
 export type { FormState }
 
@@ -172,5 +173,6 @@ export async function reportContent(_prev: FormState, formData: FormData): Promi
     reporter_id: auth.user.id, target_type: r.targetType, target_id: r.targetId, reason: r.reason, note: r.note ?? null,
   })
   if (error && error.code !== '23505') return { error: friendlyError(error) } // 23505 = already reported → fine
+  if (!error) await maybeSendModerationAlertEmail({ targetType: r.targetType })
   return { ok: true }
 }

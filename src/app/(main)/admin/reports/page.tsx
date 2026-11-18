@@ -5,7 +5,8 @@ import PageHeader from '@/components/ui/PageHeader'
 import { createClient } from '@/lib/supabase/server'
 import { getViewer } from '@/lib/server/viewer'
 import { TARGETS } from '@/lib/server/moderation'
-import { listOpenReports } from '@/lib/queries/admin'
+import { getOpenReportCount, listOpenReports } from '@/lib/queries/admin'
+import { openReportsLabel } from '@/lib/moderation-alert'
 import { REPORT_REASONS } from '@/lib/validators/comment'
 import { formatDate } from '@/lib/format'
 import { deleteItem, dismissReport, hideItem } from '../actions'
@@ -22,11 +23,12 @@ export default async function AdminReportsPage() {
   if (!supabase || !isAdmin) notFound()
 
   const reports = (await listOpenReports()) ?? []
+  const openCount = await getOpenReportCount()
 
   return (
     <>
-      <PageHeader title="Reports" subtitle={`${reports.length} open`} />
-      <AdminTabs active="reports" />
+      <PageHeader title="Reports" subtitle={openReportsLabel(openCount)} />
+      <AdminTabs active="reports" openReports={openCount} />
       {reports.length === 0 && <p className="card p-6 text-center text-ink-2">All clear. No open reports</p>}
       <div className="space-y-4">
         {reports.map((r) => {
@@ -39,7 +41,7 @@ export default async function AdminReportsPage() {
             </>
           )
           return (
-            <div key={r.id} className="card p-5" data-testid="report">
+            <div key={r.id} id={`report-${r.id}`} className="card p-5" data-testid="report">
               <div className="flex flex-wrap items-center gap-2 text-xs mb-2">
                 <span className="chip">{r.target_type === 'link' ? 'Link' : TARGETS[r.target_type].label}</span>
                 <span className="chip">{REPORT_REASONS[r.reason] ?? r.reason}</span>

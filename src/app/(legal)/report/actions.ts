@@ -6,6 +6,7 @@ import { clientIp } from '@/lib/server/request'
 import { fail } from '@/lib/server/forms'
 import { publicReportSchema } from '@/lib/validators/comment'
 import { fieldErrors, type EditState } from '@/lib/validators/issues'
+import { maybeSendModerationAlertEmail } from '@/lib/server/moderation-alert-email'
 
 const UUID_RE = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 const PATHS: [RegExp, 'meme' | 'game' | 'cocktail'][] = [
@@ -53,5 +54,6 @@ export async function submitPublicReport(_prev: EditState, formData: FormData): 
     console.error('submit_public_report', error.code, error.message)
     return fail(formData, 'We couldn’t send your report. Please try again, or email us.')
   }
+  await maybeSendModerationAlertEmail({ targetType: type })
   return { ok: true }
 }

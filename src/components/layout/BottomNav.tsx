@@ -4,6 +4,8 @@ import { usePathname } from 'next/navigation'
 import { navItems, adminNavItem, isNavActive, navHrefsForActive, type NavItem } from './navItems'
 import AddNavButton from './AddNavButton'
 import { Icon } from '@/components/ui/Icon'
+import CountBadge from '@/components/ui/CountBadge'
+import { openReportsLabel } from '@/lib/moderation-alert'
 
 /** Small bar under the tapped tab while its route loads (opacity pulse; static under reduced motion). */
 function TabPending() {
@@ -12,7 +14,7 @@ function TabPending() {
 }
 
 /** Mobile app-style tab bar (below 1024px). */
-export default function BottomNav({ isAdmin = false }: { isAdmin?: boolean }) {
+export default function BottomNav({ isAdmin = false, openReports = 0 }: { isAdmin?: boolean; openReports?: number }) {
   // Help sits in the legal footer row (and the desktop top nav) so the tab bar keeps 7 (8 for admins) tabs.
   const items: NavItem[] = (isAdmin ? [...navItems, adminNavItem] : [...navItems]).filter((i) => i.href !== '/help')
   const pathname = usePathname()
@@ -31,10 +33,21 @@ export default function BottomNav({ isAdmin = false }: { isAdmin?: boolean }) {
                   href={i.href}
                   aria-current={active ? 'page' : undefined}
                   title={i.tabLabel ?? i.label}
+                  aria-label={i.href === '/admin' && openReports > 0 ? `Admin, ${openReportsLabel(openReports)}` : undefined}
+                  data-testid={i.href === '/admin' ? 'nav-admin' : undefined}
                   className={`relative flex h-14 flex-col items-center justify-center gap-1 min-w-0 font-semibold text-tab ${active ? 'text-ink' : 'text-ink-2 hover:text-ink'}`}
                 >
                   {active && <span aria-hidden="true" className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-5 bg-accent" />}
-                  <Icon icon={i.icon} className="text-icon-lg" />
+                  <span className="relative">
+                    <Icon icon={i.icon} className="text-icon-lg" />
+                    {i.href === '/admin' && (
+                      <CountBadge
+                        count={openReports}
+                        testId="admin-report-count"
+                        className="absolute -right-2.5 -top-1"
+                      />
+                    )}
+                  </span>
                   <span className="max-w-full truncate px-0.5">{i.tabLabel ?? i.label}</span>
                   <TabPending />
                 </Link>

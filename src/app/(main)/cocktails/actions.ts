@@ -4,31 +4,16 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireActiveUser, requireUser, UUID } from '@/lib/server/auth'
 import { removeImage, uploadImage } from '@/lib/server/uploads'
-import { cocktailSchema } from '@/lib/validators/cocktail'
+import { cocktailFieldsFromForm } from '@/lib/validators/cocktail'
 import { fail, type FormState } from '@/lib/server/forms'
 import { fieldErrors, firstIssue } from '@/lib/validators/issues'
 import { failBack } from '@/lib/server/action-error'
 
-function parseCocktail(formData: FormData) {
-  const amounts = formData.getAll('ingredientAmount').map(String)
-  const items = formData.getAll('ingredientItem').map(String)
-  const ingredients = items
-    .map((item, i) => ({ item: item.trim(), amount: (amounts[i] ?? '').trim() }))
-    .filter((x) => x.item)
-  return cocktailSchema.safeParse({
-    name: String(formData.get('name') ?? '').trim(),
-    description: String(formData.get('description') ?? '').trim(),
-    ingredients,
-    method: String(formData.get('method') ?? '').trim(),
-    isAlcoholFree: formData.get('isAlcoholFree') === 'true',
-  })
-}
-
 export async function createCocktail(_prev: FormState, formData: FormData): Promise<FormState> {
   const auth = await requireActiveUser()
-  if ('error' in auth) return { error: auth.error }
+  if ('error' in auth) return fail(formData, auth.error ?? 'Please sign in first.')
   const { supabase, user } = auth
-  const parsed = parseCocktail(formData)
+  const parsed = cocktailFieldsFromForm(formData)
   if (!parsed.success) return fail(formData, firstIssue(parsed.error.issues), fieldErrors(parsed.error.issues))
   const c = parsed.data
   const img = await uploadImage(supabase, 'cocktails', user.id, formData)
@@ -51,14 +36,14 @@ export async function createCocktail(_prev: FormState, formData: FormData): Prom
 
 export async function updateCocktail(_prev: FormState, formData: FormData): Promise<FormState> {
   const auth = await requireActiveUser()
-  if ('error' in auth) return { error: auth.error }
+  if ('error' in auth) return fail(formData, auth.error ?? 'Please sign in first.')
   const { supabase, user } = auth
   const id = String(formData.get('cocktailId'))
-  if (!UUID.test(id)) return { error: 'Unknown drink' }
+  if (!UUID.test(id)) return fail(formData, 'Unknown drink')
   const { data: existing } = await supabase.from('cocktails').select('author_id, image_url, is_hidden').eq('id', id).maybeSingle()
   if (!existing || existing.author_id !== user.id) return fail(formData, 'You can only edit your own drinks.')
   if (existing.is_hidden) return fail(formData, HIDDEN_LOCKED)
-  const parsed = parseCocktail(formData)
+  const parsed = cocktailFieldsFromForm(formData)
   if (!parsed.success) return fail(formData, firstIssue(parsed.error.issues), fieldErrors(parsed.error.issues))
   const c = parsed.data
   const img = await uploadImage(supabase, 'cocktails', user.id, formData)

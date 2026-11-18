@@ -47,7 +47,7 @@ test.describe('play', () => {
     await expect(games).toContainText('Games')
     await expect(games).toHaveAttribute('aria-current', 'page')
     await expect(nav.locator('a[href="/feed"]')).not.toHaveAttribute('aria-current', 'page')
-    await expect(nav.locator('a[href="/games/new"]')).not.toHaveAttribute('aria-current', 'page')
+    await expect(nav.getByTestId('nav-add')).not.toHaveAttribute('aria-current', 'page')
   })
 
   test('dice page rolls default two dice', async ({ page }) => {

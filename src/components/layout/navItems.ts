@@ -28,16 +28,4 @@ export const adminNavItem = { href: '/admin', label: 'Admin', icon: faShieldHalv
 /** `tabLabel` is a shorter label for the mobile tab bar (fits at 360px); the desktop nav uses `label`. */
 export type NavItem = { href: string; label: string; tabLabel?: string; icon: IconDefinition }
 
-/**
- * A tab is active if the path is that tab's href or a child of it, unless a
- * longer nav href is a better match (/games/new is Add, not Games; /games/123 is Games).
- */
-export function isNavActive(pathname: string, href: string, hrefs: readonly string[]): boolean {
-  if (pathname !== href && !pathname.startsWith(`${href}/`)) return false
-  return !hrefs.some(
-    (other) =>
-      other !== href &&
-      other.length > href.length &&
-      (pathname === other || pathname.startsWith(`${other}/`)),
-  )
-}
+export { isNavActive, navHrefsForActive, ADD_HREFS } from '@/lib/nav-active'

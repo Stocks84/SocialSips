@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { signInSchema, signUpSchema } from '@/lib/validators/auth'
+import { forgotPasswordSchema, updatePasswordSchema } from '@/lib/validators/password'
 import { REMEMBER_COOKIE, rememberCookieOptions } from '@/lib/supabase/cookies'
 import { safePath } from '@/lib/safe-path'
 import { LEGAL } from '@/lib/legal'
@@ -123,6 +124,54 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
   const { data: accepted } = await supabase.rpc('my_terms_version')
   if (accepted !== LEGAL.termsVersion) redirect(`/accept-terms?next=${encodeURIComponent(dest)}`)
   redirect(dest)
+}
+
+const RESET_SENT = "If that email has an account, we've sent a reset link."
+const RESET_THROTTLED = 'Too many reset attempts. Please wait 15 minutes and try again.'
+const RESET_EXPIRED = 'That reset link is invalid or has expired. Please request a new one.'
+
+/** Send a password-reset email. Always returns the same success copy (no account enumeration). Captcha is required. */
+export async function requestPasswordReset(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const values: AuthValues = { email: str(formData.get('email')) }
+  const fail = (error: string): AuthState => ({ error, values })
+  const parsed = forgotPasswordSchema.safeParse({ email: formData.get('email') })
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? 'Enter a valid email')
+  const token = captchaToken(formData)
+  if (!token) return fail(CAPTCHA_MISSING)
+  const supabase = await createClient()
+  if (!supabase) return fail(NOT_CONFIGURED)
+  const ip = await clientIp()
+  const keys = [`reset-ip:${ip}`]
+  if (!(await throttleOk(supabase, keys))) return fail(RESET_THROTTLED)
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${siteUrl()}/auth/reset`,
+    captchaToken: token,
+  })
+  await recordFailure(supabase, keys)
+  if (error && isCaptchaError(error)) return fail(CAPTCHA_FAILED)
+  if (error) console.error('requestPasswordReset', error.message)
+  return { message: RESET_SENT, values }
+}
+
+/** Set a new password after the user opens the recovery link (session required). Never echoes the password back. */
+export async function updatePassword(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const fail = (error: string): AuthState => ({ error })
+  const parsed = updatePasswordSchema.safeParse({ password: formData.get('password'), confirm: formData.get('confirm') })
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? 'Check your details')
+  const supabase = await createClient()
+  if (!supabase) return fail(NOT_CONFIGURED)
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return fail(RESET_EXPIRED)
+  if (await isPwnedPassword(parsed.data.password)) return fail(PWNED_PASSWORD_MESSAGE)
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password })
+  if (error) {
+    if (/password/i.test(error.message)) return fail('Password is too weak. Use at least 8 characters.')
+    console.error('updatePassword', error.message)
+    return fail('Could not update your password. Please try again.')
+  }
+  await supabase.auth.signOut()
+  ;(await cookies()).delete(REMEMBER_COOKIE)
+  redirect('/sign-in?reset=ok')
 }
 
 export async function signOut() {

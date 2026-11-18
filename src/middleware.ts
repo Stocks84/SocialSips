@@ -22,7 +22,7 @@ const LEGAL_ROUTES = ['/impressum', '/privacy', '/terms', '/report']
 // Site-wide default share images (app/opengraph-image.tsx, twitter-image.tsx): static text, no user content,
 // and link-preview bots can't pass the age gate. They are served with a ?hash query; pathname excludes it.
 const DEFAULT_SHARE_IMAGES = ['/opengraph-image', '/twitter-image']
-const PUBLIC_ROUTES = ['/', '/accept-terms', '/sign-in', '/sign-up', '/age-gate', '/age-gate/sorry', '/help', '/auth/callback', '/manifest.json', '/sw.js', ...DEFAULT_SHARE_IMAGES, ...LEGAL_ROUTES]
+const PUBLIC_ROUTES = ['/', '/accept-terms', '/sign-in', '/sign-up', '/forgot-password', '/update-password', '/age-gate', '/age-gate/sorry', '/help', '/auth/callback', '/auth/reset', '/manifest.json', '/sw.js', ...DEFAULT_SHARE_IMAGES, ...LEGAL_ROUTES]
 
 // Known link-preview crawlers, and the only paths they may see without the age gate.
 const PREVIEW_BOTS = /facebookexternalhit|Facebot|Twitterbot|WhatsApp|Slackbot|LinkedInBot|Discordbot|TelegramBot/i
@@ -38,7 +38,7 @@ const isAuthRoute = (pathname: string) =>
 // While a signed-in user hasn't accepted the current Terms version, only these paths work:
 // the acceptance page, the legal pages, and the account page (download data / delete account).
 // Sign out is a button on /accept-terms (server actions POST to the page they're on).
-const TERMS_PENDING_OK = ['/accept-terms', '/auth/callback', '/manifest.json', '/sw.js', ...LEGAL_ROUTES]
+const TERMS_PENDING_OK = ['/accept-terms', '/auth/callback', '/auth/reset', '/update-password', '/manifest.json', '/sw.js', ...LEGAL_ROUTES]
 const termsPendingOk = (p: string) => TERMS_PENDING_OK.includes(p) || p === '/settings/account' || p === '/settings/account/export'
 
 export async function middleware(request: NextRequest) {

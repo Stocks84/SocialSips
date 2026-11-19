@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { faBeerMugEmpty, faMartiniGlassCitrus, faTrophy, faUser, faXmark } from '@fortawesome/free-solid-svg-icons'
 import { Icon } from '@/components/ui/Icon'
-import { WELCOME_LINKS, WELCOME_PROFILE_LINK, readWelcomeDismissed, writeWelcomeDismissed } from '@/lib/welcome'
+import { WELCOME_FRIEND_LINE, WELCOME_LINKS, WELCOME_PROFILE_LINK, readWelcomeDismissed, writeWelcomeDismissed } from '@/lib/welcome'
 import { dismissWelcome } from '@/lib/actions/welcome'
 
 const ICONS = {
@@ -73,6 +73,7 @@ export default function WelcomePrompt({ showProfile }: { showProfile: boolean })
           </li>
         ))}
       </ul>
+      <p className="mt-3 text-sm text-ink-2" data-testid="welcome-friend-line">{WELCOME_FRIEND_LINE}</p>
     </section>
   )
 }

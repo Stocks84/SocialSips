@@ -26,6 +26,10 @@ export const WELCOME_PROFILE_LINK = {
   testId: 'welcome-profile',
 } as const
 
+/** Optional hint: find a friend via the link they sent, never via search or suggestions. */
+export const WELCOME_FRIEND_LINE =
+  'Invited by a friend? Open their profile link and tap Follow. You can Share yours from your profile.'
+
 /**
  * Show the prompt only to accounts created on/after WELCOME_AFTER that have not
  * already dismissed it. `dismissed` is true when localStorage or profiles.welcome_dismissed_at says so.

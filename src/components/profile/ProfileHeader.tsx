@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { isOwnStorageUrl } from '@/lib/storage'
+import ShareButton from '@/components/ui/ShareButton'
 
 type Props = { username: string; displayName?: string | null; bio?: string | null; avatarUrl?: string | null; isOwner?: boolean }
 
@@ -13,22 +14,31 @@ export default function ProfileHeader({ username, displayName, bio, avatarUrl, i
         <div className="w-20 h-20 rounded-full bg-raised border border-rule shrink-0" aria-hidden="true" />
       )}
       <div className="min-w-0 flex-1">
-        {displayName ? (
-          <>
-            <h1 className="text-2xl font-display font-normal break-words" data-testid="profile-display-name">{displayName}</h1>
-            <p className="text-ink-2 text-sm">@{username}</p>
-          </>
-        ) : (
-          <h1 className="text-2xl font-display font-normal break-words">@{username}</h1>
-        )}
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            {displayName ? (
+              <>
+                <h1 className="text-2xl font-display font-normal break-words" data-testid="profile-display-name">{displayName}</h1>
+                <p className="text-ink-2 text-sm">@{username}</p>
+              </>
+            ) : (
+              <h1 className="text-2xl font-display font-normal break-words">@{username}</h1>
+            )}
+          </div>
+          <ShareButton title={displayName?.trim() || `@${username}`} path={`/profile/${username}`} />
+        </div>
         {bio ? (
           <p className="text-sm mt-2 whitespace-pre-line break-words" data-testid="profile-bio">{bio}</p>
         ) : (
           <p className="text-ink-2 text-sm">Party vibe: to be chosen · Favourite drink: TBC</p>
         )}
       </div>
-      {isOwner && <Link href="/settings/profile" className="btn-secondary text-sm py-2 px-4 shrink-0 self-start" data-testid="edit-profile-link">Edit profile</Link>}
-      {isOwner && <Link href="/settings/account" className="btn-secondary text-sm py-2 px-4 shrink-0 self-start" data-testid="account-link">Account</Link>}
+      {isOwner && (
+        <div className="flex flex-wrap items-center gap-3 shrink-0 self-start">
+          <Link href="/settings/profile" className="btn-secondary text-sm py-2 px-4 shrink-0 self-start" data-testid="edit-profile-link">Edit profile</Link>
+          <Link href="/settings/account" className="btn-secondary text-sm py-2 px-4 shrink-0 self-start" data-testid="account-link">Account</Link>
+        </div>
+      )}
     </div>
   )
 }

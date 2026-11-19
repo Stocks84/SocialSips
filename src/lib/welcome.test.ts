@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {
   WELCOME_AFTER,
   WELCOME_LINKS,
+  WELCOME_FRIEND_LINE,
   WELCOME_PROFILE_LINK,
   isProfileUnfinished,
   isWelcomeColumnMissing,
@@ -46,6 +47,17 @@ describe('welcome copy', () => {
     assert.match(labels, /Dare/)
     assert.doesNotMatch(labels, /cocktail/i)
     assert.doesNotMatch(labels, /challenge/i)
+  })
+
+  it('points invited friends to a shared profile link, not search or suggestions', () => {
+    assert.match(WELCOME_FRIEND_LINE, /profile link/i)
+    assert.match(WELCOME_FRIEND_LINE, /Follow/)
+    assert.match(WELCOME_FRIEND_LINE, /Share/)
+    assert.doesNotMatch(WELCOME_FRIEND_LINE, /search/i)
+    assert.doesNotMatch(WELCOME_FRIEND_LINE, /suggest/i)
+    assert.doesNotMatch(WELCOME_FRIEND_LINE, /people you may know/i)
+    assert.doesNotMatch(WELCOME_FRIEND_LINE, /cocktail/i)
+    assert.doesNotMatch(WELCOME_FRIEND_LINE, /challenge/i)
   })
 })
 

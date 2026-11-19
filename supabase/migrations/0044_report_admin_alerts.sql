@@ -3,7 +3,7 @@
 -- (actor_id is null) so a later demotion cannot leak reporter identity.
 -- Does not email anyone; Resend is wired in the app behind an env flag that
 -- is off by default.
--- Written only in this branch; do not apply until Will says so.
+-- Applied live on 18 Nov 2026 with Will's OK.
 
 alter table public.notifications drop constraint if exists notifications_kind_check;
 alter table public.notifications add constraint notifications_kind_check

@@ -19,7 +19,7 @@ export default function ImpressumPage() {
       <Section title="Basic direction (Blattlinie, § 25(4) MedienG)">
         <p>Social Sips is a community website about cocktails, drinking games and memes for adults, with content created by its users.</p>
       </Section>
-      <Section title="Point of contact (EU Digital Services Act, Art. 11–12)">
+      <Section id="contact" title="Point of contact (EU Digital Services Act, Art. 11–12)">
         <p>Users and authorities can reach us at <L k="contactEmail" mailto />, in {LEGAL.contactLanguages}.</p>
       </Section>
     </LegalPage>

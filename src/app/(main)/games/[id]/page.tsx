@@ -24,6 +24,7 @@ import StatementOfReasons from '@/components/moderation/StatementOfReasons'
 import SavedBanner from '@/components/ui/SavedBanner'
 import AdminControls from '@/components/admin/AdminControls'
 import ResponsiblePlayLine from '@/components/legal/ResponsiblePlayLine'
+import ShareButton from '@/components/ui/ShareButton'
 import { faUsers } from '@fortawesome/free-solid-svg-icons'
 import { Icon } from '@/components/ui/Icon'
 import { reportControl } from '@/lib/suspension'
@@ -70,11 +71,14 @@ export default async function GamePage({ params, searchParams }: { params: Promi
         )}
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-4xl font-display font-normal mb-3">{game.title}</h1>
-          {isOwner && !game.is_hidden ? (
-            <Link href={`${path}/edit`} className="btn-secondary text-sm py-2 px-4 shrink-0">Edit</Link>
-          ) : !isOwner && report === 'button' ? (
-            <ReportButton targetType="game" targetId={game.id} />
-          ) : report === 'public' ? <PublicReportLink targetType="game" targetId={game.id} /> : null}
+          <div className="flex flex-wrap items-center justify-end gap-3 shrink-0">
+            {!game.is_hidden && <ShareButton title={game.title} path={path} />}
+            {isOwner && !game.is_hidden ? (
+              <Link href={`${path}/edit`} className="btn-secondary text-sm py-2 px-4 shrink-0">Edit</Link>
+            ) : !isOwner && report === 'button' ? (
+              <ReportButton targetType="game" targetId={game.id} />
+            ) : report === 'public' ? <PublicReportLink targetType="game" targetId={game.id} /> : null}
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <HangoverBadge rating={game.hangover_rating} />

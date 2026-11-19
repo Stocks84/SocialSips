@@ -11,6 +11,7 @@ import SubmitButton from '@/components/ui/SubmitButton'
 import SuspendedFormBlock from '@/components/ui/SuspendedFormBlock'
 import ResponsiblePlayLine from '@/components/legal/ResponsiblePlayLine'
 import { SoftDrinkTermsNote } from '@/components/legal/PostingReminders'
+import ShareButton from '@/components/ui/ShareButton'
 
 /** Own memes / cocktail variations that can still be entered (visible, not already in this challenge). */
 async function eligible(c: Challenge, userId: string) {
@@ -52,7 +53,10 @@ export default async function ChallengeView({ c, current, error }: { c: Challeng
           <span className="chip">{KIND_LABEL[c.kind]}s</span>
           <span className="text-ink-3">{weekLabel(c.starts_on)} (Vienna time)</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-display font-normal text-ink" data-testid="challenge-theme">{c.theme}</h1>
+        <div className="flex items-start justify-between gap-4">
+          <h1 className="text-3xl sm:text-4xl font-display font-normal text-ink" data-testid="challenge-theme">{c.theme}</h1>
+          <ShareButton title={c.theme} path={current ? '/challenge' : `/challenge/${c.id}`} />
+        </div>
         {c.description && <p className="text-ink-2 mt-2">{c.description}</p>}
         <ResponsiblePlayLine className="text-sm text-ink-2 mt-3" />
         <p className="mt-4 text-sm">

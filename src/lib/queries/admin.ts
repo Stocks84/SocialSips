@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getViewer } from '@/lib/server/viewer'
 import { resolveTargets, type TargetType, type ResolvedTarget } from '@/lib/server/moderation'
 import { REPORT_REASONS } from '@/lib/validators/comment'
+import { countTowardGoal, MEMBER_GOAL, type MemberRow } from '@/lib/member-count'
 
 export type OpenReportRow = {
   id: string
@@ -62,3 +63,15 @@ export const getOpenReportCount = cache(async (): Promise<number> => {
   }
   return count ?? 0
 })
+
+/** Profiles an admin can already read, minus seed/Will/test exclusions. Read-only; no new column. */
+export async function getMemberCount(): Promise<{ count: number; goal: number } | null> {
+  const supabase = await createClient()
+  if (!supabase) return null
+  const { data, error } = await supabase.from('profiles').select('id, username')
+  if (error) {
+    console.error('member count', error.message)
+    return null
+  }
+  return { count: countTowardGoal((data ?? []) as MemberRow[]), goal: MEMBER_GOAL }
+}

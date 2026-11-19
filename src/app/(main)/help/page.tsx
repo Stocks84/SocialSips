@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import PageHeader from '@/components/ui/PageHeader'
 import { AUSTRIA_HELP_HREF, DRINKAWARE_HREF } from '@/lib/help-links'
 
@@ -24,6 +25,11 @@ export default function HelpPage() {
         <p>Alkohol-Hotline / Suchtberatung (Austria): <a href={AUSTRIA_HELP_HREF} className="text-accent" rel="noopener noreferrer">suchtvorbeugung.net</a></p>
         <p>In an emergency call 112 (EU) or 999 (UK).</p>
       </div>
+      <p className="card p-6 mt-6 text-sm" data-testid="help-feedback">
+        Got feedback or found a bug?{' '}
+        <Link href="/impressum#contact" className="text-accent font-medium hover:underline">Tell us on the Impressum</Link>.
+        We read it. We even enjoy the picky stuff.
+      </p>
     </>
   )
 }

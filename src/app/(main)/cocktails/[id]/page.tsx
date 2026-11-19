@@ -13,6 +13,7 @@ import VariationsSection from '@/components/social/VariationsSection'
 import ReportButton from '@/components/ui/ReportButton'
 import { reportControl } from '@/lib/suspension'
 import PublicReportLink from '@/components/ui/PublicReportLink'
+import ShareButton from '@/components/ui/ShareButton'
 import Image from 'next/image'
 import { isOwnStorageUrl } from '@/lib/storage'
 import Link from 'next/link'
@@ -64,11 +65,14 @@ export default async function CocktailPage({ params, searchParams }: { params: P
         )}
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-4xl font-display font-normal text-ink mb-3">{c.name}</h1>
-          {userId && c.author_id === userId && !c.is_hidden ? (
-            <Link href={`${path}/edit`} className="btn-secondary text-sm py-2 px-4 shrink-0">Edit</Link>
-          ) : userId && c.author_id !== userId && report === 'button' ? (
-            <ReportButton targetType="cocktail" targetId={c.id} />
-          ) : report === 'public' ? <PublicReportLink targetType="cocktail" targetId={c.id} /> : null}
+          <div className="flex flex-wrap items-center justify-end gap-3 shrink-0">
+            {!c.is_hidden && <ShareButton title={c.name} path={path} />}
+            {userId && c.author_id === userId && !c.is_hidden ? (
+              <Link href={`${path}/edit`} className="btn-secondary text-sm py-2 px-4 shrink-0">Edit</Link>
+            ) : userId && c.author_id !== userId && report === 'button' ? (
+              <ReportButton targetType="cocktail" targetId={c.id} />
+            ) : report === 'public' ? <PublicReportLink targetType="cocktail" targetId={c.id} /> : null}
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {c.is_alcohol_free && <span className="chip">Alcohol-free</span>}

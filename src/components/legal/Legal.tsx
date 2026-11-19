@@ -20,9 +20,9 @@ export function LegalPage({ title, children, updated = true }: { title: string; 
   )
 }
 
-export function Section({ title, children }: { title: string; children: React.ReactNode }) {
+export function Section({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {
   return (
-    <section className="card p-5 sm:p-6 space-y-3 text-sm leading-relaxed">
+    <section id={id} className="card p-5 sm:p-6 space-y-3 text-sm leading-relaxed">
       <h2 className="font-bold text-lg text-ink">{title}</h2>
       {children}
     </section>

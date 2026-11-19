@@ -5,7 +5,8 @@ import PageHeader from '@/components/ui/PageHeader'
 import { createClient } from '@/lib/supabase/server'
 import { getViewer } from '@/lib/server/viewer'
 import { TARGETS } from '@/lib/server/moderation'
-import { getOpenReportCount, listOpenReports } from '@/lib/queries/admin'
+import { getMemberCount, getOpenReportCount, listOpenReports } from '@/lib/queries/admin'
+import MemberCountCard from '@/components/admin/MemberCountCard'
 import { openReportsLabel } from '@/lib/moderation-alert'
 import { REPORT_REASONS } from '@/lib/validators/comment'
 import { formatDate } from '@/lib/format'
@@ -24,11 +25,13 @@ export default async function AdminReportsPage() {
 
   const reports = (await listOpenReports()) ?? []
   const openCount = await getOpenReportCount()
+  const members = await getMemberCount()
 
   return (
     <>
       <PageHeader title="Reports" subtitle={openReportsLabel(openCount)} />
       <AdminTabs active="reports" openReports={openCount} />
+      {members && <MemberCountCard count={members.count} />}
       {reports.length === 0 && <p className="card p-6 text-center text-ink-2">All clear. No open reports</p>}
       <div className="space-y-4">
         {reports.map((r) => {

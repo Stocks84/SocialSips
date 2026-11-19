@@ -7,12 +7,14 @@
 
 | | |
 |---|---|
-| Version | 0.1 DRAFT |
-| Date written | 17 November 2026 |
-| Service | Social Sips, https://social-sips-livid.vercel.app/ |
+| Version | 0.2 DRAFT |
+| Date first written | 17 November 2026 |
+| Date last updated | 19 November 2026 |
+| Service | Social Sips. Live today at https://social-sips-livid.vercel.app/. Intended domain: https://social-sips.app (chosen, not bought yet). |
+| Code baseline for this update | `main` at `6e8995b` (described as live). First draft was written against `main` at `229495d`. |
 | Provider and responsible person | William Stocks ("Will"), named as the person accountable (Ofcom measure ICU A2 / PCU A2) |
 | Contact (only if needed) | The public contact email on the Impressum page. Not repeated here (CLAUDE.md allows that email on the legal pages only). No home address in this file. |
-| Next review | **17 November 2027**, or sooner before any big change (see section 9) |
+| Next review | **19 November 2027**, or sooner before any big change (see section 9) |
 
 ---
 
@@ -42,16 +44,18 @@ If everything stays Low or Negligible, Ofcom calls this a **low-risk, smaller se
 
 ### Already in place
 
-Report button (signed in) and a public report form (no sign-in) · human review by an admin · hide and delete tools · reasons sent to the author · block users · rate limits on posting and reporting · Turnstile captcha at sign-up · uploads re-encoded, 4 MB max, only jpg/png/webp/gif · no private messages · no live video · no clickable links in user text · clear Terms with banned content list · named contact.
+Report button (signed in) and a public report form (no sign-in; can now target a single comment) · human review by an admin · hide, unhide, delete, and a **suspend account** tool · hidden images move to a private bucket, plus a “Make hidden images private” sweep button · in-app and email-ready admin alerts when a new report arrives · reasons sent to the author · block users · rate limits on posting and reporting · Turnstile captcha at sign-up and password reset · uploads re-encoded, 4 MB max, only jpg/png/webp/gif · no private messages · no live video · no clickable links in user text · clear Terms with banned content list · named contact · closed reports are set to be deleted after 12 months (see G2).
 
-### Gaps (full list in section 7)
+### Gaps still open (full list in section 7)
 
-1. **Children:** self-declared age gate. Decide: real age checks, block the UK, or accept the children's duties and record why.
-2. **Promise not kept in code:** the Privacy Policy says reports are kept 12 months after closing. I found **no automatic delete**.
-3. **Promise not kept in code:** the Terms say we can suspend accounts. I found **no suspend or ban tool**. Admins can only hide or delete content.
-4. **Moderation cover:** one person (Will). No written response time, no backup if he is away.
-5. **No numbers:** the Privacy Policy says there is no analytics, so I can't show UK or child user counts.
-6. **Hide leaves the image file online** (to anyone with the link). Illegal images must be **deleted**, not just hidden.
+1. **Children (G1):** self-declared age gate. Still not HEAA. Decide with the lawyer: real age checks, block the UK, or accept the children's duties and record why.
+2. **Moderation cover (G4):** one person (Will). No written response time, no backup if he is away.
+3. **No numbers (G5):** the Privacy Policy says there is no analytics, so I still can't show UK or child user counts.
+4. **UK wording (G7):** Terms and Help still do not mention the UK Act or UK support lines.
+5. **No image scanning (G8)** and **no written “save evidence then delete” rule (G9).** Illegal images should still be **deleted**, not only hidden.
+6. **G10 / G11:** Ofcom Risk Profiles not yet ticked box by box; live reports were not read for this update.
+
+Closed in code since the 17 Nov draft, subject to a live-dashboard check (see section 7): **G2** (12-month report delete job), **G3** (suspend tool), **G6** (hide now moves the image out of the public bucket).
 
 ---
 
@@ -72,7 +76,19 @@ Not a "limited functionality" service: users post their own content, so that exe
 
 # 3. What the service is (from the code)
 
-Everything below was read from the repo on 17 Nov 2026 (`main` at `229495d`). Files are in `src/` unless stated.
+The first draft was read from the repo on 17 Nov 2026 (`main` at `229495d`). This update was re-checked against `main` at `6e8995b` on 19 Nov 2026. Files are in `src/` unless stated. I did not query the live database or change any live settings.
+
+### What changed in the code since the first draft
+
+These are now on `main`. I did not re-check the live database, so “in the shipped app” here means “the code is on the branch described as live”.
+
+- **12-month report retention (G2):** migration `0039_report_retention.sql` adds `private.purge_old_reports()` and a daily `pg_cron` job `purge-old-reports` at 03:17 UTC. Open reports are never deleted. The migration file also enables the `pg_cron` extension. **Please confirm in the Supabase dashboard that this job is scheduled.** I could not verify that from here.
+- **Suspend accounts (G3):** migration `0040_account_suspension.sql`, admin **Accounts** page at `/admin/users`, and an “account suspended” banner. Suspended members can still sign in, read, delete their own posts and delete their account, but cannot post, comment, vote, follow, report, or upload. Later commits also hide create/edit forms, reaction controls, and Report buttons from suspended members.
+- **Hidden images (G6):** migration `0041_hidden_media_bucket.sql`. Hiding an item moves its image into a private `hidden-media` bucket; unhiding moves it back. If the move fails, the admin is sent to **Hidden items** to press **“Make hidden images private”** (`src/app/(main)/admin/hidden/page.tsx`). This closes the “anyone with the old link can still see the file” gap for hidden items. Illegal images should still be **deleted**, not only hidden (see G9).
+- **Moderation alerts:** migration `0044_report_admin_alerts.sql` is marked **applied live on 18 Nov 2026**. Admins see a nav badge and in-app alerts for new reports. Optional email alerts already exist in the app, behind env vars, and are not switched on yet.
+- **Public report form** can now target a **single comment** (permalink or `?comment=`), not only the parent post.
+- **Password reset** with Turnstile captcha. **Welcome prompt** after first sign-up (migration `0043_welcome_dismissed.sql` is on `main`; the file says “apply at push time”. I could not confirm it was applied live).
+- Copy now uses **Drinks** and **Dares** in public wording.
 
 ### What users can do
 
@@ -103,7 +119,8 @@ Everything below was read from the repo on 17 Nov 2026 (`main` at `229495d`). Fi
 
 - Users upload images for memes, game covers, cocktail photos and avatars. Animated GIFs are allowed (max 150 frames).
 - Server checks the real file type, re-encodes the image (strips location data), max edge 1600 px, max 4 MB. Limits: 20 images / 40 MB per user per day. (`lib/server/uploads.ts`, `README.md`)
-- Files are stored in **public** storage buckets with random file names (`userId/uuid.ext`). Anyone with the link can open the file, **no age gate on the file itself**. (`0001_init.sql`, `0006`, `0015`)
+- Visible items are stored in **public** storage buckets with random file names (`userId/uuid.ext`). Anyone with the link can open a **public** file, and there is **no age gate on the file itself**. (`0001_init.sql`, `0006`, `0015`)
+- **Since 0041:** when an item is hidden, its image is moved to the private `hidden-media` bucket, so the old public URL should stop working. Unhide moves it back. A sweep button catches images that were hidden before this, or whose move failed.
 - **No automatic image scanning** (no nudity, no CSAM hash matching).
 
 ### Limits and abuse controls found
@@ -114,14 +131,14 @@ Everything below was read from the repo on 17 Nov 2026 (`main` at `229495d`). Fi
 
 ### Reporting and moderation flow
 
-1. **Report.** Signed-in: "⚑ Report" button on posts, comments and variations. Reasons: illegal, under-18s involved, copyright, spam, harassment, dangerous drinking, hate, other. Anyone (no sign-in): `/report` form with link, reason, note (min 10 characters), optional email, good-faith tick. Also email. (`components/ui/ReportButton.tsx`, `app/(legal)/report`)
-2. **Review.** Admin pages `/admin/reports` and `/admin/hidden`. Human review. (`app/(main)/admin`)
-3. **Action.** Admin can **hide** (item disappears for the public, author can still see it), **unhide**, or **delete** (removes the row and, for delete, the image file), or **dismiss** the report. Closing a case closes all open reports about the same item. (`app/(main)/admin/actions.ts`)
+1. **Report.** Signed-in: "⚑ Report" button on posts, comments and variations. Reasons: illegal, under-18s involved, copyright, spam, harassment, dangerous drinking, hate, other. Anyone (no sign-in): `/report` form with link, reason, note (min 10 characters), optional email, good-faith tick. The form can target a **single comment** (`#comment-<id>` or `?comment=`). Also email. (`components/ui/ReportButton.tsx`, `app/(legal)/report`, `lib/report-url.ts`)
+2. **Review.** Admin pages `/admin/reports`, `/admin/hidden` and `/admin/users`. New reports also show as a nav badge and in-app alerts. Human review. (`app/(main)/admin`)
+3. **Action.** Admin can **hide** (item disappears for the public, author can still see it; the image is moved to a private bucket), **unhide**, or **delete** (removes the row and the image file), or **dismiss** the report, or **suspend / restore** an account. Closing a case closes all open reports about the same item. (`app/(main)/admin/actions.ts`, `app/(main)/admin/users`)
 4. **Tell the author.** A "statement of reasons" is saved and shown to the author. (`moderation_notices`, `components/moderation/StatementOfReasons.tsx`)
 5. **Tell the reporter.** Signed-in reporters can see status and outcome.
 6. **Appeal.** Terms say: email within 6 months, Will reviews it himself.
-7. **Retention.** Privacy Policy says reports and decisions are kept up to **12 months** after the case closes (`lib/legal.ts`). **No code or job deletes them** (see gap G2).
-8. **Suspending accounts.** The Terms say we may suspend accounts. I found **no code for this** (see gap G3).
+7. **Retention.** Privacy Policy says reports and decisions are kept up to **12 months** after the case closes (`lib/legal.ts`). **Code now exists:** migration `0039` schedules a daily delete of *closed* reports and moderation notices older than 12 months. **Please confirm the live `pg_cron` job is running.** (Was gap G2.)
+8. **Suspending accounts.** Admin Accounts page (`/admin/users`) can suspend or lift a suspension, with a reason. Suspended members cannot post or interact, but can still read and delete their own data. (Was gap G3.)
 
 ### Legal pages
 
@@ -210,8 +227,8 @@ Based on Ofcom's *Summary of our decisions* and *Summary of each chapter* tables
 |---|---|---|
 | **ICU A2** Named accountable person | Name one person responsible | **Done in this draft:** Will. Needs Will's OK. |
 | **ICU C1** Content moderation function | Review content you suspect is illegal | **Partly met.** Admin tools exist. No written process. Single person. (G4) |
-| **ICU C2** Swift takedown | Remove illegal content swiftly once you know | **Partly met.** Hide and delete exist. No target time. Hide leaves image file online. (G4, G6) |
-| **ICU D1, D2, D7** Reporting and complaints | Easy to find and use. Act on reports. | **Mostly met.** Report button, public form, email. Check UK wording. |
+| **ICU C2** Swift takedown | Remove illegal content swiftly once you know | **Improved, still partly met.** Hide, delete, and suspend exist. Hide now moves the image to a private bucket, with a sweep button if the move fails. Still no written target time (G4). Illegal images should still be deleted, not only hidden (G9). |
+| **ICU D1, D2, D7** Reporting and complaints | Easy to find and use. Act on reports. | **Mostly met.** Report button, public form (including a single comment), email, and admin alerts for new reports. Check UK wording (G7). |
 | **ICU D** Complaints about takedowns and non-compliance | Let people complain and act on it | **Partly met.** Terms offer "email within 6 months". No UK-specific mention. |
 | **ICU G1, G3** Terms of service | Say how you protect users from illegal content. Clear and easy to find. | **Mostly met** in Terms section 5 and 7. Does not name the UK Act. Lawyer to check. |
 | **Record-keeping** | Written, dated record of this assessment, and of the measures above. Keep earlier versions at least 3 years. | **This file** is the record once approved. |
@@ -229,11 +246,11 @@ Code = needs an app or database change (separate branch, Will's OK to push). Non
 | ID | Gap | What to do | Type | Priority |
 |---|---|---|---|---|
 | **G1** | **Age gate is self-declared** (not HEAA). Children's duties likely apply. | Decide Option A, B or C in section 8. | Decision first. **Code only for Option A** (3rd-party age checks: cost and privacy to consider). | **1** |
-| **G2** | **12-month report retention is promised, but nothing deletes old reports.** | Add a scheduled job or a manual monthly SQL routine to delete closed reports and moderation notices older than 12 months. Or change the Privacy Policy wording. | **Code** (SQL migration plus job) or Non-code (policy wording). | **2** |
-| **G3** | **Terms say accounts can be suspended, but no tool exists.** Repeat offenders could come back. | Short term: write down the manual way (Supabase dashboard). Better: add a "suspended" flag that blocks posting and sign-in. | Non-code now. **Code** for the flag. | **2** |
+| **G2** | **CLOSED IN CODE (check live).** Migration `0039` adds `private.purge_old_reports()` and daily `pg_cron` job `purge-old-reports` (03:17 UTC). Open reports are never deleted. | Will: in the Supabase dashboard (or SQL `select * from cron.job`), confirm the job is scheduled. If it is not, apply `0039` with Will's OK. Residual risk: the job was not verified from this update; if cron is off, old reports would stay. | Check live (non-code). Re-apply only if missing. | **Check** |
+| **G3** | **CLOSED IN CODE.** Migration `0040` plus `/admin/users`. Suspended members cannot post, comment, vote, follow, report or upload. They can still sign in, read, and delete their own data. | Keep using the Accounts page. Residual risk: I did not query the live database; if `0040` were missing, the page would error. The feature is on the branch described as live. | Done in code. | — |
 | **G4** | **One moderator, no response target, no backup.** | Write a one-page moderation routine: check reports daily; illegal content within 24 hours (proposal, Will to confirm); name a backup or an "away" plan. Say the target in Terms. | Non-code (plus a small Terms edit). | **3** |
 | **G5** | **No UK or child user numbers.** Can't justify "not significant" or "few children". | Choose a privacy-friendly count (for example Vercel's built-in country totals) and update the Privacy Policy if needed. Or record that scope is assumed. | Non-code or small **code** change. | 4 |
-| **G6** | **Hiding an item leaves its image file online.** For illegal images that is not enough. | Rule: illegal image content must be **deleted**, not hidden. Also keep a note of what was deleted (see G9). Later: make hide also move the file out of the public bucket. | Non-code rule now. **Code** for the later fix. | 3 |
+| **G6** | **MOSTLY CLOSED IN CODE.** Hide moves the image to the private `hidden-media` bucket (migration `0041`). The Hidden items page has a **“Make hidden images private”** button for leftovers. | Residual: public files are still reachable by URL until hidden or deleted; there is still no age gate on public file URLs. For illegal images, **delete** the item (and keep a note — G9), do not only hide it. | Mostly done. Residual is process (G9) plus the public-bucket design for visible items. | Residual |
 | **G7** | **Terms and Help don't mention the UK Act or UK support.** | Add a short UK section: how to report, how complaints work, UK help (Samaritans 116 123, Childline 0800 1111, Drinkaware). Lawyer to word it. | Terms text edit (**code**, small) after lawyer review. | 5 |
 | **G8** | **No image scanning.** Fine at low risk, but impact of CSAM is severe. | Record the decision to rely on reports for now. Revisit if image volume grows. Consider free tools (for example Cloudflare's CSAM scanning tool for sites behind Cloudflare). *Not checked: whether it fits this setup.* | Non-code decision. | 5 |
 | **G9** | **Deleting illegal content destroys evidence** for law enforcement. | Write down what to do (for example, keep the report record and note the URL and time before deleting; contact the police and, for child abuse images, the IWF). Lawyer to advise. | Non-code. | 4 |
@@ -241,8 +258,24 @@ Code = needs an app or database change (separate branch, Will's OK to push). Non
 | **G11** | **Live data not reviewed.** Real reports, admin count and any past incidents were not read. | Will reviews `/admin/reports` history once and records anything notable here. | Non-code. | 4 |
 
 Other points, lower priority:
-- Review the share-preview bypass (stub with title and summary for bots). It is text only, so low risk, but it is the one place content shows without any age check.
+- Review the share-preview bypass (stub with title and summary for bots, now also for `/challenge`). It is text only, so low risk, but it is still the one place content shows without any age check.
 - The UK duty to **report detected CSAM to the National Crime Agency** may apply to Social Sips. *I did not confirm whether that duty is in force or applies at this size. Lawyer to confirm.*
+
+### Residual risk (after the closed code gaps)
+
+Illegal-content risk levels in section 5 are **unchanged** in this update (still no Medium or High; still no live report data). The main residual risks are: the self-declared age gate (G1); a single moderator with no written target time (G4); no UK/child user counts (G5); no image scanning (G8); and deleting illegal content without a written evidence step (G9). Closing G2, G3 and G6 lowers the chance that a closed report is kept too long, that a repeat offender can keep posting, or that a hidden illegal image stays on a public URL. They do not, on their own, change the children's HEAA question. **That is for the lawyer, not settled here.**
+
+### Remaining code (and small build) tasks
+
+Ordered, smallest first. Do not start these until Will says so. Anything that needs lawyer wording waits for the WKO review.
+
+1. **Live checks (Will does, no code):** confirm in Supabase that migration `0039`’s `purge-old-reports` cron job is scheduled, that `0040` and `0041` are applied (the Accounts page and hide-image flow work), and whether `0043` (welcome dismiss) has been applied.
+2. **UK wording in Terms and Help (G7), after the lawyer drafts it:** a short UK section on how to report, how complaints work, and UK help lines (Samaritans 116 123, Childline 0800 1111, Drinkaware). Small copy change only.
+3. **“Save a note, then delete” for illegal images (G9 residual):** a small admin flow that stores the URL, time and report id, then deletes the file and row, so evidence is not lost. Lawyer should say what to keep.
+4. **Optional, only if the lawyer wants numbers (G5):** a privacy-friendly way to see UK (and maybe age-band) visitor totals, for example Vercel’s built-in country stats, plus a Privacy Policy line if needed.
+5. **Only if the lawyer says HEAA is required (G1 Option A):** integrate a third-party age-assurance vendor. This is a bigger job (cost, privacy, a vendor, friction for users). Do not start it first.
+6. **Only if the lawyer says to block the UK (G1 Option B):** a geo-block for UK visitors, plus a review of UK help-line wording so the site is not still aimed at the UK. Do not start it first.
+7. **Later, if image volume grows (G8):** look at image scanning (for example Cloudflare’s CSAM scanning, if it fits this setup). Not needed at the current size, but record the decision.
 
 ---
 
@@ -320,7 +353,7 @@ If a children's risk assessment is required, you also have to **tell Ofcom if yo
 
 # 9. When to redo this assessment
 
-Redo **at least once a year**. Redo **before** any big change, for example:
+Redo **at least once a year** (next due **19 November 2027**). Redo **before** any big change, for example:
 
 - direct messages, group chat, voice, video, live streams
 - video uploads
@@ -342,11 +375,12 @@ Ofcom wants a written, dated, easy-to-understand record, **kept in a durable pla
 | This file is the record | `docs/legal/uk-osa-risk-assessment.md` in the repo (history kept by git) |
 | Accountable person | William Stocks |
 | Draft written by | Social Sips assistant, 17 Nov 2026 |
+| Draft updated by | Social Sips assistant, 19 Nov 2026 (rebased onto `main` `6e8995b`; closed G2/G3/G6 in code) |
 | Reviewed by lawyer | **Not yet** (WKO review pending) |
 | Approved by Will | **Not yet** |
 | Date approved | |
-| Actions started | (fill in) |
-| Next review due | 17 Nov 2027 |
+| Actions started | Code for G2, G3 and G6 is on `main`. Live cron job for G2 not verified from here. |
+| Next review due | 19 Nov 2027 |
 
 **Report to governance:** Ofcom says small services without a board can simply report the result to the person responsible. Here that is Will, so his sign-off above is the report.
 
@@ -354,7 +388,7 @@ Ofcom wants a written, dated, easy-to-understand record, **kept in a durable pla
 
 # 11. Ofcom and legal sources
 
-All were read on 17 Nov 2026. Ofcom changes its pages; check the date on each.
+Ofcom sources were first read on 17 Nov 2026. The Vercel DPA was re-read on 19 Nov 2026. Ofcom changes its pages; check the date on each.
 
 **Illegal content**
 - Illegal content duties (page, updated 25 Jun 2026): https://www.ofcom.org.uk/online-safety/illegal-and-harmful-content/illegal-content-duties-under-the-online-safety-act
@@ -383,14 +417,23 @@ All were read on 17 Nov 2026. Ofcom changes its pages; check the date on each.
 
 *Note on one source:* the "excessive alcohol" example in section 8 comes from the text of Ofcom's *Guidance on content harmful to children* as it appeared in a law-firm summary (Handley Gill) and Ofcom's own definition of harmful substances content. I read the Ofcom PDF's definition and contents but not its full harmful-substances section (section 9). **Check that section directly.**
 
+**Processors / DPA (checked 19 Nov 2026)**
+- Vercel Data Processing Addendum: https://vercel.com/legal/dpa (last updated 17 March 2026, effective 31 March 2026). The public text says it applies to Enterprise and Pro plans. The live project's plan was not checked.
+- Supabase DPA (already linked from the Privacy Policy): https://supabase.com/legal/dpa
+
+
 ---
 
 # 12. Questions for the WKO lawyer
 
+These are questions, not answers. Please treat every point below as **for the lawyer to decide**.
+
 1. Is Social Sips in scope of the UK Online Safety Act at its size, with UK help lines on the site and no user counts?
-2. Is a self-declared age gate acceptable for a hobby 18+ alcohol-themed app, or must it use highly effective age assurance?
-3. Does PCU B5 (HEAA for medium-risk priority content that the Terms prohibit) apply to "harmful substances" content when the whole theme is alcohol?
-4. Is "block the UK" a safe way out, or does Ofcom still see UK links?
-5. Does the duty to report CSAM to the National Crime Agency apply at this size, and what should be kept as evidence before deleting?
+2. **HEAA or a UK block?** The age gate is only self-declared (type a date of birth). Ofcom’s public guidance says that is not highly effective age assurance. For a hobby 18+ alcohol-themed app, should Will: (A) add real age checks (HEAA), (B) geo-block the UK, or (C) keep the current gate, do the children’s duties, and write down why? What is the least heavy option that still meets the duty?
+3. If we chose Option C, does **PCU B5** (HEAA for medium-risk priority content that the Terms prohibit) apply to “harmful substances” content, when alcohol is the whole theme and the Terms already ban encouraging dangerous or excessive drinking? I rated that risk Medium, cautiously. That rating, and whether B5 applies, are for you to confirm.
+4. If we chose Option B (block the UK): is a Vercel or middleware geo-block enough, or would UK help lines, English-language copy, or VPN use still count as UK links? What wording would we need to change?
+5. Does the duty to report CSAM to the National Crime Agency apply at this size, and what should be kept as evidence before deleting an illegal image?
 6. Is the flashing-images offence relevant for animated GIFs?
-7. Wording for UK terms and complaints, and what to do about the 12-month report retention promise.
+7. Wording for a short UK section in the Terms and Help (how to report, how complaints work, UK help lines). The 12-month report retention promise now has a delete job in the code; please say if the Privacy Policy wording still needs a change, and whether Will must confirm the live cron job.
+8. **Vercel Hobby plan and the DPA.** The Privacy Policy already links to Vercel’s Data Processing Addendum (https://vercel.com/legal/dpa). The public DPA text, last updated 17 March 2026 and effective 31 March 2026, says it applies to Vercel’s processing “for Customers who are on Enterprise and Pro plans.” I have **not** checked which plan the live Social Sips project is on. If it is on the Hobby plan, does that leave a gap under GDPR Article 28 (no processor contract), and should Will upgrade to Pro so the DPA applies? This is a GDPR / DSA point as well as an OSA one. Please also say whether a non-commercial hobby project on Hobby is otherwise acceptable under Vercel’s terms.
+9. Who should be named as the accountable person, and is the record in this file enough once Will signs it?

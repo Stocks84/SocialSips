@@ -1,0 +1,14 @@
+Subject: Your Social Sips confirmation code
+
+Here's your Social Sips confirmation code. Enter it in the app to continue. Don't share it with anyone.
+
+Your code:
+{{ .Token }}
+
+If you didn't ask for this, you can ignore this email. Don't share the code with anyone.
+
+Social Sips
+Questions? willsto84@gmail.com
+Impressum: https://social-sips.app/impressum
+Privacy: https://social-sips.app/privacy
+A non-commercial hobby project. 18+ only. Please drink responsibly.

@@ -1,0 +1,16 @@
+Subject: Confirm your new Social Sips email
+
+You asked to change the email on your Social Sips account. Confirm the new address with the link below.
+
+Until you confirm it, your current email stays in use.
+
+Confirm new email:
+{{ .ConfirmationURL }}
+
+If you didn't ask to change your email, you can ignore this email. Your current email stays in use. Worried? Write to willsto84@gmail.com.
+
+Social Sips
+Questions? willsto84@gmail.com
+Impressum: https://social-sips.app/impressum
+Privacy: https://social-sips.app/privacy
+A non-commercial hobby project. 18+ only. Please drink responsibly.

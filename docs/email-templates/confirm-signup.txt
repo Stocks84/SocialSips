@@ -1,0 +1,16 @@
+Subject: Confirm your Social Sips account
+
+Welcome to Social Sips. One last sip — confirm your email and you're in.
+
+Then you can share Drinks and Dares with the rest of the table.
+
+Confirm your email:
+{{ .ConfirmationURL }}
+
+If you didn't sign up for Social Sips, you can ignore this email. Nothing will happen.
+
+Social Sips
+Questions? willsto84@gmail.com
+Impressum: https://social-sips.app/impressum
+Privacy: https://social-sips.app/privacy
+A non-commercial hobby project. 18+ only. Please drink responsibly.

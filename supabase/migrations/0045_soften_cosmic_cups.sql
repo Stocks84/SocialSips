@@ -1,8 +1,7 @@
 -- Soften the seeded Cosmic Cups rules so they offer a sip or a soft-drink option
 -- instead of telling every player to drink.
 --
--- DO NOT APPLY in the safeguards job. This file is written only, for Will to
--- apply later if the live database still has the old seed text.
+-- Applied live on 19 Nov 2026 with Will's OK.
 --
 -- Target rows (from supabase/seed.sql, and any live copy of that seed):
 --   public.games

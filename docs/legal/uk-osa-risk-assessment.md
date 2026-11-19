@@ -7,14 +7,20 @@
 
 | | |
 |---|---|
-| Version | 0.2 DRAFT |
+| Version | 0.3 DRAFT |
 | Date first written | 17 November 2026 |
 | Date last updated | 19 November 2026 |
 | Service | Social Sips. Live today at https://social-sips-livid.vercel.app/. Intended domain: https://social-sips.app (chosen, not bought yet). |
-| Code baseline for this update | `main` at `6e8995b` (described as live). First draft was written against `main` at `229495d`. |
+| Code baseline for this update | `main` at `04ea2e8`. First draft was written against `main` at `229495d`. |
 | Provider and responsible person | William Stocks ("Will"), named as the person accountable (Ofcom measure ICU A2 / PCU A2) |
 | Contact (only if needed) | The public contact email on the Impressum page. Not repeated here (CLAUDE.md allows that email on the legal pages only). No home address in this file. |
 | Next review | **19 November 2027**, or sooner before any big change (see section 9) |
+
+**Change log**
+
+- **0.1** (17 Nov 2026): first draft.
+- **0.2** (19 Nov 2026): refreshed against later `main` (G2, G3 and G6 closed in code).
+- **0.3** (19 Nov 2026): re-read Ofcom's harmful-substances guidance and Risk Level Table. Rate harmful-substances (and restated dangerous-challenges) children's risk as **Low**, with evidence, weak spots, and cheap extra safeguards. Not legal advice. Lawyer to confirm.
 
 ---
 
@@ -37,10 +43,9 @@ If everything stays Low or Negligible, Ofcom calls this a **low-risk, smaller se
 
 ### Children
 
-- The age gate is **self-declared** (type a birth date, tick a box). Ofcom says this is **not** "highly effective age assurance" (HEAA). The Online Safety Act itself says self-declaration "without more" is not age assurance.
-- So Ofcom says I can't claim children can't get in. I must assume children are **likely** to be on the service and do a **children's risk assessment** (section 8).
-- Biggest children's risk: **"harmful substances" content**. Ofcom lists content encouraging excessive alcohol as an example. Drinking games are the product. I rate this **Medium** (cautious).
-- This may mean Ofcom expects real age checks (HEAA) for that content. **Lawyer question, not settled here.**
+- The age gate is **self-declared** (type a birth date, tick a box). Ofcom says this is **not** "highly effective age assurance" (HEAA). The Act says self-declaration "without more" is not age assurance. So I still treat children as able to get in, and I still do a children's risk assessment (section 8).
+- I now rate **"harmful substances" content as Low**, not Medium. Ofcom's category is content that *actively encourages excessive* drinking (for example initiations, or drinking until someone is sick), not every mention of alcohol. The full case, including weak spots, is in section 8.
+- Because that rating is now Low, I no longer think measure **PCU B5** (HEAA when the risk is medium or high and the Terms ban the content) is triggered. **That is for the lawyer to confirm, not settled here.**
 
 ### Already in place
 
@@ -263,7 +268,7 @@ Other points, lower priority:
 
 ### Residual risk (after the closed code gaps)
 
-Illegal-content risk levels in section 5 are **unchanged** in this update (still no Medium or High; still no live report data). The main residual risks are: the self-declared age gate (G1); a single moderator with no written target time (G4); no UK/child user counts (G5); no image scanning (G8); and deleting illegal content without a written evidence step (G9). Closing G2, G3 and G6 lowers the chance that a closed report is kept too long, that a repeat offender can keep posting, or that a hidden illegal image stays on a public URL. They do not, on their own, change the children's HEAA question. **That is for the lawyer, not settled here.**
+Illegal-content risk levels in section 5 are **unchanged** in this update (still no Medium or High; still no live report data). The main residual risks are: the self-declared age gate (G1); a single moderator with no written target time (G4); no UK/child user counts (G5); no image scanning (G8); and deleting illegal content without a written evidence step (G9). Closing G2, G3 and G6 lowers the chance that a closed report is kept too long, that a repeat offender can keep posting, or that a hidden illegal image stays on a public URL. They do not, on their own, settle the children's HEAA question. v0.3 rates harmful substances as Low, so PCU B5 looks less likely, but **that is for the lawyer, not settled here.**
 
 ### Remaining code (and small build) tasks
 
@@ -318,13 +323,13 @@ If we conclude "not met" instead, Ofcom wants the **detailed evidence written do
 |---|---|---|---|
 | **A. Add real age checks (HEAA)** | Use a third-party check (photo ID, face estimate, etc.) before access. | Strongest answer. May lower children's duties a lot. | Cost, privacy work, a vendor, friction for users, code changes. Heavy for a hobby app. |
 | **B. Block UK users** | Geo-block the UK so there are no UK links. | Removes OSA duties. Simple on Vercel. | Loses UK users. VPNs. Ofcom may still see the site as UK-targeted if the UK help lines stay. |
-| **C. Accept the children's duties (light touch)** | Keep the self-declared gate. Do the children's risk assessment (below). Apply the Protection of Children Code measures for a small service. | No new vendor. Mostly what you already have. | Possible **PCU B5** problem (see below). Ofcom may say the gate is not enough. |
+| **C. Accept the children's duties (light touch)** | Keep the self-declared gate. Do the children's risk assessment (below). Apply the Protection of Children Code measures for a small service. | No new vendor. Mostly what you already have. | Ofcom may still say the gate is not enough. **PCU B5** looks less likely if the harmful-substances rating stays Low (see below), but that is for the lawyer. |
 
-**Possible problem with Option C (lawyer to check).** In Ofcom's *Codes at a glance*, measure **PCU B5** says services must use HEAA to protect children from priority harmful content when (a) that content is not the service's main purpose, (b) their Terms **prohibit** that content, and (c) their risk for it is **medium or high**. Social Sips' Terms **do** ban "encouraging dangerous, excessive or forced drinking". If harmful substances is Medium (my rating below), PCU B5 **appears to** apply. I read this from a text extract of a table, so please treat it as "needs checking", not as a final answer.
+**PCU B5 and Option C (lawyer to check).** In Ofcom's *Codes at a glance* (text extract, not re-read in full for v0.3), measure **PCU B5** says services must use HEAA to protect children from priority harmful content when (a) that content is not the service's main purpose, (b) their Terms **prohibit** that content, and (c) their risk for it is **medium or high**. Social Sips' Terms **do** ban "encouraging dangerous, excessive or forced drinking". I now rate that risk **Low** (see below), so I do not think condition (c) is met. Please confirm both the Low rating and whether B5 still applies.
 
-**My recommendation:** do Option C on paper now (it costs nothing), ask the lawyer the PCU B5 question, and only then choose between A and B if the answer is "yes, you need HEAA".
+**My recommendation:** stay with Option C on paper, with the Low rating and the weak spots written down, and ask the lawyer to confirm. Only then choose A or B if the lawyer says HEAA is still required.
 
-### Children's risk assessment (first draft)
+### Children's risk assessment (updated in v0.3)
 
 Ofcom's categories of content harmful to children: **4 primary priority** and **8 priority** kinds, plus "non-designated" kinds (Ofcom names depression content and body-stigma content). Same scale and same four steps.
 
@@ -338,14 +343,120 @@ Ofcom's categories of content harmful to children: **4 primary priority** and **
 | **Bullying content** (PC) | **Low (watch)** | Public comments, follows. Block tool exists. |
 | **Violent content** (PC, serious violence against people) | **Low** | Meme images could show violence. No sign of it. Not the topic. |
 | **Violence against animals or creatures** (PC) | **Negligible** | Not the topic. |
-| **Dangerous stunts and challenges** (PC) | **Low (watch)** | Drinking dares are possible. The weekly challenge themes are set by an admin and are meme or cocktail-variation themes, not drinking dares. |
-| **Harmful substances content** (PC) | **Medium** | Ofcom lists "content encouraging excessive consumption of alcohol" as an example. Alcohol is **the whole theme**. Our Terms say drinking is optional and ban pressure to drink, which helps, but the risk is built in. |
+| **Dangerous stunts and challenges** (PC) | **Low** | See the detailed case below. Weekly Dares are meme or drink-recipe themes, not injury stunts. |
+| **Harmful substances content** (PC) | **Low** | See the detailed case below. The category is *encouraging excessive* drinking, not every mention of alcohol. |
 | **Depression content** (non-designated) | **Low** | Not the topic. |
 | **Body stigma content** (non-designated) | **Negligible** | Not the topic. |
 
-**Result:** one Medium (harmful substances), so a **single-risk** service for children. Not multi-risk (needs two or more medium or high).
+**Result:** no Medium or High children's ratings in this draft. If the lawyer agrees, this would be a **low-risk service for children** as well as for illegal content (only the core children's measures would apply). This is a change from v0.2, which rated harmful substances as Medium and therefore treated the service as "single-risk" for children.
 
-**Children's measures for a smaller service** (Codes at a glance): name an accountable person (PCU A2, Will) · content moderation function that reviews and acts swiftly (PCU C1, C2) · complaints and reporting (PCU D1, D2, D7, D10, D13, D14) · terms that cover protection of children and are clear (PCU G1, G3). Most are the same as the illegal-content measures above. **Possible extra for medium risk: PCU B5 (HEAA), see above.**
+**Children's measures for a smaller, low-risk service** (Codes at a glance, from the earlier extract): name an accountable person (PCU A2, Will) · content moderation function that reviews and acts swiftly (PCU C1, C2) · complaints and reporting (PCU D1, D2, D7, D10, D13, D14) · terms that cover protection of children and are clear (PCU G1, G3). Most are the same as the illegal-content measures above. **PCU B5 (HEAA) is written for medium or high risk. I do not think it is triggered if the Low rating stands. Lawyer to confirm.**
+
+### Why harmful substances (and dangerous challenges) are rated Low
+
+This is the detailed case. Short sentences. File paths are to the current code. Nothing here is invented user data.
+
+#### What Ofcom's category actually covers
+
+I read Section 9 of Ofcom's *Guidance on content harmful to children* (PDF, 24 April 2025) in full for this update.
+
+The Act (section 62(9), as quoted by Ofcom) defines harmful-substances content as content which **encourages** a person to ingest, inject, inhale or otherwise self-administer a physically harmful substance, or a substance in a quantity that is physically harmful.
+
+Ofcom Table 9.1 says "encourage" here means **active or express encouragement**: recommending, advising, inciting, inducing or instigating. Paragraph 9.4 says content that only depicts or describes use, with no active or express encouragement, is **unlikely to be in scope**.
+
+Alcohol is on Ofcom's list of harmful substances (it is not legal to sell it to children in the UK). But not every alcohol mention is in-scope content. Ofcom's alcohol example of content that **is** in scope (Table 9.2) is:
+
+> "Content encouraging activities that involve drinking excessive amounts, often to the point of vomiting or passing out, e.g., encouraging initiations or hazing rituals or other challenges involving excessive consumption of alcohol."
+
+Ofcom's example of content that is **not** in scope (Table 9.3) includes:
+
+> "Content depicting or describing individuals drinking alcohol … without active or express encouragement of others to do the same."
+
+The same paragraph 9.11 notes that out-of-scope content may still be **unsuitable for children**. That is a separate point from this rating.
+
+Dangerous stunts and challenges (Section 10, and the Act) is content which encourages, promotes or provides instructions for a challenge or stunt **highly likely to result in serious injury**. That is a high bar. A weekly "Dare" that is a meme theme or a drink-recipe variation is not, by itself, that kind of content.
+
+#### Risk factors (Ofcom Table 6)
+
+Ofcom's Children's Risk Profiles (PDF, 24 April 2025, Table 6) list these **specific** user-to-user risk factors for harmful-substances content: social media services; video-sharing services; posting images or videos; content tagging; and features that increase engagement.
+
+How those sit on Social Sips:
+
+| Risk factor | On this service? |
+| --- | --- |
+| Social media service (1a) | **Partly, and this is a weak spot.** There are public posts, profiles, follows and comments. It is a small hobby community, not a large service built to maximise engagement. A lawyer could still treat 1a as a yes. |
+| Video-sharing (1f) | **No.** No video uploads. Images and GIFs only. |
+| Posting images or videos (4d) | **Yes.** Memes, game covers, drink photos and avatars. |
+| Content tagging (5b) | **Weakly.** Games can have up to 10 user tags (`src/lib/validators/game.ts`). Not a hashtag discovery system. |
+| Features that increase engagement (7) | **Mostly no.** There is no "For you" recommender and no autoplay. The main feed is newest first. "Top" is a user-chosen sort by star rating. "Following" shows only people you chose (`src/app/(main)/feed/page.tsx`, `src/lib/queries/games.ts`). Reactions, comments and follows do exist. |
+
+For dangerous stunts, Table 6 also lists user connections and content recommender systems. Follows exist. A recommender does not.
+
+Ofcom says that, ordinarily, **few** specific risk factors for a kind of content point to a **lower likelihood** (guidance 4.30 / Table 10). I count few clear yeses here. The general factors still apply: the user base is aimed at adults; the project is a non-commercial hobby with no ads or payments.
+
+#### Evidence from the app
+
+1. **18+ wording and checks.** Guests type a date of birth (`src/app/(auth)/age-gate/`). Under-18s get an exit page and a 24-hour block. Sign-up asks for a date of birth, shows "18+ only. We check your date of birth.", and a required tick box: "I confirm I am 18 or over, and I'll drink responsibly." (`src/app/(auth)/sign-up/page.tsx`, `SignUpForm.tsx`). The database rejects under-18 sign-ups (`supabase/migrations/0001_init.sql`, `0002_age_confirmation.sql`). Terms section 2 is "18+ only" (`src/app/(legal)/terms/page.tsx`). Privacy says 18+ only, and that an under-18 account is deleted. This is still **self-declaration, not HEAA**. I do not claim children cannot get in.
+
+2. **The Terms ban the in-scope content.** Terms section 3: content is for entertainment; know your limits; never drink and drive; don't pressure anyone to drink; drinking games are optional; alcohol-free versions are always fine; Drinkaware and Austrian help links. Terms section 5 bans content that targets under-18s or shows minors drinking, and bans "Encouraging dangerous, excessive or forced drinking, drink-driving, or mixing alcohol with drugs." It also bans selling alcohol.
+
+3. **Responsible-drinking and soft-drink notes already in the product.** Home: "18+ only. Every game works with soft drinks." and "Social Sips promotes responsible drinking. Know your limits, and never drink and drive." (`src/app/page.tsx`). Footer on every page: "18+ only · Please drink responsibly", plus a Help link (`src/components/layout/LegalFooter.tsx`). Help page: pace yourself, eat, never drink and drive, every game works with soft drinks, look after friends; Drinkaware / Drinkline 0300 123 1110; Austrian help; 112 / 999 (`src/app/(main)/help/page.tsx`). The built-in Kings Cup play screen: "Nobody has to drink to play. Soft drinks work just as well." (`src/components/play/KingsCup.tsx`). Drink recipes can be marked and filtered as alcohol-free (`src/components/cocktails/*`).
+
+4. **Built-in Drinks and Dares.** The weekly Dare is only a **meme** or a **cocktail-variation** (recipe) theme, set by an admin, not a drinking stunt (`src/lib/challenge.ts`). Seeded drinks include a virgin/alcohol-free example (`supabase/seed.sql`). Seeded games are mixed: "Mocktail Mafia" is alcohol-free (`no_hangover`); "Neon Never Have I Ever" says "takes a sip"; "Cosmic Cups" is a flip-cup relay where "each player drinks" and is tagged `two_day_hangover`. There is **no** cap on how intense a user-written game can be, and **no** wording filter. Hangover ratings are a warning label (`no_hangover`, `mild_hangover`, `two_day_hangover`), but the public jokes include "Cancel your plans. All of them." (`src/components/ui/HangoverBoard.tsx`). That last point is a weak spot, not a strength.
+
+5. **Moderation.** Anyone can report, including a single comment (`/report`, `src/lib/validators/comment.ts`). One report reason is **"Dangerous drinking / unsafe"**. Admins get a nav badge and in-app alerts (migration 0044, marked applied live). They can hide (image moves to a private bucket, plus a "Make hidden images private" button), delete, or suspend an account (migrations 0040 and 0041, `/admin/users`, `/admin/hidden`). Closed reports are set to be deleted after 12 months (migration 0039 — confirm the live cron job). Posts are **not** pre-checked before they go live.
+
+6. **No DMs, no "For you" feed, no user search.** There are no private messages, no live video, and no clickable links in user text (section 3 of this file). Adults cannot search for or message children on the service. Content is not pushed to strangers by an algorithm.
+
+7. **Design is aimed at adults, not children.** Dark pub-board look (bottle green, cream, brass), hangover scale, 18+ on share cards and the homepage. It is not a cartoon or brightly child-targeted design. Party memes and a phone-friendly layout could still appeal to older teens. I do not claim "no child would like this."
+
+8. **Scale.** This is a non-commercial hobby project, pre-launch, with a stated first target of about **50 users** by 31 January 2027. I have **no live user count** and no analytics. Ofcom's Medium/High impact examples talk about 100,000 or 1 million monthly UK child users, and about content going viral. We are nowhere near that. Ofcom also says: if a service has a *high* number of users and no age data, assume a high number of children (guidance 4.34). That "high number" example does not fit a 50-user hobby app. I still have no proof there are zero child users.
+
+#### Likelihood: Low
+
+I rate the likelihood that a child would encounter **in-scope** harmful-substances content (active encouragement of excessive or forced drinking) as **Low**.
+
+Why: the Terms ban that content; there is a dedicated report reason and a working hide/suspend path; the feed will not push a post to strangers; the service is tiny; Ofcom's own examples are about hazing and drinking until someone is sick, which is not what the product is designed to host; and only a few of Ofcom's specific risk factors clearly apply.
+
+I do **not** claim the second Low-likelihood limb in Table 10 (comprehensive, "very effective" systems, for example all content pre-moderated). We do not pre-moderate. I also do not claim there is proof of zero cases, because live reports were not read (gap G11).
+
+I do not rate this Negligible. Children can still lie at the age gate, and a user could still post in-scope content before an admin sees it.
+
+#### Impact and overall rating
+
+If a child did see genuine "drink until you pass out" or hazing content, the **severity would not be low**. Ofcom Table 10 is clear: if severity is high, even a small number of instances can mean the service is not Low *for impact*. I will not pretend otherwise.
+
+What *is* limited is **reach**: a handful of intended users, no viral recommender, and a hide/suspend path once something is reported. The everyday content (recipes, optional sip-based games, responsible-drinking notes) is, on Ofcom's Table 9.3, mostly depiction or information, not in-scope encouragement of excess.
+
+**Overall children's risk for harmful substances: Low.** I get there mainly on **low likelihood** and **small reach**, plus the existing bans and tools, not by saying alcohol harm is mild. **Dangerous stunts and challenges: also Low**, for the same reasons, and because weekly Dares are not injury stunts.
+
+This is my judgement from the guidance and the code. It is not a legal conclusion.
+
+#### Residual risk
+
+A child who lies about their age can still see alcohol-themed posts. A new game can go live without being checked. A flip-cup or "take a sip" game is not Ofcom's hazing example, but it does tell players to drink. Ordinary public images still have no age gate on the file URL. If the user base grows a lot, or if reports of excessive-drinking content appear, this rating should be done again.
+
+#### Weak spots (be honest)
+
+1. The product is still **about drinking**. A cautious reader, or a lawyer, might say Medium because alcohol is the theme, even after reading Ofcom's narrower definition.
+2. The age gate is **not HEAA**. Children can get in. Ofcom also says that if the evidence is not conclusive, pick the **higher** risk level (Risk Level Table, 4.3).
+3. Posts are **not pre-moderated**. Table 10's example of a "very effective" control is pre-moderation. We do not have that.
+4. **No wording filter**, and no cap on how hard a game can be. A user could post a hazing-style dare.
+5. Built-in **Cosmic Cups** tells each player to drink and is labelled `two_day_hangover`. The hangover-board joke is "Cancel your plans. All of them." That can look like celebrating a heavy night.
+6. Responsible-drinking and Drinkaware links are on Home, Help, Terms and the Kings Cup screen. They are **not** on every Game or Dare page. The footer says "Please drink responsibly" but does not itself name Drinkaware.
+7. Live reports and user numbers were **not** checked. I cannot say "we have had no cases."
+8. Memes and party culture can still appeal to **older teens**.
+
+#### Cheap extra safeguards (not built in this job)
+
+These would make the Low rating easier to defend. Small code or copy tasks only. Do not start them until Will says so.
+
+1. A one-line reminder on every Game and Dare page: nobody has to drink; soft drinks are fine; link to `/help`.
+2. On the game / dare form, a required tick or a prompt for a soft-drink alternative, and a short reminder that encouraging excessive or forced drinking is banned.
+3. Put Drinkaware (and the Austrian help link) in the **global footer**, not only on `/help` and the Terms.
+4. A simple wording flag for an admin when a post looks like hazing or "drink until you pass out" (not a full filter, just a review queue).
+5. Soften or relabel `two_day_hangover` so it reads as a **warning**, not a joke about a heavy night, and review the seeded "Cosmic Cups" rules.
+6. Keep the sign-up 18+ line, and add the same short "18+ only, drink responsibly" line at the top of the create-game and create-dare screens.
 
 If a children's risk assessment is required, you also have to **tell Ofcom if you find "non-designated" harmful content** on the service (nondesignatedcontent@ofcom.org.uk). None found as far as I know (no live data checked).
 
@@ -375,7 +486,7 @@ Ofcom wants a written, dated, easy-to-understand record, **kept in a durable pla
 | This file is the record | `docs/legal/uk-osa-risk-assessment.md` in the repo (history kept by git) |
 | Accountable person | William Stocks |
 | Draft written by | Social Sips assistant, 17 Nov 2026 |
-| Draft updated by | Social Sips assistant, 19 Nov 2026 (rebased onto `main` `6e8995b`; closed G2/G3/G6 in code) |
+| Draft updated by | Social Sips assistant, 19 Nov 2026. v0.2: refreshed against later main (G2, G3, G6 closed in code). v0.3: harmful-substances children's risk changed from Medium to Low, with evidence, weak spots and extra safeguards. |
 | Reviewed by lawyer | **Not yet** (WKO review pending) |
 | Approved by Will | **Not yet** |
 | Date approved | |
@@ -388,7 +499,7 @@ Ofcom wants a written, dated, easy-to-understand record, **kept in a durable pla
 
 # 11. Ofcom and legal sources
 
-Ofcom sources were first read on 17 Nov 2026. The Vercel DPA was re-read on 19 Nov 2026. Ofcom changes its pages; check the date on each.
+Ofcom sources were first read on 17 Nov 2026. On 19 Nov 2026 I re-read the children's risk guidance (including the Risk Level Table and Table 6) and, in full, Section 9 of the harmful-to-children guidance, plus the start of Section 10. The live Ofcom PDFs returned 403 from this environment (Cloudflare); I used Ofcom's pages via the fetch tool and a 6 January 2026 Wayback Machine copy of the same PDFs. Ofcom changes its pages; check the date on each.
 
 **Illegal content**
 - Illegal content duties (page, updated 25 Jun 2026): https://www.ofcom.org.uk/online-safety/illegal-and-harmful-content/illegal-content-duties-under-the-online-safety-act
@@ -409,13 +520,15 @@ Ofcom sources were first read on 17 Nov 2026. The Vercel DPA was re-read on 19 N
 - Protection of children duties (page, updated 1 Apr 2026): https://www.ofcom.org.uk/online-safety/protecting-children/protection-of-children-duties-under-the-online-safety-act
 - Age assurance duties (page): https://www.ofcom.org.uk/online-safety/protecting-children/age-assurance
 - Guidance on highly effective age assurance, Part 3 (PDF): https://www.ofcom.org.uk/siteassets/resources/documents/consultations/category-1-10-weeks/statement-age-assurance-and-childrens-access/part-3-guidance-on-highly-effective-age-assurance.pdf
-- Guidance on content harmful to children (PDF): https://www.ofcom.org.uk/siteassets/resources/documents/consultations/category-1-10-weeks/statement-protecting-children-from-harms-online/main-document/guidance-on-content-harmful-to-children.pdf
-- Protection of Children Codes: Codes at a glance (PDF): https://www.ofcom.org.uk/siteassets/resources/documents/consultations/category-1-10-weeks/statement-protecting-children-from-harms-online/main-document/codes-at-a-glance.pdf
+- Guidance on content harmful to children (PDF, published 24 April 2025): https://www.ofcom.org.uk/siteassets/resources/documents/consultations/category-1-10-weeks/statement-protecting-children-from-harms-online/main-document/guidance-on-content-harmful-to-children.pdf — **Section 9 read in full** for v0.3 (definition, “encourage” in Table 9.1, paragraphs 9.4–9.11, Tables 9.2 and 9.3). Start of Section 10 also read. Wayback copy used: https://web.archive.org/web/20260106175424/https://www.ofcom.org.uk/siteassets/resources/documents/consultations/category-1-10-weeks/statement-protecting-children-from-harms-online/main-document/guidance-on-content-harmful-to-children.pdf
+- Children's Risk Assessment Guidance and Children's Risk Profiles (PDF, published 24 April 2025): https://www.ofcom.org.uk/siteassets/resources/documents/consultations/category-1-10-weeks/statement-protecting-children-from-harms-online/main-document/childrens-risk-assessment-guidance-and-childrens-risk-profiles.pdf — Step 2 (especially 4.22–4.36), Table 6 (specific risk factors, including harmful substances and dangerous stunts) and Table 10 (Risk Level Table, pages 68–71) read for v0.3.
+- Protection of children duties (page): https://www.ofcom.org.uk/online-safety/protecting-children/protection-of-children-duties-under-the-online-safety-act
+- Protection of Children Codes: Codes at a glance (PDF): https://www.ofcom.org.uk/siteassets/resources/documents/consultations/category-1-10-weeks/statement-protecting-children-from-harms-online/main-document/codes-at-a-glance.pdf — PCU B5 wording is still from the earlier extract; not re-read in full for v0.3.
 
 **The Act**
 - Online Safety Act 2023, section 230 (self-declaration is not age verification or estimation): https://www.legislation.gov.uk/ukpga/2023/50/section/230
 
-*Note on one source:* the "excessive alcohol" example in section 8 comes from the text of Ofcom's *Guidance on content harmful to children* as it appeared in a law-firm summary (Handley Gill) and Ofcom's own definition of harmful substances content. I read the Ofcom PDF's definition and contents but not its full harmful-substances section (section 9). **Check that section directly.**
+*Note on sources:* v0.1/v0.2 relied in part on a law-firm summary for the “excessive alcohol” example and had not read Section 9 in full. **v0.3 read Section 9 in full** from Ofcom's PDF (and a Wayback copy when the live file was blocked). I have **not** read Section 8 of Ofcom's *Children's Register of Risks* (the impact chapter that Section 9.8 points to). The lawyer should check that chapter too.
 
 **Processors / DPA (checked 19 Nov 2026)**
 - Vercel Data Processing Addendum: https://vercel.com/legal/dpa (last updated 17 March 2026, effective 31 March 2026). The public text says it applies to Enterprise and Pro plans. The live project's plan was not checked.
@@ -430,7 +543,7 @@ These are questions, not answers. Please treat every point below as **for the la
 
 1. Is Social Sips in scope of the UK Online Safety Act at its size, with UK help lines on the site and no user counts?
 2. **HEAA or a UK block?** The age gate is only self-declared (type a date of birth). Ofcom’s public guidance says that is not highly effective age assurance. For a hobby 18+ alcohol-themed app, should Will: (A) add real age checks (HEAA), (B) geo-block the UK, or (C) keep the current gate, do the children’s duties, and write down why? What is the least heavy option that still meets the duty?
-3. If we chose Option C, does **PCU B5** (HEAA for medium-risk priority content that the Terms prohibit) apply to “harmful substances” content, when alcohol is the whole theme and the Terms already ban encouraging dangerous or excessive drinking? I rated that risk Medium, cautiously. That rating, and whether B5 applies, are for you to confirm.
+3. **PCU B5, please confirm.** We now rate harmful-substances children's risk as **Low**, because Ofcom's category is active encouragement of *excessive* drinking (initiations, hazing, drinking until someone is sick), not every alcohol-themed post, and because the Terms ban that in-scope content, the service is tiny, there is no recommender, and there is a report / hide / suspend path. The weak spots are written down in section 8 (no HEAA, no pre-moderation, no wording filter, a heavy seeded game, no live report review). Does the Low rating stand? If it does, is **PCU B5** (HEAA when the Terms prohibit the content and the risk is medium or high) **not** triggered? If you think the rating should stay Medium, please say why.
 4. If we chose Option B (block the UK): is a Vercel or middleware geo-block enough, or would UK help lines, English-language copy, or VPN use still count as UK links? What wording would we need to change?
 5. Does the duty to report CSAM to the National Crime Agency apply at this size, and what should be kept as evidence before deleting an illegal image?
 6. Is the flashing-images offence relevant for animated GIFs?

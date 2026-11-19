@@ -28,7 +28,7 @@ export const WELCOME_PROFILE_LINK = {
 
 /**
  * Show the prompt only to accounts created on/after WELCOME_AFTER that have not
- * already dismissed it. `dismissed` covers a localStorage (or, later, database) flag.
+ * already dismissed it. `dismissed` is true when localStorage or profiles.welcome_dismissed_at says so.
  */
 export function shouldShowWelcome(input: {
   createdAt?: string | null
@@ -63,4 +63,15 @@ export function writeWelcomeDismissed(): void {
   } catch {
     // Private mode or blocked storage: the prompt may reappear this session only.
   }
+}
+
+/**
+ * PostgREST / Postgres errors when profiles.welcome_dismissed_at is not in the
+ * schema yet (code deployed before 0043, or the cache has not reloaded).
+ */
+export function isWelcomeColumnMissing(error: { code?: string | null; message?: string | null } | null | undefined): boolean {
+  if (!error) return false
+  if (error.code === '42703' || error.code === 'PGRST204') return true
+  const m = (error.message ?? '').toLowerCase()
+  return m.includes('welcome_dismissed_at') && (m.includes('does not exist') || m.includes('schema cache') || m.includes('could not find'))
 }

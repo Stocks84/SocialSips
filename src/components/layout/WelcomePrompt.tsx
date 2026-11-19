@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { faBeerMugEmpty, faMartiniGlassCitrus, faTrophy, faUser, faXmark } from '@fortawesome/free-solid-svg-icons'
 import { Icon } from '@/components/ui/Icon'
 import { WELCOME_LINKS, WELCOME_PROFILE_LINK, readWelcomeDismissed, writeWelcomeDismissed } from '@/lib/welcome'
+import { dismissWelcome } from '@/lib/actions/welcome'
 
 const ICONS = {
   '/games': faBeerMugEmpty,
@@ -16,17 +17,24 @@ const ICONS = {
 /**
  * Dismissible first-visit card. Hidden until the client sees that localStorage
  * has no dismiss flag, so a returning visit on this device does not flash the card.
+ * Dismiss also writes profiles.welcome_dismissed_at so it stays hidden elsewhere.
+ * If localStorage is already set but the DB is not, sync once on mount.
  */
 export default function WelcomePrompt({ showProfile }: { showProfile: boolean }) {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    if (!readWelcomeDismissed()) setVisible(true)
+    if (readWelcomeDismissed()) {
+      void dismissWelcome()
+      return
+    }
+    setVisible(true)
   }, [])
 
   function dismiss() {
     writeWelcomeDismissed()
     setVisible(false)
+    void dismissWelcome()
   }
 
   if (!visible) return null

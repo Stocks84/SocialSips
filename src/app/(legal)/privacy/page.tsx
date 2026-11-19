@@ -36,7 +36,7 @@ export default function PrivacyPage() {
         <p>Uploaded images are re-encoded and location (EXIF) data is stripped. We do not sell data, run ads, or use analytics or tracking cookies.</p>
       </Section>
       <Section title="3. Cookies and local storage">
-        <p>Only strictly necessary items: Supabase login session cookies, the age-check cookie, and settings kept on your device only (for example your &quot;What can I make?&quot; bar, Kings Cup house rules, and whether you have dismissed the welcome prompt, in localStorage). These are exempt from consent under § 165(3) TKG 2021 and Art. 5(3) of the ePrivacy Directive, so no consent banner is shown. If we add analytics later we will ask first.</p>
+        <p>Only strictly necessary items: Supabase login session cookies, the age-check cookie, and settings kept on your device only (for example your &quot;What can I make?&quot; bar and Kings Cup house rules, in localStorage). If you are signed in and dismiss the welcome prompt, we also store that on your profile so it stays hidden on your other devices; localStorage is kept as a fallback on this device. These are exempt from consent under § 165(3) TKG 2021 and Art. 5(3) of the ePrivacy Directive, so no consent banner is shown. If we add analytics later we will ask first.</p>
       </Section>
       <Section title="4. Service providers (processors)">
         <ul className="list-disc pl-5 space-y-1">

@@ -1,15 +1,22 @@
 -- Remember that a member dismissed the first-visit welcome prompt.
--- Set welcome_dismissed_at when they dismiss it or follow a link in it, so the
--- hide persists across devices. The app uses localStorage until this file is
--- applied; do not apply it as part of this branch without Will's OK.
+-- Additive and safe to re-run: nullable timestamptz, no default (Postgres
+-- will not rewrite the table), IF NOT EXISTS, and grants only on this column.
+-- Existing RLS policy "own profile update" already limits UPDATE to
+-- (select auth.uid()) = id, so a member cannot write another row. Column
+-- grants already block updates to is_admin, username, suspended_at, and
+-- the other profile fields not listed in 0028; this file only adds
+-- welcome_dismissed_at. Anon gets no grant. Other signed-in members can
+-- see the timestamp (the select policy is public); it is only a dismiss
+-- flag, not private content.
+-- Apply at push time. The app treats a missing column as "not dismissed"
+-- so a short deploy window is safe.
 
 alter table public.profiles
   add column if not exists welcome_dismissed_at timestamptz;
 
--- Column-level grants (profiles has no table-level SELECT/UPDATE for members).
--- Other members can see the timestamp because the select policy is public;
--- it is only a dismiss flag. Anon gets nothing.
 revoke select (welcome_dismissed_at), update (welcome_dismissed_at)
   on public.profiles from anon, authenticated;
 grant select (welcome_dismissed_at) on public.profiles to authenticated;
 grant update (welcome_dismissed_at) on public.profiles to authenticated;
+
+notify pgrst, 'reload schema';

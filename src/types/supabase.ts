@@ -717,6 +717,7 @@ export type Database = {
           suspended_at: string | null;
           suspension_reason: string | null;
           username: string;
+          welcome_dismissed_at: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -735,6 +736,7 @@ export type Database = {
           suspended_at?: string | null;
           suspension_reason?: string | null;
           username: string;
+          welcome_dismissed_at?: string | null;
         };
         Update: {
           accepted_terms_at?: string | null;
@@ -752,6 +754,7 @@ export type Database = {
           suspended_at?: string | null;
           suspension_reason?: string | null;
           username?: string;
+          welcome_dismissed_at?: string | null;
         };
         Relationships: [];
       };

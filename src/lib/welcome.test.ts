@@ -5,6 +5,7 @@ import {
   WELCOME_LINKS,
   WELCOME_PROFILE_LINK,
   isProfileUnfinished,
+  isWelcomeColumnMissing,
   shouldShowWelcome,
 } from './welcome.ts'
 
@@ -45,5 +46,20 @@ describe('welcome copy', () => {
     assert.match(labels, /Dare/)
     assert.doesNotMatch(labels, /cocktail/i)
     assert.doesNotMatch(labels, /challenge/i)
+  })
+})
+
+describe('isWelcomeColumnMissing', () => {
+  it('recognises a missing welcome_dismissed_at column during the deploy window', () => {
+    assert.equal(isWelcomeColumnMissing({ code: '42703', message: 'column "welcome_dismissed_at" does not exist' }), true)
+    assert.equal(isWelcomeColumnMissing({ code: 'PGRST204', message: 'Could not find the welcome_dismissed_at column in the schema cache' }), true)
+    assert.equal(isWelcomeColumnMissing({ code: '42703' }), true)
+    assert.equal(isWelcomeColumnMissing({ message: 'column profiles.welcome_dismissed_at does not exist' }), true)
+  })
+
+  it('does not swallow unrelated errors', () => {
+    assert.equal(isWelcomeColumnMissing(null), false)
+    assert.equal(isWelcomeColumnMissing({ code: '42501', message: 'permission denied' }), false)
+    assert.equal(isWelcomeColumnMissing({ message: 'jwt expired' }), false)
   })
 })

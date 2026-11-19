@@ -5,7 +5,8 @@ import { siteUrl } from '@/lib/site-url'
 
 /**
  * Share this Game, Drink or Dare. Uses the Web Share API when the browser
- * has it; otherwise copies the trusted site URL and shows “Link copied”.
+ * has it; otherwise copies the trusted site URL and swaps the label to
+ * “Copied ✓” in place, so nothing overlaps or shifts.
  */
 export default function ShareButton({ title, path }: { title: string; path: string }) {
   const [copied, setCopied] = useState(false)
@@ -33,7 +34,7 @@ export default function ShareButton({ title, path }: { title: string; path: stri
   }
 
   return (
-    <span className="relative inline-flex min-h-11 items-center">
+    <span className="inline-flex min-h-11 items-center">
       <button
         type="button"
         onClick={() => void share()}
@@ -41,17 +42,17 @@ export default function ShareButton({ title, path }: { title: string; path: stri
         data-testid="share-button"
         aria-label={`Share ${title}`}
       >
-        Share
-      </button>
-      {copied && (
-        <span
-          className="absolute left-0 top-full z-20 mt-1 whitespace-nowrap rounded-sm border border-rule bg-surface px-3 py-2 text-xs text-accent"
-          role="status"
-          data-testid="share-copied"
-        >
-          Link copied
+        {/* Reserve the wider “Copied ✓” width so Report does not shift. */}
+        <span className="grid justify-items-end" aria-hidden="true">
+          <span className={`col-start-1 row-start-1 ${copied ? 'invisible' : ''}`}>Share</span>
+          <span className={`col-start-1 row-start-1 ${copied ? 'text-accent' : 'invisible'}`} data-testid="share-copied">
+            Copied ✓
+          </span>
         </span>
-      )}
+      </button>
+      <span role="status" aria-live="polite" className="sr-only">
+        {copied ? 'Link copied' : ''}
+      </span>
     </span>
   )
 }

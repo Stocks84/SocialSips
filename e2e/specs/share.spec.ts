@@ -15,7 +15,7 @@ async function passAgeGate(page: import('@playwright/test').Page) {
 test.describe('share button', () => {
   test.use({ storageState: { cookies: [], origins: [] } })
 
-  test('copy fallback shows Link copied on a Game page', async ({ page }) => {
+  test('copy fallback shows Copied on a Game page', async ({ page }) => {
     // Force the copy path so this test does not depend on Web Share support.
     await page.addInitScript(() => {
       Object.defineProperty(navigator, 'share', { configurable: true, value: undefined })
@@ -33,6 +33,8 @@ test.describe('share button', () => {
     const share = page.getByTestId('share-button')
     await expect(share).toBeVisible()
     await share.click()
-    await expect(page.getByTestId('share-copied')).toHaveText('Link copied')
+    const copied = page.getByTestId('share-copied')
+    await expect(copied).toBeVisible()
+    await expect(copied).toHaveText('Copied ✓')
   })
 })

@@ -23,6 +23,7 @@ import HiddenNotice from '@/components/ui/HiddenNotice'
 import StatementOfReasons from '@/components/moderation/StatementOfReasons'
 import SavedBanner from '@/components/ui/SavedBanner'
 import AdminControls from '@/components/admin/AdminControls'
+import ResponsiblePlayLine from '@/components/legal/ResponsiblePlayLine'
 import { faUsers } from '@fortawesome/free-solid-svg-icons'
 import { Icon } from '@/components/ui/Icon'
 import { reportControl } from '@/lib/suspension'
@@ -85,6 +86,7 @@ export default async function GamePage({ params, searchParams }: { params: Promi
         {game.is_hidden && <><HiddenNotice />{isOwner && <StatementOfReasons type="game" id={game.id} />}</>}
         {isAdmin && <div className="mt-3"><AdminControls type="game" id={game.id} redirectTo="/feed" /></div>}
         <p className="text-ink-2 mt-4">{game.summary}</p>
+        <ResponsiblePlayLine className="text-sm text-ink-2 mt-3" />
         <p className="text-ink-3 text-xs mt-2">
           {game.author && <>by <Link href={`/profile/${game.author.username}`} className="text-accent">@{game.author.username}</Link> · </>}
           {game.tags.map((t) => `#${t}`).join(' ')}

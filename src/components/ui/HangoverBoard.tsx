@@ -4,7 +4,7 @@ import { HangoverPips } from './HangoverBadge'
 const JOKES: Record<(typeof HANGOVER_RATINGS)[number], string> = {
   no_hangover: "You'll be fine. Probably.",
   mild_hangover: 'Painkillers recommended.',
-  two_day_hangover: 'Cancel your plans. All of them.',
+  two_day_hangover: 'Pace yourself. Tomorrow-you will thank you.',
 }
 
 /**

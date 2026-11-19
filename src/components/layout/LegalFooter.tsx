@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { AUSTRIA_HELP_HREF, AUSTRIA_HELP_LABEL, DRINKAWARE_HREF, DRINKAWARE_LABEL } from '@/lib/help-links'
 
 const footerLink = 'inline-flex min-h-11 items-center whitespace-nowrap text-sm text-ink-2 underline decoration-accent decoration-1 underline-offset-4 hover:decoration-ink'
 
@@ -20,9 +21,13 @@ export default function LegalFooter() {
           {/* Visible route to /help on every page, incl. mobile app pages where the tab bar has no Help tab */}
           <Link href="/help" className={footerLink} data-testid="mobile-help-link">Help</Link>
         </nav>
-        <div className="flex flex-col gap-1 text-meta text-ink-3 lg:flex-row lg:gap-6">
-          <p>18+ only · Please drink responsibly</p>
-          <p>Social Sips – Version 1</p>
+        <div className="flex flex-col gap-1 text-meta text-ink-3 lg:flex-row lg:items-center lg:gap-6">
+          <p className="inline-flex min-h-11 items-center">18+ only · Please drink responsibly</p>
+          <p className="flex flex-wrap gap-x-5" data-testid="footer-help-orgs">
+            <a href={DRINKAWARE_HREF} className={footerLink} rel="noopener noreferrer">{DRINKAWARE_LABEL}</a>
+            <a href={AUSTRIA_HELP_HREF} className={footerLink} rel="noopener noreferrer">{AUSTRIA_HELP_LABEL}</a>
+          </p>
+          <p className="inline-flex min-h-11 items-center">Social Sips – Version 1</p>
         </div>
       </div>
     </footer>

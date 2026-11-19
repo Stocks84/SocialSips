@@ -9,6 +9,7 @@ const TABS = [
   { key: 'hidden', href: '/admin/hidden', label: 'Hidden items' },
   { key: 'users', href: '/admin/users', label: 'Accounts', testId: 'admin-users-link' },
   { key: 'challenges', href: '/admin/challenges', label: 'Challenges', testId: 'admin-challenges-link' },
+  { key: 'wording', href: '/admin/wording', label: 'Wording', testId: 'admin-wording-link' },
 ] as const
 
 export type AdminTabKey = (typeof TABS)[number]['key']

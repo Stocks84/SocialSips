@@ -1,6 +1,7 @@
 'use client'
 import { useActionState, useEffect, useRef } from 'react'
 import { addComment, type FormState } from '@/lib/actions/social'
+import { SoftDrinkTermsNote } from '@/components/legal/PostingReminders'
 
 export default function CommentForm({ kind, targetId }: { kind: 'game' | 'cocktail' | 'meme'; targetId: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(addComment, {})
@@ -14,6 +15,7 @@ export default function CommentForm({ kind, targetId }: { kind: 'game' | 'cockta
       <input type="hidden" name="kind" value={kind} />
       <input type="hidden" name="targetId" value={targetId} />
       <textarea name="body" defaultValue={val('body')} rows={3} maxLength={1000} required className="input" placeholder="Tried it? Tell us how it went…" aria-label="Comment" />
+      <SoftDrinkTermsNote variant="comment" className="text-xs text-ink-3" />
       {state.error && <p className="error-msg" role="alert">{state.error}</p>}
         {state.ok && <p className="text-accent text-sm" role="status">Comment posted</p>}
       <button className="btn-primary" disabled={pending}>{pending ? 'Posting…' : 'Post comment'}</button>

@@ -3,6 +3,7 @@ import { useActionState, useState } from 'react'
 import ImageInput from '@/components/ui/ImageInput'
 import IngredientRows, { type IngredientRow } from './IngredientRows'
 import FieldError from '@/components/ui/FieldError'
+import { SoftDrinkTermsNote } from '@/components/legal/PostingReminders'
 import LengthHint, { defaultHint, uniqueFieldError } from '@/components/ui/LengthHint'
 import { cocktailFieldsFromForm } from '@/lib/validators/cocktail'
 import { fieldErrors, firstIssue, type EditState } from '@/lib/validators/issues'
@@ -112,6 +113,7 @@ export default function CocktailForm({ action: serverAction, defaults = {}, subm
           <input type="checkbox" name="removeCover" value="true" className="accent-accent" /> Remove current photo
         </label>
       )}
+      <SoftDrinkTermsNote variant="drink" />
       <button className="btn-primary" disabled={pending} data-testid="drink-submit">{pending ? 'Saving…' : submitLabel}</button>
     </form>
   )

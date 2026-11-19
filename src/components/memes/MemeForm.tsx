@@ -3,6 +3,7 @@ import { useActionState } from 'react'
 import { shrinkImage } from '@/lib/image'
 import FieldError from '@/components/ui/FieldError'
 import type { EditState } from '@/lib/validators/issues'
+import { SoftDrinkTermsNote } from '@/components/legal/PostingReminders'
 
 type Props = {
   action: (prev: EditState, fd: FormData) => Promise<EditState>
@@ -54,6 +55,7 @@ export default function MemeForm({ action: serverAction, defaults, submitLabel }
         <FieldError id="jokeText" message={err('jokeText')} />
       </div>
       {state.error && <p className="error-msg" role="alert">{state.error}</p>}
+      <SoftDrinkTermsNote variant="comment" className="text-sm text-ink-2" />
       <button className="btn-primary" disabled={pending}>{pending ? 'Saving…' : submitLabel}</button>
     </form>
   )

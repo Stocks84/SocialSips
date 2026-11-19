@@ -8,6 +8,7 @@ import FieldError from '@/components/ui/FieldError'
 import LengthHint, { defaultHint, uniqueFieldError } from '@/components/ui/LengthHint'
 import { EQUIPMENT_ITEM_MAX, GAME_LIST_LIMIT, TAG_ITEM_MAX, gameFieldsFromForm, listItems } from '@/lib/validators/game'
 import { fieldErrors, firstIssue } from '@/lib/validators/issues'
+import { SoftDrinkTermsNote } from '@/components/legal/PostingReminders'
 
 export type GameFormDefaults = {
   id?: string
@@ -164,6 +165,7 @@ export default function GameForm({ action: serverAction, defaults = {}, submitLa
           <input type="checkbox" name="removeCover" value="true" className="accent-accent" /> Remove current cover
         </label>
       )}
+      <SoftDrinkTermsNote variant="game" />
       <button className="btn-primary" disabled={pending} data-testid="game-submit">{pending ? 'Saving…' : submitLabel}</button>
     </form>
   )

@@ -7,11 +7,11 @@
 
 | | |
 |---|---|
-| Version | 0.3 DRAFT |
+| Version | 0.4 DRAFT |
 | Date first written | 17 November 2026 |
 | Date last updated | 19 November 2026 |
 | Service | Social Sips. Live today at https://social-sips-livid.vercel.app/. Intended domain: https://social-sips.app (chosen, not bought yet). |
-| Code baseline for this update | `main` at `04ea2e8`. First draft was written against `main` at `229495d`. |
+| Code baseline for this update | Branch `osa-safeguards`, created from `osa-low-risk` at `e204801` (which sat on `main` at `04ea2e8`). First draft was written against `main` at `229495d`. |
 | Provider and responsible person | William Stocks ("Will"), named as the person accountable (Ofcom measure ICU A2 / PCU A2) |
 | Contact (only if needed) | The public contact email on the Impressum page. Not repeated here (CLAUDE.md allows that email on the legal pages only). No home address in this file. |
 | Next review | **19 November 2027**, or sooner before any big change (see section 9) |
@@ -21,6 +21,7 @@
 - **0.1** (17 Nov 2026): first draft.
 - **0.2** (19 Nov 2026): refreshed against later `main` (G2, G3 and G6 closed in code).
 - **0.3** (19 Nov 2026): re-read Ofcom's harmful-substances guidance and Risk Level Table. Rate harmful-substances (and restated dangerous-challenges) children's risk as **Low**, with evidence, weak spots, and cheap extra safeguards. Not legal advice. Lawyer to confirm.
+- **0.4** (19 Nov 2026): built the six cheap safeguards from v0.3 on branch `osa-safeguards`. Ratings are unchanged. Not legal advice. Lawyer to confirm.
 
 ---
 
@@ -402,7 +403,7 @@ Ofcom says that, ordinarily, **few** specific risk factors for a kind of content
 
 3. **Responsible-drinking and soft-drink notes already in the product.** Home: "18+ only. Every game works with soft drinks." and "Social Sips promotes responsible drinking. Know your limits, and never drink and drive." (`src/app/page.tsx`). Footer on every page: "18+ only · Please drink responsibly", plus a Help link (`src/components/layout/LegalFooter.tsx`). Help page: pace yourself, eat, never drink and drive, every game works with soft drinks, look after friends; Drinkaware / Drinkline 0300 123 1110; Austrian help; 112 / 999 (`src/app/(main)/help/page.tsx`). The built-in Kings Cup play screen: "Nobody has to drink to play. Soft drinks work just as well." (`src/components/play/KingsCup.tsx`). Drink recipes can be marked and filtered as alcohol-free (`src/components/cocktails/*`).
 
-4. **Built-in Drinks and Dares.** The weekly Dare is only a **meme** or a **cocktail-variation** (recipe) theme, set by an admin, not a drinking stunt (`src/lib/challenge.ts`). Seeded drinks include a virgin/alcohol-free example (`supabase/seed.sql`). Seeded games are mixed: "Mocktail Mafia" is alcohol-free (`no_hangover`); "Neon Never Have I Ever" says "takes a sip"; "Cosmic Cups" is a flip-cup relay where "each player drinks" and is tagged `two_day_hangover`. There is **no** cap on how intense a user-written game can be, and **no** wording filter. Hangover ratings are a warning label (`no_hangover`, `mild_hangover`, `two_day_hangover`), but the public jokes include "Cancel your plans. All of them." (`src/components/ui/HangoverBoard.tsx`). That last point is a weak spot, not a strength.
+4. **Built-in Drinks and Dares.** The weekly Dare is only a **meme** or a **cocktail-variation** (recipe) theme, set by an admin, not a drinking stunt (`src/lib/challenge.ts`). Seeded drinks include a virgin/alcohol-free example (`supabase/seed.sql`). Seeded games are mixed: "Mocktail Mafia" is alcohol-free (`no_hangover`); "Neon Never Have I Ever" says "takes a sip"; "Cosmic Cups" is a flip-cup relay tagged `two_day_hangover`. On this branch the seed rules offer a sip or a soft-drink option (`supabase/seed.sql`). The same change for any live `slug = 'cosmic-cups'` row is in `supabase/migrations/0045_soften_cosmic_cups.sql` and has **not** been applied. There is still **no** cap on how intense a user-written game can be. A small wording **flag** (not a filter, not an automatic hide) marks hazing / "drink until you pass out" phrases for an admin (`src/lib/wording-flag.ts`, `/admin/wording`). Hangover ratings stay as enum values `no_hangover`, `mild_hangover`, `two_day_hangover`; the public label for `two_day_hangover` is now "Heavy — take it easy", and the board line is "Pace yourself. Tomorrow-you will thank you." (`src/types/domain.ts`, `src/components/ui/HangoverBoard.tsx`).
 
 5. **Moderation.** Anyone can report, including a single comment (`/report`, `src/lib/validators/comment.ts`). One report reason is **"Dangerous drinking / unsafe"**. Admins get a nav badge and in-app alerts (migration 0044, marked applied live). They can hide (image moves to a private bucket, plus a "Make hidden images private" button), delete, or suspend an account (migrations 0040 and 0041, `/admin/users`, `/admin/hidden`). Closed reports are set to be deleted after 12 months (migration 0039 — confirm the live cron job). Posts are **not** pre-checked before they go live.
 
@@ -441,22 +442,22 @@ A child who lies about their age can still see alcohol-themed posts. A new game 
 1. The product is still **about drinking**. A cautious reader, or a lawyer, might say Medium because alcohol is the theme, even after reading Ofcom's narrower definition.
 2. The age gate is **not HEAA**. Children can get in. Ofcom also says that if the evidence is not conclusive, pick the **higher** risk level (Risk Level Table, 4.3).
 3. Posts are **not pre-moderated**. Table 10's example of a "very effective" control is pre-moderation. We do not have that.
-4. **No wording filter**, and no cap on how hard a game can be. A user could post a hazing-style dare.
-5. Built-in **Cosmic Cups** tells each player to drink and is labelled `two_day_hangover`. The hangover-board joke is "Cancel your plans. All of them." That can look like celebrating a heavy night.
-6. Responsible-drinking and Drinkaware links are on Home, Help, Terms and the Kings Cup screen. They are **not** on every Game or Dare page. The footer says "Please drink responsibly" but does not itself name Drinkaware.
+4. There is still **no wording filter** and no cap on how hard a game can be. A user could still post a hazing-style dare; it should now appear on the admin wording-flag list (`/admin/wording`) for review, but it can go live first. The matcher only covers a small phrase list.
+5. Built-in **Cosmic Cups** is still tagged `two_day_hangover` (the database enum value is unchanged). On this branch the seed rules offer a sip or a soft drink, and the hangover label/joke are warning-style. Any **live** Cosmic Cups row is unchanged until `0045_soften_cosmic_cups.sql` is applied.
+6. Responsible-drinking notes are now also on every Game and Dare page, and Drinkaware plus the Austrian help link are in the global footer (verified URLs: `https://www.drinkaware.co.uk` and `https://www.suchtvorbeugung.net`; Help previously cited `suchtvorbeugung.at`, whose TLS certificate does not match that hostname, so Help now uses the same `.net` URL already on the Terms). A child who is already through the age gate can still see alcohol-themed posts.
 7. Live reports and user numbers were **not** checked. I cannot say "we have had no cases."
 8. Memes and party culture can still appeal to **older teens**.
 
-#### Cheap extra safeguards (not built in this job)
+#### Cheap extra safeguards (built on branch `osa-safeguards`)
 
-These would make the Low rating easier to defend. Small code or copy tasks only. Do not start them until Will says so.
+These were listed in v0.3 as small tasks that would make the Low rating easier to defend. They are built on this branch. Live Cosmic Cups text is unchanged until Will applies the SQL file below.
 
-1. A one-line reminder on every Game and Dare page: nobody has to drink; soft drinks are fine; link to `/help`.
-2. On the game / dare form, a required tick or a prompt for a soft-drink alternative, and a short reminder that encouraging excessive or forced drinking is banned.
-3. Put Drinkaware (and the Austrian help link) in the **global footer**, not only on `/help` and the Terms.
-4. A simple wording flag for an admin when a post looks like hazing or "drink until you pass out" (not a full filter, just a review queue).
-5. Soften or relabel `two_day_hangover` so it reads as a **warning**, not a joke about a heavy night, and review the seeded "Cosmic Cups" rules.
-6. Keep the sign-up 18+ line, and add the same short "18+ only, drink responsibly" line at the top of the create-game and create-dare screens.
+1. **Built.** A one-line reminder on every Game and Dare page: "Nobody has to drink. Soft drinks are fine. See Help", linking to `/help` (`src/components/legal/ResponsiblePlayLine.tsx`, used on `src/app/(main)/games/[id]/page.tsx` and `src/components/challenge/ChallengeView.tsx`).
+2. **Built.** A soft-drink alternative prompt plus a short Terms reminder on the create/edit game form, the create-dare (schedule) form, drink and house-rules forms, and a lighter Terms note on comments, memes, and the enter-a-Dare form (`src/components/legal/PostingReminders.tsx`). Prompt only, not a required tick.
+3. **Built.** Drinkaware and the Austrian help link are in the global footer (`src/components/layout/LegalFooter.tsx`). URLs, verified 19 November 2026: `https://www.drinkaware.co.uk` and `https://www.suchtvorbeugung.net`. Help now uses the same links (the old bare `suchtvorbeugung.at` host was not safe to reuse).
+4. **Built.** An admin wording flag, computed in the admin view with no new database column. Posts, comments, Dares, house rules, drink twists and memes that match a small list of hazing / "drink until you pass out" phrases appear at `/admin/wording` (`src/lib/wording-flag.ts`, `src/lib/queries/wording-flags.ts`). The matcher is unit-tested. This is a review list, not an automatic hide, and it only scans recent rows (200 per type).
+5. **Built in code and seed; live row not updated.** The `two_day_hangover` **enum value** is unchanged. The public label is now "Heavy — take it easy" and the board line is "Pace yourself. Tomorrow-you will thank you." Seeded Cosmic Cups rules now offer a sip or a soft drink (`supabase/seed.sql`). For any live row with `slug = 'cosmic-cups'`, see unapplied `supabase/migrations/0045_soften_cosmic_cups.sql`.
+6. **Built.** Sign-up already had the 18+ / drink-responsibly line. The same short line is now at the top of the create-game and create-dare screens (`AgeResponsibleLine` on `src/app/(main)/games/new/page.tsx` and `src/app/(main)/admin/challenges/page.tsx`).
 
 If a children's risk assessment is required, you also have to **tell Ofcom if you find "non-designated" harmful content** on the service (nondesignatedcontent@ofcom.org.uk). None found as far as I know (no live data checked).
 
@@ -486,11 +487,11 @@ Ofcom wants a written, dated, easy-to-understand record, **kept in a durable pla
 | This file is the record | `docs/legal/uk-osa-risk-assessment.md` in the repo (history kept by git) |
 | Accountable person | William Stocks |
 | Draft written by | Social Sips assistant, 17 Nov 2026 |
-| Draft updated by | Social Sips assistant, 19 Nov 2026. v0.2: refreshed against later main (G2, G3, G6 closed in code). v0.3: harmful-substances children's risk changed from Medium to Low, with evidence, weak spots and extra safeguards. |
+| Draft updated by | Social Sips assistant, 19 Nov 2026. v0.2: refreshed against later main (G2, G3, G6 closed in code). v0.3: harmful-substances children's risk changed from Medium to Low, with evidence, weak spots and extra safeguards. v0.4: six cheap safeguards built on branch `osa-safeguards`. |
 | Reviewed by lawyer | **Not yet** (WKO review pending) |
 | Approved by Will | **Not yet** |
 | Date approved | |
-| Actions started | Code for G2, G3 and G6 is on `main`. Live cron job for G2 not verified from here. |
+| Actions started | Code for G2, G3 and G6 is on `main`. Live cron job for G2 not verified from here. The six cheap safeguards are on `osa-safeguards`. Migration `0045_soften_cosmic_cups.sql` is written and has not been applied. |
 | Next review due | 19 Nov 2027 |
 
 **Report to governance:** Ofcom says small services without a board can simply report the result to the person responsible. Here that is Will, so his sign-off above is the report.
@@ -543,7 +544,7 @@ These are questions, not answers. Please treat every point below as **for the la
 
 1. Is Social Sips in scope of the UK Online Safety Act at its size, with UK help lines on the site and no user counts?
 2. **HEAA or a UK block?** The age gate is only self-declared (type a date of birth). Ofcom’s public guidance says that is not highly effective age assurance. For a hobby 18+ alcohol-themed app, should Will: (A) add real age checks (HEAA), (B) geo-block the UK, or (C) keep the current gate, do the children’s duties, and write down why? What is the least heavy option that still meets the duty?
-3. **PCU B5, please confirm.** We now rate harmful-substances children's risk as **Low**, because Ofcom's category is active encouragement of *excessive* drinking (initiations, hazing, drinking until someone is sick), not every alcohol-themed post, and because the Terms ban that in-scope content, the service is tiny, there is no recommender, and there is a report / hide / suspend path. The weak spots are written down in section 8 (no HEAA, no pre-moderation, no wording filter, a heavy seeded game, no live report review). Does the Low rating stand? If it does, is **PCU B5** (HEAA when the Terms prohibit the content and the risk is medium or high) **not** triggered? If you think the rating should stay Medium, please say why.
+3. **PCU B5, please confirm.** We now rate harmful-substances children's risk as **Low**, because Ofcom's category is active encouragement of *excessive* drinking (initiations, hazing, drinking until someone is sick), not every alcohol-themed post, and because the Terms ban that in-scope content, the service is tiny, there is no recommender, and there is a report / hide / suspend path. The weak spots are written down in section 8 (no HEAA, no pre-moderation, no wording *filter* — there is now a flag for admin review — a still-heavy hangover tag on Cosmic Cups, and no live report review). Does the Low rating stand? If it does, is **PCU B5** (HEAA when the Terms prohibit the content and the risk is medium or high) **not** triggered? If you think the rating should stay Medium, please say why.
 4. If we chose Option B (block the UK): is a Vercel or middleware geo-block enough, or would UK help lines, English-language copy, or VPN use still count as UK links? What wording would we need to change?
 5. Does the duty to report CSAM to the National Crime Agency apply at this size, and what should be kept as evidence before deleting an illegal image?
 6. Is the flashing-images offence relevant for animated GIFs?

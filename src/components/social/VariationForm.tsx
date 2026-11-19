@@ -1,6 +1,7 @@
 'use client'
 import { useActionState, useEffect, useRef } from 'react'
 import { addVariation, type FormState } from '@/lib/actions/social'
+import { SoftDrinkTermsNote } from '@/components/legal/PostingReminders'
 
 export default function VariationForm({ kind, targetId }: { kind: 'game' | 'cocktail'; targetId: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(addVariation, {})
@@ -19,6 +20,7 @@ export default function VariationForm({ kind, targetId }: { kind: 'game' | 'cock
         <input type="hidden" name="targetId" value={targetId} />
         <input name="title" defaultValue={val('title')} className="input" placeholder="Variation name" required minLength={3} maxLength={80} aria-label="Variation name" />
         <textarea name="rules" defaultValue={val('rules')} rows={4} className="input" placeholder="What changes?" required minLength={10} maxLength={3000} aria-label="Variation details" />
+        <SoftDrinkTermsNote variant={kind === 'game' ? 'game' : 'drink'} className="text-sm text-ink-2" />
         {state.error && <p className="error-msg" role="alert">{state.error}</p>}
         {state.ok && <p className="text-accent text-sm" role="status">Variation added</p>}
         <button className="btn-secondary" disabled={pending}>{pending ? 'Saving…' : 'Save variation'}</button>

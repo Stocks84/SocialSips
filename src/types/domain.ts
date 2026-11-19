@@ -10,5 +10,5 @@ export type HangoverRating = (typeof HANGOVER_RATINGS)[number]
 export const HANGOVER_LABELS: Record<HangoverRating, { label: string; emoji: string; pips: 1 | 2 | 3; textClass: string; pipClass: string }> = {
   no_hangover: { label: 'No Hangover', emoji: '😇', pips: 1, textClass: 'text-hangover-none', pipClass: 'bg-hangover-none' },
   mild_hangover: { label: 'Mild Hangover', emoji: '🤕', pips: 2, textClass: 'text-hangover-mild', pipClass: 'bg-hangover-mild' },
-  two_day_hangover: { label: 'Two-Day Hangover', emoji: '💀', pips: 3, textClass: 'text-hangover-heavy', pipClass: 'bg-hangover-heavy' },
+  two_day_hangover: { label: 'Heavy — take it easy', emoji: '💀', pips: 3, textClass: 'text-hangover-heavy', pipClass: 'bg-hangover-heavy' },
 }

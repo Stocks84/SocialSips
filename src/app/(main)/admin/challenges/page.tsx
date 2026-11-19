@@ -9,6 +9,7 @@ import { KIND_LABEL, weekLabel } from '@/lib/challenge'
 import { deleteChallenge, scheduleChallenge } from './actions'
 import SubmitButton from '@/components/ui/SubmitButton'
 import { adminTitle } from '@/lib/server/page-meta'
+import { AgeResponsibleLine, SoftDrinkTermsNote } from '@/components/legal/PostingReminders'
 
 export const generateMetadata = adminTitle('Challenges · Admin')
 export const dynamic = 'force-dynamic'
@@ -38,6 +39,7 @@ export default async function AdminChallengesPage({ searchParams }: { searchPara
       </section>
       <section className="card p-5 mb-6">
         <h2 className="font-bold mb-3">Schedule a week</h2>
+        <AgeResponsibleLine className="text-sm text-ink-2 mb-3" />
         <form action={scheduleChallenge} className="grid gap-3 sm:grid-cols-2" data-testid="schedule-form">
           <label className="text-sm">Week
             <select name="startsOn" className="input mt-1" required>{weeks.map((w) => <option key={w} value={w}>{weekLabel(w)}{byWeek.has(w) ? ` (replaces “${byWeek.get(w)!.theme}”)` : ''}</option>)}</select>
@@ -51,6 +53,7 @@ export default async function AdminChallengesPage({ searchParams }: { searchPara
           <label className="text-sm sm:col-span-2">Description (optional)
             <textarea name="description" rows={3} maxLength={500} className="input mt-1" placeholder="What should people make?" />
           </label>
+          <SoftDrinkTermsNote variant="dare" className="text-sm text-ink-2 sm:col-span-2" />
           <SubmitButton className="btn-primary sm:col-span-2 justify-self-start" data-testid="schedule-btn" pendingLabel="Scheduling…">Schedule</SubmitButton>
         </form>
       </section>

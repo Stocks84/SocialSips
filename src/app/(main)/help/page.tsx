@@ -1,4 +1,5 @@
 import PageHeader from '@/components/ui/PageHeader'
+import { AUSTRIA_HELP_HREF, DRINKAWARE_HREF } from '@/lib/help-links'
 
 export const metadata = { title: 'Help & Responsibility' }
 
@@ -19,8 +20,8 @@ export default function HelpPage() {
       </ul>
       <div className="card p-6 space-y-2 text-sm">
         <h2 className="font-bold text-lg mb-2">Need support?</h2>
-        <p>Drinkaware (UK): drinkaware.co.uk · Drinkline 0300 123 1110</p>
-        <p>Alkohol-Hotline / Suchtberatung (Austria): suchtvorbeugung.at</p>
+        <p>Drinkaware (UK): <a href={DRINKAWARE_HREF} className="text-accent" rel="noopener noreferrer">drinkaware.co.uk</a> · Drinkline 0300 123 1110</p>
+        <p>Alkohol-Hotline / Suchtberatung (Austria): <a href={AUSTRIA_HELP_HREF} className="text-accent" rel="noopener noreferrer">suchtvorbeugung.net</a></p>
         <p>In an emergency call 112 (EU) or 999 (UK).</p>
       </div>
     </>

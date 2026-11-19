@@ -16,7 +16,7 @@ insert into public.games (author_id, title, slug, summary, rules, equipment, min
    '{glow sticks}', 3, 'mild_hangover', '{classic,party}'),
   ('00000000-0000-0000-0000-000000000001', 'Cosmic Cups', 'cosmic-cups',
    'Flip-cup relay where the losing team names the next planet.',
-   'Two teams line up. Each player drinks, then flips their cup upside down from the table edge before the next can go. First team done wins the round.',
+   'Two teams line up. Each player takes a sip — a soft drink is fine — then flips their cup upside down from the table edge before the next can go. First team done wins the round.',
    '{plastic cups,table}', 6, 'two_day_hangover', '{team,fast}'),
   ('00000000-0000-0000-0000-000000000001', 'Mocktail Mafia', 'mocktail-mafia',
    'Social deduction, played with mocktails.',

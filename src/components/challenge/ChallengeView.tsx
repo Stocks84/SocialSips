@@ -9,6 +9,8 @@ import { isOwnStorageUrl } from '@/lib/storage'
 import { enterChallenge, voteChallenge, withdrawEntry } from '@/app/(main)/challenge/actions'
 import SubmitButton from '@/components/ui/SubmitButton'
 import SuspendedFormBlock from '@/components/ui/SuspendedFormBlock'
+import ResponsiblePlayLine from '@/components/legal/ResponsiblePlayLine'
+import { SoftDrinkTermsNote } from '@/components/legal/PostingReminders'
 
 /** Own memes / cocktail variations that can still be entered (visible, not already in this challenge). */
 async function eligible(c: Challenge, userId: string) {
@@ -52,6 +54,7 @@ export default async function ChallengeView({ c, current, error }: { c: Challeng
         </div>
         <h1 className="text-3xl sm:text-4xl font-display font-normal text-ink" data-testid="challenge-theme">{c.theme}</h1>
         {c.description && <p className="text-ink-2 mt-2">{c.description}</p>}
+        <ResponsiblePlayLine className="text-sm text-ink-2 mt-3" />
         <p className="mt-4 text-sm">
           {status === 'open' && <Countdown endsAt={challengeEnd(c.starts_on).toISOString()} initialNow={Date.now()} />}
           {status === 'upcoming' && <span>Starts {challengeEndLabel(c.starts_on, true)}</span>}
@@ -66,6 +69,7 @@ export default async function ChallengeView({ c, current, error }: { c: Challeng
 
       {status === 'open' && (
         <section className="card p-5 mb-6" data-testid="challenge-enter">
+          <SoftDrinkTermsNote variant="entry" className="text-sm text-ink-2 mb-3" />
           {!userId ? (
             <p className="text-sm"><Link href="/sign-in?redirectTo=/challenge" className="text-accent">Sign in</Link> to enter and vote.</p>
           ) : hasEntry ? (
